@@ -15,7 +15,7 @@
             android:layout_margin="20dp"
             android:layout_marginBottom="0dp"
             android:weightSum="12">
-            <EditText
+            <AutoCompleteTextView
                 android:id="@+id/searchBar"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"

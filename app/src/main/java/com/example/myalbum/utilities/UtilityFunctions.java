@@ -1,4 +1,4 @@
-package com.example.layouthome;
+package com.example.myalbum.utilities;
 
 import android.app.Activity;
 import android.content.Context;
@@ -15,5 +15,4 @@ public class UtilityFunctions {
         InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
-
 }

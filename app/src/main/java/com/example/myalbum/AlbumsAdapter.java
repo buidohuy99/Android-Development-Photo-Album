@@ -1,18 +1,14 @@
-package com.example.layouthome;
+package com.example.myalbum;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +24,7 @@ public class AlbumsAdapter extends BaseAdapter {
     int layoutToInflate;
 
     AlbumsAdapter(Context context, List<Album> displayAlbums, int resource){
-        this.displayAlbums = new ArrayList<Album>();
-        this.displayAlbums.addAll(displayAlbums);
+        this.displayAlbums = displayAlbums;
         currentContext = context;
         layoutToInflate = resource;
     }
@@ -100,5 +95,10 @@ public class AlbumsAdapter extends BaseAdapter {
 
         //Return the Row for display
         return currentRow;
+    }
+
+    public void setList(List<Album> a)
+    {
+        displayAlbums = a;
     }
 }

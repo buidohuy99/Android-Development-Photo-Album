@@ -1,4 +1,4 @@
-package com.example.layouthome;
+package com.example.myalbum;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        assertEquals("com.example.layouthome", appContext.getPackageName());
+        assertEquals("com.example.myalbum", appContext.getPackageName());
     }
 }

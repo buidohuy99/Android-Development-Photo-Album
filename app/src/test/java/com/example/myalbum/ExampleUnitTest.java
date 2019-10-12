@@ -1,4 +1,4 @@
-package com.example.layouthome;
+package com.example.myalbum;
 
 import org.junit.Test;
 

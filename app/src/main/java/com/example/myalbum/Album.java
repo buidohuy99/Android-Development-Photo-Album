@@ -1,11 +1,13 @@
-package com.example.layouthome;
+package com.example.myalbum;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Album {
+    //To change this list to be list of URI because will load from Gallery
     private List<Integer> images;
     private String albumName;
+    private String albumID;
 
     Album(String albumName){
         this.albumName = albumName;
@@ -23,4 +25,3 @@ public class Album {
     }
     Integer getImage(int index) {return images.get(index);};
 }
-

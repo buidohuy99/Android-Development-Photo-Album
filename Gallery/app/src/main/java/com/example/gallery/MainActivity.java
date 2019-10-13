@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     static public Bitmap getResizedBitmap(Bitmap image) {
-        int mSize=1000;
+        int mSize=500;
         float  scale = (float) mSize / image.getWidth();
         int newSize = Math.round(image.getHeight() * scale);
 

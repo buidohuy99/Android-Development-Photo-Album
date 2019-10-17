@@ -1,38 +1,36 @@
 package com.example.gallery;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.content.Context;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import android.Manifest;
+import android.content.ClipData;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.example.gallery.ImageAdapter;
-
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final int PICK_IMAGE = 100;
+    TextView text;
     GridView gridView;
     Button button;
     Uri imageUri;
+    ArrayList<Uri> listUri = new ArrayList<Uri>();
     ArrayList<Bitmap> list = new ArrayList<Bitmap>();
-    ImageAdapter adapter = new ImageAdapter(this,list);
-
+    ImageAdapter adapter = new ImageAdapter(this, list);
 
 
     @Override
@@ -40,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         gridView = (GridView) findViewById(R.id.gridview);
-        button = (Button)findViewById(R.id.add);
+        button = (Button) findViewById(R.id.add);
+        text = (TextView)findViewById(R.id.nameAlbum) ;
         gridView.setAdapter(adapter);
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -52,39 +50,61 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openGallery() {
-        Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-        startActivityForResult(gallery,PICK_IMAGE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_IMAGE);
+
+        } else {
+            Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            gallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            startActivityForResult(gallery, PICK_IMAGE);
+        }
+
+
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        super.onActivityResult( requestCode,  resultCode,  data);
-        if(resultCode == RESULT_OK && requestCode == PICK_IMAGE){
-            imageUri=data.getData();
-            try {
-                InputStream inputStream = getContentResolver().openInputStream(imageUri);
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            if (data.getClipData() != null) {
+                ClipData mClipData = data.getClipData();
+                for (int i = 0; i < mClipData.getItemCount(); i++) {
 
-//                ByteArrayOutputStream stream = new ByteArrayOutputStream();
-//                bitmap.compress(Bitmap.CompressFormat.PNG, 50, stream);
+                    ClipData.Item item = mClipData.getItemAt(i);
+                    Uri uri = item.getUri();
+                    listUri.add(uri);
+                    list.add(getResizedBitmap(ChangeUriToBitmap(uri)));
+                }
+                adapter.notifyDataSetChanged();
 
-                bitmap = getResizedBitmap(bitmap);
-                // for(int i=0; i<10;i++)
-                list.add(bitmap);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             }
-
-            gridView.setAdapter(adapter);
         }
     }
+
+    public Bitmap ChangeUriToBitmap(Uri uri){
+        Bitmap bitmap = null;
+        try {
+            //Change the path, from Uri to Bitmap
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            bitmap = BitmapFactory.decodeStream(inputStream);
+
+           } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+    //Resize image
     static public Bitmap getResizedBitmap(Bitmap image) {
-        int mSize=500;
+        int mSize=200;
         float  scale = (float) mSize / image.getWidth();
         int newSize = Math.round(image.getHeight() * scale);
 
         return Bitmap.createScaledBitmap(image, mSize, newSize, true);
     }
+    // Hàm gọi xử lý cắt ảnh
+
 //    public String BitMapToString(Bitmap bitmap){
 //        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
 //        bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);

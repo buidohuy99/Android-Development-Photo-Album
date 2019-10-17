@@ -2,6 +2,7 @@ package com.example.gallery;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,11 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.gallery.MainActivity.getResizedBitmap;
 
 public class ImageAdapter extends BaseAdapter {
     Context context;
@@ -52,7 +56,7 @@ public class ImageAdapter extends BaseAdapter {
             int gridsize = context.getResources().getDimensionPixelOffset(R.dimen.gridview_size);
             imageView.setLayoutParams(new GridView.LayoutParams(gridsize, gridsize));
 //imageView.setLayoutParams(new GridView.LayoutParams(100, 100));//NOT a good practice
-            imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setPadding(5, 5, 5, 5);
         } else {
             imageView = (ImageView) view;
@@ -64,9 +68,8 @@ public class ImageAdapter extends BaseAdapter {
         return imageView;
 
     }//getView
-    public ArrayList<Bitmap> getList() {
-        return new ArrayList<Bitmap>();
-    }
+
+
 
 }
 

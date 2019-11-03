@@ -1,13 +1,18 @@
 package com.example.myalbum;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +25,9 @@ public class HomeActivity extends Activity implements ActivityCallBacks{
     private ListView albumList;
     private Button searchButton;
     private Button addAlbumButton;
+    private ProgressBar loadingCir;
     private AddAlbumDialog addAlbumDialog = null;
+    private final static int FIND_ALBUM_THREADCODE = 1;
 
     //Auto-completes
     private ArrayList<String> hint;
@@ -35,6 +42,38 @@ public class HomeActivity extends Activity implements ActivityCallBacks{
     //Listeners
     //Nothing here
 
+    //Handlers
+    private static class IncomingHandler extends Handler {
+        private final WeakReference<HomeActivity> mActivity;
+
+        IncomingHandler(HomeActivity homeActivity) {
+            mActivity = new WeakReference<HomeActivity>(homeActivity);
+        }
+        @Override
+        public void handleMessage(Message msg)
+        {
+            HomeActivity activity = mActivity.get();
+            if (activity != null) {
+                activity.handleMessage(msg);
+            }
+        }
+    }
+
+    private void handleMessage(Message msg){
+        if(msg.what == FIND_ALBUM_THREADCODE) {
+            ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
+            ArrayList<Album> source = (ArrayList<Album>) allAlbums;
+            Intent newActivity = new Intent(this, SearchAlbumActivity.class);
+            newActivity.putExtra("Source", source);
+            newActivity.putExtra("Render Info", filtered);
+            newActivity.putExtra("AutoComplete", hint);
+            loadingCir.setVisibility(View.INVISIBLE);
+            startActivity(newActivity);
+        }
+    }
+
+    private IncomingHandler updateHandler = new IncomingHandler(HomeActivity.this);
+
     //Adapters
     private AlbumsAdapter albumsAdapter;
     private ArrayAdapter<String> autoCompleteAdapter;
@@ -45,6 +84,22 @@ public class HomeActivity extends Activity implements ActivityCallBacks{
         albumsAdapter.notifyDataSetChanged();
         hint.add(name);
         autoCompleteAdapter.notifyDataSetChanged();
+        albumList.smoothScrollToPosition(albumsAdapter.getCount()-1);
+    }
+    private ArrayList<Album> findAlbumByName(List<Album> source, String name){
+        if(name == null) return null;
+        ArrayList<Album> result = new ArrayList<Album>();
+        Album album;
+        for (int i = 0; i < source.size();i++)
+        {
+            album = source.get(i);
+            if (album.getAlbumName().equals(name))
+            {
+                result.add(album);
+            }
+        }
+
+        return result;
     }
 
     @Override
@@ -57,6 +112,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks{
         searchButton = findViewById(R.id.searchButton);
         addAlbumButton = findViewById(R.id.addAlbumButton);
         albumList = findViewById(R.id.albumList);
+        loadingCir = findViewById(R.id.progress_circular);
 
         //Tests
         allAlbums = new ArrayList<Album>();
@@ -105,25 +161,22 @@ public class HomeActivity extends Activity implements ActivityCallBacks{
             @Override
             public void onClick(View view) {
                 
-                String find = (searchBar.getText()).toString();
+                final String find = (searchBar.getText()).toString();
                 if(find.equals("")) {
-                    albumsAdapter.setList(allAlbums);
-                    albumsAdapter.notifyDataSetChanged();
                     return;
                 }
-                ArrayList<Album> result = new ArrayList<Album>();
-                Album album;
-                for (int i = 0; i < allAlbums.size();i++)
-                {
-                    album = allAlbums.get(i);
-                    if (album.getAlbumName().equals(find))
-                    {
-                        result.add(album);
-                    }
-                }
 
-                albumsAdapter.setList(result);
-                albumsAdapter.notifyDataSetChanged();
+                Thread findThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ArrayList<Album> filtered = findAlbumByName(allAlbums, find);
+                        Message msg = updateHandler.obtainMessage(FIND_ALBUM_THREADCODE, filtered);
+                        updateHandler.sendMessage(msg);
+                    }
+                });
+
+                loadingCir.setVisibility(View.VISIBLE);
+                findThread.run();
             }
         });
         searchButton.setOnClickListener(searchButton_OnClick);

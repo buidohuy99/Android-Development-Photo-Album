@@ -1,9 +1,10 @@
 package com.example.myalbum;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Album {
+public class Album implements Serializable {
     //To change this list to be list of URI because will load from Gallery
     private List<Integer> images;
     private String albumName;

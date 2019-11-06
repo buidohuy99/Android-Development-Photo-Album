@@ -12,19 +12,9 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
-//--------Do tui bỏ file tui trong thư mục con thay vì ở com.example.myalbum
-//Tui phải import cái này, nếu mng để file ở ngoài com.example.myalbum luôn thì không cần
-//phải import dòng này, có thể xóa đi------------------
+import androidx.annotation.NonNull;
+
 import com.example.myalbum.R;
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
-//----------------------------!!!!!!!!!----------------------
 
 //Included for event kind of listener
 import com.example.myalbum.events.OnClickEvent;
@@ -207,6 +197,18 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             //Album List
         albumList.setOnItemClickListener(UtilityListeners.listView_OnItemClick_ClearFocus(HomeActivity.this));
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        
     }
 
     //-------------------------------------Interfaces Implementations---------------------------------

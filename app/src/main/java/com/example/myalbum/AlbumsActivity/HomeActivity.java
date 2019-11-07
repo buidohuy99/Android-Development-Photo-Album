@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -195,7 +196,16 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         searchButton.setOnClickListener(searchButton_OnClick);
 
             //Album List
-        albumList.setOnItemClickListener(UtilityListeners.listView_OnItemClick_ClearFocus(HomeActivity.this));
+        albumList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
+
+                newActivity.putExtra("AutoComplete", hint);
+                loadingCir.setVisibility(View.INVISIBLE);
+                startActivity(newActivity);
+            }
+        });
 
     }
 

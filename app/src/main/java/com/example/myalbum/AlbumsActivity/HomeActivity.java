@@ -201,8 +201,10 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
 
-                newActivity.putExtra("AutoComplete", hint);
-                loadingCir.setVisibility(View.INVISIBLE);
+                Bundle myData = new Bundle();
+                myData.putString("nameAlbum", allAlbums.get(i).getAlbumName());
+
+                newActivity.putExtras(myData);
                 startActivity(newActivity);
             }
         });

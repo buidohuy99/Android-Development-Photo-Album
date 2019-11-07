@@ -37,14 +37,14 @@ public class AlbumActivity extends Activity {
     TextView text;
     GridView gridView;
     Button button;
-    Uri imageUri;
+
     ArrayList<Uri> listUri = new ArrayList<Uri>();
     ArrayList<Bitmap> list = new ArrayList<Bitmap>();
     ImageAdapter adapter = new ImageAdapter(this, list);
     Handler myHandler = new Handler();
     ProgressBar progressBar ;
     int shouldRun;
-    Uri temp;
+
     int n;
 
 
@@ -53,9 +53,14 @@ public class AlbumActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.imagesofalbum);
 
+        //Get data from HomeActivity
+        Intent callingIntent = getIntent();
+        Bundle myBundle = callingIntent.getExtras();
+        text = findViewById(R.id.nameAlbum) ;
+        text.setText(myBundle.getString("nameAlbum"));
+
         gridView = findViewById(R.id.gridview);
         button =  findViewById(R.id.add);
-        text = findViewById(R.id.nameAlbum) ;
         progressBar =  findViewById(R.id.myBarCir);
         progressBar.setVisibility(View.INVISIBLE);
         gridView.setAdapter(adapter);
@@ -68,6 +73,7 @@ public class AlbumActivity extends Activity {
         });
     }
 
+    //Mở thư viện ảnh
     private void openGallery() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -128,7 +134,7 @@ public class AlbumActivity extends Activity {
     private Runnable backgroundTask = new Runnable() {
         @Override
         public void run() {
-// busy work goes here...
+
             for ( n = 0; n < listUri.size(); n++) {
 
 
@@ -137,6 +143,7 @@ public class AlbumActivity extends Activity {
             }
         }// run
     };// backgroundTask
+
 
     public Bitmap ChangeUriToBitmap(Uri uri){
         Bitmap bitmap = null;
@@ -158,64 +165,7 @@ public class AlbumActivity extends Activity {
 
         return Bitmap.createScaledBitmap(image, mSize, newSize, true);
     }
-    // Hàm gọi xử lý cắt ảnh
 
-//    public String BitMapToString(Bitmap bitmap){
-//        ByteArrayOutputStream baos=new  ByteArrayOutputStream();
-//        bitmap.compress(Bitmap.CompressFormat.PNG,100, baos);
-//        byte [] arr=baos.toByteArray();
-//        String result=Base64.encodeToString(arr, Base64.DEFAULT);
-//        return result;
-//    }
-//    public Bitmap StringToBitMap(String image){
-//        try{
-//            byte [] encodeByte=Base64.decode(image,Base64.DEFAULT);
-//            Bitmap bitmap=BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
-//            return bitmap;
-//        }catch(Exception e){
-//            e.getMessage();
-//            return null;
-//        }
-//    }
-//    public void onSaveInstanceState(Bundle savedInstanceState) {
-//
-//        // Save UI state changes to the savedInstanceState.
-//        // This bundle will be passed to onCreate if the process is
-//        // killed and restarted.
-////        ArrayList<String> listPictureString = new ArrayList<String>();
-////        for(int i = 0; i < list.size(); i++)
-////            listPictureString.add(BitMapToString(list.get(i)));
-////        savedInstanceState.putStringArrayList("mylist", listPictureString);
-//
-//        // etc.
-//
-//        super.onSaveInstanceState(savedInstanceState);
-//        ArrayList<String> listPictureString = new ArrayList<String>();
-//        for(int i = 0; i < list.size(); i++)
-//            listPictureString.add(BitMapToString(list.get(i)));
-//        savedInstanceState.putStringArrayList("mylist", listPictureString);
-//
-//    }
-////
-////onRestoreInstanceState
-//
-//    @Override
-//    public void onRestoreInstanceState(Bundle savedInstanceState) {
-//
-//        super.onRestoreInstanceState(savedInstanceState);
-//
-//        // Restore UI state from the savedInstanceState.
-//        // This bundle has also been passed to onCreate.
-//
-//
-//        ArrayList<String> listPictureString = new ArrayList<String>();
-//        listPictureString=savedInstanceState.getStringArrayList("mylist");
-//        list.clear();
-//        for(int i = 0; i < list.size(); i++)
-//            list.add(StringToBitMap(listPictureString.get(i)));
-//
-//        gridView.setAdapter(new ImageAdapter(this,list));
-//    }
 
 }
 

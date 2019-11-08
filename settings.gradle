@@ -1,2 +1,2 @@
 include ':app'
-rootProject.name='MyAlbum'
+rootProject.name='Gallery2'

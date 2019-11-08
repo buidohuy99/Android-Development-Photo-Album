@@ -32,6 +32,10 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+//test
+import com.example.myalbum.DAO.DatabaseHandler;
+//end test
+
 public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //------------------------------------------------Variables--------------------------------------
@@ -73,6 +77,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private void addAlbum(String name) {
         allAlbums.add(new Album(name));
         albumsAdapter.notifyDataSetChanged();
+        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(new Album(name));
         hint.add(name);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, hint);
@@ -126,15 +131,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
 
-        //Tests
+        //Get all albums
         allAlbums = new ArrayList<Album>();
-        allAlbums.add(new Album("Test Album"));
-        allAlbums.add(new Album("Test Album 2"));
-        allAlbums.add(new Album("Test Album 3"));
+        allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
 
         hint = new ArrayList<String>();
-        for (int i = 0; i < allAlbums.size();i++)
-        {
+
+        //Populate hints with album name
+        for(int i = 0 ; i< allAlbums.size(); i++) {
             hint.add(allAlbums.get(i).getAlbumName());
         }
 

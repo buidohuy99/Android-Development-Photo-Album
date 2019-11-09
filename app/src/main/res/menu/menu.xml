@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/edit"
+        android:title="Edit"
+        android:visible="true"
+        app:showAsAction="ifRoom|withText"
+        />
+    <item android:id="@+id/homescreen"
+        android:title="Set as wallpaper"
+        android:visible="true"
+        app:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/addAlbum"
+        android:title="Add to album"
+        android:visible="true"
+        app:showAsAction="ifRoom|withText"/>
+    <item android:id="@+id/info"
+        android:title="Details"
+        android:visible="true"
+        app:showAsAction="ifRoom|withText"/>
+
+</menu>

@@ -75,9 +75,10 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     //Album related logic (to be moved to different class)
         //Add album
     private void addAlbum(String name) {
-        allAlbums.add(new Album(name));
+        Album album = new Album(name);
+        allAlbums.add(album);
         albumsAdapter.notifyDataSetChanged();
-        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(new Album(name));
+        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(album);
         hint.add(name);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, hint);
@@ -207,6 +208,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
                 Bundle myData = new Bundle();
                 myData.putString("nameAlbum", allAlbums.get(i).getAlbumName());
+                myData.putInt("IDAlbum", allAlbums.get(i).getId());
 
                 newActivity.putExtras(myData);
                 startActivity(newActivity);

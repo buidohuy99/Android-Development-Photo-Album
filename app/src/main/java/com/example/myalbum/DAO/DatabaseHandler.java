@@ -26,6 +26,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         //Các table khác viết sau đây
         //...
 
+    private static final String TABLE_IMAGE = "IMAGE";
+    private static final String KEY_ID_IMAGE = "id";
+    private static final String ID_ALBUM = "id_album";
+    private static final String IMAGE = "image";
     //Singleton
     private static DatabaseHandler databaseObject = null;
 
@@ -50,12 +54,20 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String create_albums_table = String.format("CREATE TABLE %s" +
                 "(%s INTEGER PRIMARY KEY, %s TEXT, %s TEXT)", TABLE_NAME, KEY_ID, KEY_NAME, KEY_DATE);
         db.execSQL(create_albums_table);
+
+        //Tạo  bảng danh sách các hình ảnh
+        String create_images_table = String.format("CREATE TABLE %s" +
+                "(%s INTEGER PRIMARY KEY, %s INTEGER, %s BLOB)", TABLE_IMAGE, KEY_ID_IMAGE, ID_ALBUM, IMAGE);
+        db.execSQL(create_images_table);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         String drop_albums_table = String.format("DROP TABLE IF EXISTS %s", TABLE_NAME);
         db.execSQL(drop_albums_table);
+
+        String drop_images_table = String.format("DROP TABLE IF EXISTS %s", TABLE_IMAGE);
+        db.execSQL(drop_images_table);
 
         onCreate(db);
     }
@@ -64,6 +76,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        values.put(KEY_ID,album.getId());
         values.put(KEY_NAME, album.getAlbumName());
         values.put(KEY_DATE, album.getDate());
 
@@ -111,5 +124,35 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_NAME, KEY_ID + " = ?", new String[] { String.valueOf(albumId) });
         db.close();
+    }
+    public void addImage(byte[] image, int albumId ) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(ID_ALBUM , albumId);
+        values.put(IMAGE, image);
+
+        db.insert(TABLE_IMAGE, null, values);
+        db.close();
+
+
+    }
+
+    public List<byte[]> getAllImageOfAlbum(int albumID) {
+
+        List<byte[]> listImage = new ArrayList<byte[]>();
+        String query = "SELECT * FROM " + TABLE_IMAGE;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+
+        while(cursor.isAfterLast() == false) {
+            byte[] image = cursor.getBlob(2);
+            listImage.add(image);
+            cursor.moveToNext();
+        }
+        return listImage;
     }
 }

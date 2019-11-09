@@ -25,11 +25,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class AlbumActivity extends Activity {
 
@@ -46,7 +49,9 @@ public class AlbumActivity extends Activity {
     int shouldRun;
 
     int n;
+    int IDAlbum;
 
+    List<byte[]> imageByte = new ArrayList<byte[]>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +62,16 @@ public class AlbumActivity extends Activity {
         Intent callingIntent = getIntent();
         Bundle myBundle = callingIntent.getExtras();
         text = findViewById(R.id.nameAlbum) ;
-        text.setText(myBundle.getString("nameAlbum"));
+        IDAlbum= myBundle.getInt("IDAlbum");
+        text.setText(myBundle.getString("nameAlbum") + String.valueOf(IDAlbum));
+
+
+        imageByte= DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
+
+        for(int i = 0; i< imageByte.size();i++)
+            list.add(BitmapFactory.decodeByteArray(imageByte.get(i), 0, imageByte.get(i).length));
+
+        adapter.notifyDataSetChanged();
 
         gridView = findViewById(R.id.gridview);
         button =  findViewById(R.id.add);
@@ -137,8 +151,11 @@ public class AlbumActivity extends Activity {
 
             for ( n = 0; n < listUri.size(); n++) {
 
+                Bitmap temp =ChangeUriToBitmap(listUri.get(n));
 
-                list.add(getResizedBitmap(ChangeUriToBitmap(listUri.get(n))));
+
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(bitmapToByte(temp),IDAlbum);
+                list.add(getResizedBitmap(temp));
                 myHandler.post(foregroundRunnable);
             }
         }// run
@@ -166,6 +183,13 @@ public class AlbumActivity extends Activity {
         return Bitmap.createScaledBitmap(image, mSize, newSize, true);
     }
 
+    public static byte[] bitmapToByte(Bitmap image) {
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+        return byteArray;
+    }
 
 }
 

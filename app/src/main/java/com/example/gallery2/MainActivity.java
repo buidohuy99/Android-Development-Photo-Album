@@ -4,9 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 
 public class MainActivity extends Activity {
 
@@ -63,5 +65,18 @@ public class MainActivity extends Activity {
     {
         Drawable selectedLargeImage = getResources().getDrawable(largeImages[frameID], getTheme());
         imageSelected.setBackground(selectedLargeImage);
+    }
+
+  //  @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu,menu);
+//        return true;
+//    }
+
+    public void showMenu(View view)
+    {
+        PopupMenu menu = new PopupMenu(this, view);
+        menu.inflate(R.menu.menu);
+        menu.show();
     }
 }

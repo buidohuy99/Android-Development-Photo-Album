@@ -57,7 +57,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="15dp"
-                android:src="@drawable/ic_more_vert_black_24dp" />
+                android:src="@drawable/ic_more_vert_black_24dp"
+                android:onClick="showMenu"/>
         </RelativeLayout>
     </LinearLayout>
 

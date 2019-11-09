@@ -10,11 +10,15 @@ public class Album implements Serializable {
     private List<Integer> images;
     private String albumName;
     private int albumID;
-    private String albumDate;   //created date
+    private String albumDate;
+    private static int count=0;
+    //created date
 
     public Album(String albumName){
         this.albumName = albumName;
         //nhớ đổi "Integer thành Byte"
+        this.albumID = count;
+        count++;
         this.images = new ArrayList<Integer>();
     }
 

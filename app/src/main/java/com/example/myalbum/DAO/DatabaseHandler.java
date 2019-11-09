@@ -141,10 +141,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public List<byte[]> getAllImageOfAlbum(int albumID) {
 
         List<byte[]> listImage = new ArrayList<byte[]>();
-        String query = "SELECT * FROM " + TABLE_IMAGE;
-
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM IMAGE WHERE id_album=? ", new String[]{String.valueOf(albumID)});
+
         cursor.moveToFirst();
 
 

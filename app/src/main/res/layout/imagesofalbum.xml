@@ -46,10 +46,4 @@
         android:textSize="50dp"
         android:layout_margin="30dp"
         android:id="@+id/add"/>
-    <ProgressBar
-        android:id="@+id/myBarCir"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|center_vertical"/>
 </FrameLayout>

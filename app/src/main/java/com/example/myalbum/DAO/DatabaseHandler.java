@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.myalbum.DTOs.Album;
+import com.example.myalbum.DTOs.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         //...
 
     private static final String TABLE_IMAGE = "IMAGE";
-    private static final String AlBUM_ID_IMAGE = "id";
+    private static final String KEY_ID_IMAGE = "id";
     private static final String ID_ALBUM = "id_album";
     private static final String IMAGE = "image";
     //Singleton
@@ -57,7 +58,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         //Tạo  bảng danh sách các hình ảnh
         String create_images_table = String.format("CREATE TABLE %s" +
-                "(%s INTEGER PRIMARY KEY, %s INTEGER, %s BLOB)", TABLE_IMAGE, AlBUM_ID_IMAGE, ID_ALBUM, IMAGE);
+                "(%s INTEGER PRIMARY KEY, %s INTEGER, %s TEXT)", TABLE_IMAGE, KEY_ID_IMAGE, ID_ALBUM, IMAGE);
         db.execSQL(create_images_table);
     }
 
@@ -138,9 +139,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     }
 
-    public List<byte[]> getAllImageOfAlbum(int albumID) {
+    public List<Image> getAllImageOfAlbum(int albumID) {
 
-        List<byte[]> listImage = new ArrayList<byte[]>();
+        List<Image> listImage = new ArrayList<Image>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM IMAGE WHERE id_album=? ", new String[]{String.valueOf(albumID)});
 
@@ -148,8 +149,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
 
         while(cursor.isAfterLast() == false) {
-            byte[] image = cursor.getBlob(2);
-            listImage.add(image);
+            String url = cursor.getString(2);
+            listImage.add(new Image(url));
             cursor.moveToNext();
         }
         return listImage;

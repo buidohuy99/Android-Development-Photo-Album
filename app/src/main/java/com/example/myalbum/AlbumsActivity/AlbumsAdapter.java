@@ -76,7 +76,7 @@ public class AlbumsAdapter extends BaseAdapter {
             //Get all Views from the newly-created row for changing contents
             thisRowViews.albumImage = currentRow.findViewById(R.id.albumImage);
             thisRowViews.albumName = currentRow.findViewById(R.id.albumName);
-            thisRowViews.imagesNumber = currentRow.findViewById(R.id.imagesAmount);
+            thisRowViews.imagesNumber = currentRow.findViewById(R.id.imagesNumber);
             //Associate the row with the View Holder object, containing Views inside it
             currentRow.setTag(thisRowViews);
         }else {

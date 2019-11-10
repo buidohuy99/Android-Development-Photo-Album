@@ -126,7 +126,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.delete(TABLE_ALBUM, AlBUM_ID + " = ?", new String[] { String.valueOf(albumId) });
         db.close();
     }
-    public void addImage(byte[] image, int albumId ) {
+    public void addImage(String image, int albumId ) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();

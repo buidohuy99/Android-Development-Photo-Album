@@ -11,6 +11,8 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 
+import com.bumptech.glide.Glide;
+import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 
 import java.io.ByteArrayOutputStream;
@@ -22,8 +24,8 @@ import java.util.List;
 
 public class ImageAdapter extends BaseAdapter {
     Context context;
-    ArrayList<Bitmap> picture;
-    public ImageAdapter(Context mainActivity, ArrayList<Bitmap> list) {
+    List<Image> picture;
+    public ImageAdapter(Context mainActivity, List<Image> list) {
         this.context= mainActivity;
         this.picture=list;
     }
@@ -64,7 +66,7 @@ public class ImageAdapter extends BaseAdapter {
             imageView = (ImageView) view;
         }
 
-        imageView.setImageBitmap(picture.get(i));
+        Glide.with(context).load(picture.get(i).getUrlHinh()).into(imageView);
         imageView.setId(i);
 
         return imageView;

@@ -20,6 +20,7 @@ import com.example.myalbum.R;
 //Included for event kind of listener
 import com.example.myalbum.events.OnClickEvent;
 //Include interface
+import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
 import com.example.myalbum.utilities.UtilityGlobals;
@@ -31,6 +32,10 @@ import com.example.myalbum.DTOs.Album;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+//test
+import com.example.myalbum.DAO.DatabaseHandler;
+//end test
 
 public class HomeActivity extends Activity implements ActivityCallBacks {
 
@@ -56,6 +61,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     //Events
     private OnClickEvent addAlbumButton_OnClick = new OnClickEvent();
     private OnClickEvent searchButton_OnClick = new OnClickEvent();
+    private OnItemClickEvent albumList_OnItemClick = new OnItemClickEvent();
 
     //Listeners
     //Nothing here
@@ -71,8 +77,10 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     //Album related logic (to be moved to different class)
         //Add album
     private void addAlbum(String name) {
-        allAlbums.add(new Album(name));
+        Album album = new Album(name);
+        allAlbums.add(album);
         albumsAdapter.notifyDataSetChanged();
+        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(album);
         hint.add(name);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, hint);
@@ -126,15 +134,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
 
-        //Tests
+        //Get all albums
         allAlbums = new ArrayList<Album>();
-        allAlbums.add(new Album("Test Album"));
-        allAlbums.add(new Album("Test Album 2"));
-        allAlbums.add(new Album("Test Album 3"));
+        allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
 
         hint = new ArrayList<String>();
-        for (int i = 0; i < allAlbums.size();i++)
-        {
+
+        //Populate hints with album name
+        for(int i = 0 ; i< allAlbums.size(); i++) {
             hint.add(allAlbums.get(i).getAlbumName());
         }
 
@@ -196,18 +203,21 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         searchButton.setOnClickListener(searchButton_OnClick);
 
             //Album List
-        albumList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        albumList_OnItemClick.register(UtilityListeners.listView_OnItemClick_ClearFocus(HomeActivity.this));
+        albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
 
                 Bundle myData = new Bundle();
                 myData.putString("nameAlbum", allAlbums.get(i).getAlbumName());
+                myData.putInt("IDAlbum", allAlbums.get(i).getId());
 
                 newActivity.putExtras(myData);
                 startActivity(newActivity);
             }
         });
+        albumList.setOnItemClickListener(albumList_OnItemClick);
 
     }
 

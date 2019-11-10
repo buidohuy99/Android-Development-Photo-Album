@@ -17,14 +17,9 @@ import android.widget.TextView;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.example.myalbum.DAO.DatabaseHandler;
-import com.example.myalbum.R;
-
-import java.util.ArrayList;
-
 import com.example.myalbum.DTOs.Image;
-
+import com.example.myalbum.R;
 import java.util.List;
 
 public class AlbumActivity extends Activity {
@@ -41,10 +36,7 @@ public class AlbumActivity extends Activity {
     ImageAdapter adapter;
     String nameAlbum;
 
-    int n;
     int IDAlbum;
-
-    List<byte[]> imageByte = new ArrayList<byte[]>();
 
     public void init()
     {

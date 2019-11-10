@@ -46,4 +46,5 @@
         android:textSize="50dp"
         android:layout_margin="30dp"
         android:id="@+id/add"/>
+    
 </FrameLayout>

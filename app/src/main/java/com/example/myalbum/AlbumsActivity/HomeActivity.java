@@ -20,6 +20,7 @@ import com.example.myalbum.R;
 //Included for event kind of listener
 import com.example.myalbum.events.OnClickEvent;
 //Include interface
+import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
 import com.example.myalbum.utilities.UtilityGlobals;
@@ -60,6 +61,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     //Events
     private OnClickEvent addAlbumButton_OnClick = new OnClickEvent();
     private OnClickEvent searchButton_OnClick = new OnClickEvent();
+    private OnItemClickEvent albumList_OnItemClick = new OnItemClickEvent();
 
     //Listeners
     //Nothing here
@@ -201,7 +203,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         searchButton.setOnClickListener(searchButton_OnClick);
 
             //Album List
-        albumList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        albumList_OnItemClick.register(UtilityListeners.listView_OnItemClick_ClearFocus(HomeActivity.this));
+        albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
@@ -214,6 +217,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 startActivity(newActivity);
             }
         });
+        albumList.setOnItemClickListener(albumList_OnItemClick);
 
     }
 

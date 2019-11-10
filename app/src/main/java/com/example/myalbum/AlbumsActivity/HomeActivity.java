@@ -1,6 +1,8 @@
 package com.example.myalbum.AlbumsActivity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,8 +12,10 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
@@ -31,10 +35,14 @@ import com.example.myalbum.DTOs.Album;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 //test
 import com.example.myalbum.DAO.DatabaseHandler;
+
+import org.w3c.dom.Text;
 //end test
 
 public class HomeActivity extends Activity implements ActivityCallBacks {
@@ -76,15 +84,38 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //Album related logic (to be moved to different class)
         //Add album
+
+
     private void addAlbum(String name) {
         Album album = new Album(name);
+        //Add to database
+        int nextID = AlbumBusinessLogic.findSmallestMissingAlbumID(allAlbums);
+        album.setId(nextID);
+        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(album);
+        //Display album
         allAlbums.add(album);
         albumsAdapter.notifyDataSetChanged();
-        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(album);
+        //Update autocomplete
         hint.add(name);
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, hint);
         searchBar.setAdapter(autoCompleteAdapter);
+        albumList.smoothScrollToPosition(albumsAdapter.getCount()-1);
+    }
+
+    private void removeAlbum(int position) {
+        int albumID = allAlbums.get(position).getId();
+        String albumName = allAlbums.get(position).getAlbumName();
+        //update autoComplete
+        hint.remove(albumName);
+        ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_dropdown_item_1line, hint);
+        searchBar.setAdapter(autoCompleteAdapter);
+        //Remove display
+        allAlbums.remove(position);
+        albumsAdapter.notifyDataSetChanged();
+        //Remove database
+        DatabaseHandler.getInstance(HomeActivity.this).deleteAlbum(albumID);
         albumList.smoothScrollToPosition(albumsAdapter.getCount()-1);
     }
 
@@ -219,18 +250,35 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         });
         albumList.setOnItemClickListener(albumList_OnItemClick);
 
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
+            //Delete
+        albumList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog DeleteDialog = new AlertDialog.Builder(HomeActivity.this)
+                        .setTitle("Bạn muốn xóa album này?\n")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                removeAlbum(position);
+                            }
+                        })
+                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create();
+                DeleteDialog.show();
+                return true;
+            }
+        });
 
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        
     }
 
     //-------------------------------------Interfaces Implementations---------------------------------

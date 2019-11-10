@@ -10,7 +10,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
+import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 
 import java.util.List;
@@ -89,11 +92,17 @@ public class AlbumsAdapter extends BaseAdapter {
         //Update the contents of the Views inside found scrap Row
         Album album = displayAlbums.get(position);
         thisRowViews.albumName.setText(album.getAlbumName());
-        thisRowViews.imagesNumber.setText(album.getImagesNumber().toString());
-        if(album.getImagesNumber()-1<0)
+        //Get number of images
+        Integer numberOfImages = DatabaseHandler.getInstance(currentContext).getNumberOfImages(album.getId());
+        thisRowViews.imagesNumber.setText(numberOfImages.toString());
+        //Set album thumbnail
+        if(numberOfImages - 1<0)
             thisRowViews.albumImage.setBackgroundColor(Color.parseColor("#ededeb"));
-        else
-            thisRowViews.albumImage.setImageResource(album.getImage(album.getImagesNumber()-1));
+        else {
+            Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), 0);
+            Glide.with(thisRowViews.albumImage.getContext()).load(latestImage.getUrlHinh())
+                    .into(thisRowViews.albumImage);
+        }
 
         //Return the Row for display
         return currentRow;

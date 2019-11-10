@@ -124,8 +124,29 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void deleteAlbum(int albumId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ALBUM, AlBUM_ID + " = ?", new String[] { String.valueOf(albumId) });
+        String sqlDeleteAllImages = String.format(
+                        "DELETE FROM %s " +
+                        "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumId);
+        db.execSQL(sqlDeleteAllImages);
         db.close();
     }
+
+    public int getNumberOfAlbums() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = String.format(
+                "SELECT COUNT(*)" +
+                        "FROM %s"
+                        , TABLE_ALBUM);
+        Cursor answer = db.rawQuery(sql, null);
+
+        answer.moveToFirst();
+        int amount = answer.getInt(0);
+        answer.close();
+
+        db.close();
+        return amount;
+    }
+
     public void addImage(String image, int albumId ) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -135,8 +156,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         db.insert(TABLE_IMAGE, null, values);
         db.close();
-
-
     }
 
     public List<Image> getAllImageOfAlbum(int albumID) {
@@ -147,12 +166,49 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
 
-
         while(cursor.isAfterLast() == false) {
             String url = cursor.getString(2);
             listImage.add(new Image(url));
             cursor.moveToNext();
         }
+
+        cursor.close();
+
+        db.close();
         return listImage;
+    }
+
+    public Image getImageAt(int albumID, int position) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = String.format(
+                "SELECT * " +
+                        "FROM %s " +
+                        "WHERE %s = %d " +
+                        "LIMIT 1 OFFSET %d ",TABLE_IMAGE, ID_ALBUM, albumID, position);
+        Cursor answer = db.rawQuery(sql, null);
+
+        answer.moveToFirst();
+        String imageUrl = answer.getString(2);
+        Image thumbnail = new Image(imageUrl);
+        answer.close();
+
+        db.close();
+        return thumbnail;
+    }
+
+    public int getNumberOfImages(int albumID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = String.format(
+                    "SELECT COUNT(*) " +
+                    "FROM %s " +
+                    "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumID);
+        Cursor answer = db.rawQuery(sql, null);
+
+        answer.moveToFirst();
+        int amount = answer.getInt(0);
+        answer.close();
+
+        db.close();
+        return amount;
     }
 }

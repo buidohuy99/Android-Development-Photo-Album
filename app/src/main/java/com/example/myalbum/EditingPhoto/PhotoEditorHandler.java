@@ -16,6 +16,7 @@ import ja.burhanrashid52.photoeditor.PhotoEditorView;
 
 public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
+
     PhotoEditorView mPhotoEditorView;
     PhotoEditor photoEditor;
     ImageButton addEmojiButton;
@@ -36,10 +37,15 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
                 .build();
 
         addEmojiButton = findViewById(R.id.addEmojiButton);
+        ft = getFragmentManager().beginTransaction();
+
         addEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                ArrayList<String> emoji = PhotoEditor.getEmojis(PhotoEditorHandler.this);
+                emojiFragment = AddEmojFragment.newInstance(emoji);
+                ft.replace(R.id.FragmentHolder, emojiFragment);
+                ft.commit();
             }
         });
 
@@ -47,9 +53,11 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
     @Override
     public void onMsgFromFragToMain(String sender, Bundle bundle) {
-        ArrayList<String> emoji = PhotoEditor.getEmojis(this);
-        ft = getFragmentManager().beginTransaction();
-        emojiFragment = AddEmojFragment.newInstance(emoji);
-        ft.commit();
+
+        if (sender == "EmojiFragment")
+        {
+
+            photoEditor.addEmoji(bundle.getString("ChosenEmoji"));
+        }
     }
 }

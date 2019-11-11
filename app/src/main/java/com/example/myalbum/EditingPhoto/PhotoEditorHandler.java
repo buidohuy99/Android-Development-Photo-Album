@@ -7,6 +7,7 @@ import android.widget.ImageButton;
 
 import android.app.FragmentTransaction;
 
+
 import com.example.myalbum.R;
 
 import java.util.ArrayList;
@@ -37,14 +38,17 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
                 .build();
 
         addEmojiButton = findViewById(R.id.addEmojiButton);
-        ft = getFragmentManager().beginTransaction();
+        ArrayList<String> emoji = PhotoEditor.getEmojis(PhotoEditorHandler.this);
+        emojiFragment = AddEmojFragment.newInstance(emoji);
+
+
 
         addEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<String> emoji = PhotoEditor.getEmojis(PhotoEditorHandler.this);
-                emojiFragment = AddEmojFragment.newInstance(emoji);
+                ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.FragmentHolder, emojiFragment);
+                ft.addToBackStack(null);
                 ft.commit();
             }
         });

@@ -1,4 +1,4 @@
-package com.example.gallery2;
+package com.example.myalbum;
 
 import org.junit.Test;
 

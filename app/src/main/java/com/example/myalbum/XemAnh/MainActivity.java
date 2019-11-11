@@ -1,4 +1,4 @@
-package com.example.gallery2;
+package com.example.myalbum.XemAnh;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;

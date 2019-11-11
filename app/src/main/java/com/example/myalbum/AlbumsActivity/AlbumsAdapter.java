@@ -101,6 +101,8 @@ public class AlbumsAdapter extends BaseAdapter {
         else {
             Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), 0);
             Glide.with(thisRowViews.albumImage.getContext()).load(latestImage.getUrlHinh())
+                    .placeholder(R.drawable.loading)
+                    .error(R.drawable.error)
                     .into(thisRowViews.albumImage);
         }
 

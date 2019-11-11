@@ -1,8 +1,10 @@
 package com.example.myalbum.XemAnh;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -10,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 
-public class MainActivity extends Activity {
+import com.example.myalbum.R;
+
+public class ViewImageActivity extends Activity {
 
     ViewGroup scrollViewgroup;
     ImageView icon;
@@ -53,6 +57,7 @@ public class MainActivity extends Activity {
             scrollViewgroup.addView(singleFrame);
 
             singleFrame.setOnClickListener(new View.OnClickListener() {
+                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
                 public void onClick(View v) {
                     showLargeImage(singleFrame.getId());
@@ -61,6 +66,7 @@ public class MainActivity extends Activity {
         }
 
     }
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     protected  void showLargeImage(int frameID)
     {
         Drawable selectedLargeImage = getResources().getDrawable(largeImages[frameID], getTheme());

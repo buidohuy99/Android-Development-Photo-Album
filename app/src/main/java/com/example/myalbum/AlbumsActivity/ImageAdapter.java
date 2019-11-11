@@ -54,12 +54,15 @@ public class ImageAdapter extends BaseAdapter {
             imageView.setLayoutParams(new GridView.LayoutParams(gridsize, gridsize));
 //imageView.setLayoutParams(new GridView.LayoutParams(100, 100));//NOT a good practice
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(5, 5, 5, 5);
+//            imageView.setPadding(1, 1, 1, );
         } else {
             imageView = (ImageView) view;
         }
 
-        Glide.with(context).load(picture.get(i).getUrlHinh()).into(imageView);
+        Glide.with(context).load(picture.get(i).getUrlHinh())
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.error)
+                .into(imageView);
         imageView.setId(i);
 
         return imageView;

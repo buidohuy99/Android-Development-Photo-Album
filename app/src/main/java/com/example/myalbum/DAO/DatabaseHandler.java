@@ -58,7 +58,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         //Tạo  bảng danh sách các hình ảnh
         String create_images_table = String.format("CREATE TABLE %s" +
-                "(%s INTEGER PRIMARY KEY, %s INTEGER, %s TEXT)", TABLE_IMAGE, KEY_ID_IMAGE, ID_ALBUM, IMAGE);
+                "(%s INTEGER , %s INTEGER, %s TEXT, " +
+                "PRIMARY KEY (%s, %s))", TABLE_IMAGE, KEY_ID_IMAGE, ID_ALBUM, IMAGE, KEY_ID_IMAGE, ID_ALBUM);
         db.execSQL(create_images_table);
     }
 
@@ -147,10 +148,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return amount;
     }
 
-    public void addImage(String image, int albumId ) {
+    public void addImage(String image, int idImage, int albumId ) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        values.put(KEY_ID_IMAGE, idImage);
         values.put(ID_ALBUM , albumId);
         values.put(IMAGE, image);
 
@@ -168,7 +170,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         while(cursor.isAfterLast() == false) {
             String url = cursor.getString(2);
-            listImage.add(new Image(url));
+            int pos = cursor.getInt(0);
+            listImage.add(new Image(url, albumID, pos));
             cursor.moveToNext();
         }
 
@@ -178,22 +181,37 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return listImage;
     }
 
-    public Image getImageAt(int albumID, int position) {
+    public Image getImageAt(int albumID, int imageID) {
         SQLiteDatabase db = this.getReadableDatabase();
         String sql = String.format(
                 "SELECT * " +
                         "FROM %s " +
-                        "WHERE %s = %d " +
-                        "LIMIT 1 OFFSET %d ",TABLE_IMAGE, ID_ALBUM, albumID, position);
+                        "WHERE %s = %d AND %s = %d "
+                        ,TABLE_IMAGE, ID_ALBUM, albumID, KEY_ID_IMAGE, imageID);
         Cursor answer = db.rawQuery(sql, null);
 
         answer.moveToFirst();
         String imageUrl = answer.getString(2);
-        Image thumbnail = new Image(imageUrl);
+        Image thumbnail = new Image(imageUrl, albumID, imageID);
         answer.close();
 
         db.close();
         return thumbnail;
+//        Image result = null;
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery("SELECT * FROM IMAGE WHERE id_album=? AND id = ?", new String[]{String.valueOf(albumID),String.valueOf(position)});
+//
+//        cursor.moveToFirst();
+//
+//
+//            String url = cursor.getString(2);
+//            result=new Image(url, albumID, position);
+//
+//
+//        cursor.close();
+//        db.close();
+//        return result;
+
     }
 
     public int getNumberOfImages(int albumID) {
@@ -203,9 +221,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     "FROM %s " +
                     "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumID);
         Cursor answer = db.rawQuery(sql, null);
-
+        int amount=0;
         answer.moveToFirst();
-        int amount = answer.getInt(0);
+        if(answer.isAfterLast() == false)
+            amount = answer.getInt(0);
         answer.close();
 
         db.close();

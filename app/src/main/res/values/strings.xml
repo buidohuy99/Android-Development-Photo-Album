@@ -1,13 +1,3 @@
 <resources>
     <string name="app_name">My Album</string>
-    <string name="edit_1">Edit 1</string>
-    <string name="edit_2">Edit 2</string>
-    <string name="edit_3">Edit 3</string>
-    <string name="edit_4">Edit 4</string>
-    <string name="edit_5">Edit 5</string>
-    <string name="edit_6">Edit 6</string>
-    <string name="edit_7">Edit 7</string>
-    <string name="edit_8">Edit 8</string>
-    <string name="save">Save</string>
-    <string name="cancel">Cancel</string>
 </resources>

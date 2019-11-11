@@ -310,5 +310,11 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             }
         }
     }
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        albumsAdapter.notifyDataSetChanged();
+    }
 
 }

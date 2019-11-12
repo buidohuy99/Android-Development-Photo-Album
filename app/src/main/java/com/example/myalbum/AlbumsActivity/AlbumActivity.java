@@ -3,7 +3,9 @@ package com.example.myalbum.AlbumsActivity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -26,6 +28,8 @@ import androidx.core.content.ContextCompat;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.example.myalbum.XemAnh.ViewImageActivity;
+
 import java.util.List;
 
 public class AlbumActivity extends Activity {
@@ -81,20 +85,63 @@ public class AlbumActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
+//                Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
+//
+//                Bundle myData = new Bundle();
+//
+//                newActivity.putExtras(myData);
+//                startActivity(newActivity);
+            }
+        });
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog DeleteDialog = new AlertDialog.Builder(AlbumActivity.this)
+                        .setTitle("Bạn muốn xóa ảnh này?\n")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(getApplicationContext(), String.valueOf(position), Toast.LENGTH_LONG).show();
+
+                                removeImage(IDAlbum, position);
+
+                            }
+                        })
+                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .create();
+                DeleteDialog.show();
+                return true;
             }
         });
 
 
-
-
-
-                button.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 openGallery();
             }
         });
     }
+
+    private void removeImage(int idAlbum, int position) {
+        DatabaseHandler.getInstance(AlbumActivity.this).deleteAllImageAt(idAlbum);
+        list.remove(position);
+        adapter.notifyDataSetChanged();
+
+        for(int i=0; i<list.size(); i++)
+        {
+            list.get(i).setPos(i);
+            DatabaseHandler.getInstance(AlbumActivity.this).addImage(list.get(i).getUrlHinh(),list.get(i).getPos(),list.get(i).getIdAlbum());
+        }
+
+
+    }
+
     @Override
     protected void onPause()
     {
@@ -143,7 +190,6 @@ public class AlbumActivity extends Activity {
                     Image newImage =new Image(uri.toString(), IDAlbum, list.size());
                     list.add(newImage);
                     DatabaseHandler.getInstance(AlbumActivity.this).addImage(uri.toString(),newImage.getPos(),newImage.getIdAlbum());
-
                 }
 
             }

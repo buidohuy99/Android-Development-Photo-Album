@@ -18,18 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".AlbumsActivity.HomeActivity"
-            android:label="Danh sách album">
-<!--            old intent-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
 
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-        </activity>
-        <activity
-            android:name=".AlbumsActivity.SearchAlbumActivity"
+        <activity android:name=".AlbumsActivity.SearchAlbumActivity"
             android:label="Tìm kiếm album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">
 
@@ -38,8 +28,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity
-            android:name=".AlbumsActivity.AlbumActivity"
+
+        <activity android:name=".AlbumsActivity.AlbumActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">
 

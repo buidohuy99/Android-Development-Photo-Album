@@ -17,6 +17,7 @@ public class Album implements Serializable {
     //created date
 
     public Album(String albumName){
+        super();
         this.albumName = albumName;
     }
 

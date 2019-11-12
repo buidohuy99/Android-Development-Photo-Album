@@ -97,7 +97,7 @@ public class AlbumsAdapter extends BaseAdapter {
         thisRowViews.imagesNumber.setText(numberOfImages.toString());
         //Set album thumbnail
         if(numberOfImages - 1<0)
-            thisRowViews.albumImage.setBackgroundColor(Color.parseColor("#ededeb"));
+            thisRowViews.albumImage.setImageResource(android.R.drawable.gallery_thumb);
         else {
             Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), 0);
             Glide.with(thisRowViews.albumImage.getContext()).load(latestImage.getUrlHinh())

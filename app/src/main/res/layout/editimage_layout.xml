@@ -18,16 +18,7 @@
 
     </ja.burhanrashid52.photoeditor.PhotoEditorView>
 
-    <com.divyanshu.colorseekbar.ColorSeekBar
-        android:id="@+id/color_seek_bar"
-        android:layout_width="match_parent"
-        android:layout_height="10dp"
-        android:layout_margin="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:colorSeeds="@array/rainbow"/>
+
     <FrameLayout
         android:id="@+id/FragmentHolder"
         android:layout_width="match_parent"
@@ -72,7 +63,7 @@
 
             <ImageButton
 
-                android:id="@+id/drawButton"
+                android:id="@+id/addBrushButton"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:scaleType="fitCenter"

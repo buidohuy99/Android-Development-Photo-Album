@@ -13,9 +13,12 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
@@ -41,21 +44,19 @@ public class AlbumActivity extends Activity {
 
     int IDAlbum;
 
-    public void init()
-    {
-        text = findViewById(R.id.nameAlbum) ;
+    public void init() {
+        text = findViewById(R.id.nameAlbum);
         gridView = findViewById(R.id.gridview);
-        button =  findViewById(R.id.add);
+        button = findViewById(R.id.add);
 
     }
 
-    public void getData()
-    {
+    public void getData() {
         //Get data from HomeActivity
         Intent callingIntent = getIntent();
         Bundle myBundle = callingIntent.getExtras();
-        IDAlbum= myBundle.getInt("IDAlbum");
-        nameAlbum= myBundle.getString("nameAlbum") + String.valueOf(IDAlbum);
+        IDAlbum = myBundle.getInt("IDAlbum");
+        nameAlbum = myBundle.getString("nameAlbum") + String.valueOf(IDAlbum);
         list = DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
 
     }
@@ -73,19 +74,44 @@ public class AlbumActivity extends Activity {
 
         //Cai đặt các đối tượng
         text.setText(nameAlbum);
-        adapter= new ImageAdapter(this, list);
+        adapter = new ImageAdapter(this, list);
         gridView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
+            }
+        });
 
 
-        button.setOnClickListener(new View.OnClickListener() {
+
+
+
+                button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 openGallery();
             }
         });
     }
+    @Override
+    protected void onPause()
+    {
+        super.onPause();
 
+    }
+    protected void onResume()
+    {
+        super.onResume();
+        adapter.notifyDataSetChanged();
+    }
+    @Override
+    protected void onStop()
+    {
+        super.onStop();
+
+    }
     //Mở thư viện ảnh
     private void openGallery() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -114,9 +140,10 @@ public class AlbumActivity extends Activity {
 
                     ClipData.Item item = mClipData.getItemAt(i);
                     Uri uri = item.getUri();
-                    list.add(new Image(uri.toString()));
-                    DatabaseHandler.getInstance(AlbumActivity.this).addImage(uri.toString(),IDAlbum);
-                    adapter.notifyDataSetChanged();
+                    Image newImage =new Image(uri.toString(), IDAlbum, list.size());
+                    list.add(newImage);
+                    DatabaseHandler.getInstance(AlbumActivity.this).addImage(uri.toString(),newImage.getPos(),newImage.getIdAlbum());
+
                 }
 
             }

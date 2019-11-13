@@ -84,8 +84,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //Album related logic (to be moved to different class)
         //Add album
-
-
     private void addAlbum(String name) {
         Album album = new Album(name);
         //Add to database
@@ -309,6 +307,12 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 activity.handleMessage(msg);
             }
         }
+    }
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        albumsAdapter.notifyDataSetChanged();
     }
 
 }

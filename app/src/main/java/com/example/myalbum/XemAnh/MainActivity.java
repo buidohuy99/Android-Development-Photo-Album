@@ -1,4 +1,4 @@
-package com.example.myalbum.XemAnh;
+package com.example.gallery2;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
@@ -67,16 +67,10 @@ public class MainActivity extends Activity {
         imageSelected.setBackground(selectedLargeImage);
     }
 
-  //  @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu,menu);
-//        return true;
-//    }
+  @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu,menu);
+        return true;
+   }
 
-    public void showMenu(View view)
-    {
-        PopupMenu menu = new PopupMenu(this, view);
-        menu.inflate(R.menu.menu);
-        menu.show();
-    }
 }

@@ -1,29 +1,39 @@
-package com.example.gallery2;
+package com.example.myalbum.XemAnh;
 
-import android.app.Activity;
-
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.LinearLayout;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.myalbum.DAO.DatabaseHandler;
+import com.example.myalbum.DTOs.Image;
+import com.example.myalbum.R;
+
 import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class ViewImageActivity extends FragmentActivity {
 
-//    ViewGroup scrollViewgroup;
-//    ImageView icon;
-//    ImageView imageSelected;
+    private int IDAlbum;
+    private int IDImage;
+    private List<Image> listImage;
+    public void getData() {
+        //Get data from HomeActivity
+        Intent callingIntent = getIntent();
+        Bundle myBundle = callingIntent.getExtras();
+        IDAlbum = myBundle.getInt("IDAlbum");
+        IDImage = myBundle.getInt("IDImage");
+        listImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
 
+    }
     private ArrayList<Integer> images;
     private BitmapFactory.Options options;
     private ViewPager viewPager;
@@ -106,22 +116,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    protected  void showLargeImage(int frameID)
-//    {
-//        Drawable selectedLargeImage = getResources().getDrawable(largeImages[frameID], getTheme());
-//        imageSelected.setBackground(selectedLargeImage);
-//    }
-
-  //  @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu,menu);
-//        return true;
-//    }
-
-//    public void showMenu(View view)
-//    {
-//        PopupMenu menu = new PopupMenu(this, view);
-//        menu.inflate(R.menu.menu);
-//        menu.show();
-//    }
 }

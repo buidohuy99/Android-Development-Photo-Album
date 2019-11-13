@@ -1,4 +1,4 @@
-package com.example.gallery2;
+package com.example.myalbum.XemAnh;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;

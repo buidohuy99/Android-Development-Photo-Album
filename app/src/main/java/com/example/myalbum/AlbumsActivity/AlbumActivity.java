@@ -26,6 +26,8 @@ import androidx.core.content.ContextCompat;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.example.myalbum.XemAnh.ViewImageActivity;
+
 import java.util.List;
 
 public class AlbumActivity extends Activity {
@@ -80,7 +82,15 @@ public class AlbumActivity extends Activity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
+//                Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
+                Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
+
+                Bundle myData = new Bundle();
+                myData.putInt("IDAlbum", IDAlbum);
+                myData.putInt("IDImage", list.get(i).getPos());
+
+                newActivity.putExtras(myData);
+                startActivity(newActivity);
             }
         });
 

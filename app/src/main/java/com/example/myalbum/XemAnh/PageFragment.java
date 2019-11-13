@@ -1,4 +1,4 @@
-package com.example.gallery2;
+package com.example.myalbum.XemAnh;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.fragment.app.Fragment;
+
+import com.example.myalbum.R;
 
 public class PageFragment extends Fragment {
 

@@ -1,31 +1,29 @@
 package com.example.gallery2;
 
-import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
+import android.widget.LinearLayout;
 
-public class MainActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
-    ViewGroup scrollViewgroup;
-    ImageView icon;
-    ImageView imageSelected;
+import java.util.ArrayList;
 
-    Integer[] thumnails = {
-            R.drawable.small_01,
-            R.drawable.small_02,
-            R.drawable.small_03,
-            R.drawable.small_04,
-            R.drawable.small_05,
-            R.drawable.small_06
-    };
+public class MainActivity extends AppCompatActivity {
 
-    Integer[] largeImages = {
+    private ArrayList<Integer> images;
+    private BitmapFactory.Options options;
+    private ViewPager viewPager;
+    private FragmentStatePagerAdapter adapter;
+    private LinearLayout thumbnailsContainer;
+
+    private final static int[] largeImages= new int[]{
             R.drawable.large_01,
             R.drawable.large_02,
             R.drawable.large_03,
@@ -34,43 +32,69 @@ public class MainActivity extends Activity {
             R.drawable.large_06
     };
 
+   Integer[] thumnails = {
+           R.drawable.small_01,
+           R.drawable.small_02,
+           R.drawable.small_03,
+           R.drawable.small_04,
+           R.drawable.small_05,
+           R.drawable.small_06
+  };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageSelected = (ImageView) findViewById(R.id.imageView);
-        scrollViewgroup = (ViewGroup) findViewById(R.id.viewGroup);
 
-        for(int i=0; i< thumnails.length ; i++)
-        {
-            final View singleFrame = getLayoutInflater().inflate(R.layout.item_thumbnails,null);
-            singleFrame.setId(i);
+        images = new ArrayList<>();
 
-            ImageView icon = (ImageView) singleFrame.findViewById(R.id.icon);
-            icon.setImageResource(thumnails[i]);
+        viewPager =(ViewPager)findViewById(R.id.ViewPager);
+        thumbnailsContainer = (LinearLayout) findViewById(R.id.container);
 
-            scrollViewgroup.addView(singleFrame);
+        setImagesData();
 
-            singleFrame.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    showLargeImage(singleFrame.getId());
-                }
-            });
-        }
+        adapter = new ViewPagerAdapter (getSupportFragmentManager(),images);
+        viewPager.setAdapter(adapter);
+
+        inflateThumbnails();
 
     }
-    protected  void showLargeImage(int frameID)
-    {
-        Drawable selectedLargeImage = getResources().getDrawable(largeImages[frameID], getTheme());
-        imageSelected.setBackground(selectedLargeImage);
-    }
 
-  @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu,menu);
+        getMenuInflater().inflate(R.menu.main,menu);
         return true;
-   }
+    }
 
+    private void inflateThumbnails() {
+        for (int i = 0; i < images.size(); i++) {
+            View imageLayout = getLayoutInflater().inflate(R.layout.item_thumbnails, null);
+            ImageView imageView = (ImageView) imageLayout.findViewById(R.id.icon);
+            imageView.setOnClickListener(onChagePageClickListener(i));
+            //add imageview
+            thumbnailsContainer.addView(imageLayout);
+        }
+    }
+
+    private View.OnClickListener onChagePageClickListener(final int i) {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewPager.setCurrentItem(i);
+            }
+        };
+    }
+
+    private void setImagesData() {
+        for(int i=0;i<largeImages.length;i++)
+        {
+            images.add(largeImages[i]);
+        }
+    }
+
+   protected  void showLargeImage(int frameID)
+   {
+       Drawable selectedLargeImage = getResources().getDrawable(largeImages[frameID], getTheme());
+       imageSelected.setBackground(selectedLargeImage);
+   }
 }

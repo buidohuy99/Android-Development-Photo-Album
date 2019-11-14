@@ -197,20 +197,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         db.close();
         return thumbnail;
-//        Image result = null;
-//        SQLiteDatabase db = this.getReadableDatabase();
-//        Cursor cursor = db.rawQuery("SELECT * FROM IMAGE WHERE id_album=? AND id = ?", new String[]{String.valueOf(albumID),String.valueOf(position)});
-//
-//        cursor.moveToFirst();
-//
-//
-//            String url = cursor.getString(2);
-//            result=new Image(url, albumID, position);
-//
-//
-//        cursor.close();
-//        db.close();
-//        return result;
 
     }
 
@@ -229,5 +215,36 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         db.close();
         return amount;
+    }
+    public void deleteImage(int albumID, int imageID)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_IMAGE,  ID_ALBUM + " = ? AND " + KEY_ID_IMAGE  +" = ?" , new String[] { String.valueOf(albumID),String.valueOf(imageID) });
+        String sqlDeleteAllImages = String.format(
+                "DELETE FROM %s " +
+                        "WHERE %s = %d AND %s = %d", TABLE_IMAGE, ID_ALBUM, albumID, KEY_ID_IMAGE, imageID);
+        db.execSQL(sqlDeleteAllImages);
+        db.close();
+    }
+
+    public void deleteAllImageAt(int albumID)
+    {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_IMAGE,  ID_ALBUM + " = ? " , new String[] { String.valueOf(albumID) });
+        String sqlDeleteAllImages = String.format(
+                "DELETE FROM %s " +
+                        "WHERE %s = %d", TABLE_IMAGE, ID_ALBUM, albumID  );
+        db.execSQL(sqlDeleteAllImages);
+        db.close();
+    }
+
+    public void updateImage(Image image, int IDImage) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID_IMAGE, IDImage);
+
+
+        db.update(TABLE_IMAGE, values, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?" , new String[] { String.valueOf(image.getIdAlbum()), String.valueOf((image.getPos())) });
+        db.close();
     }
 }

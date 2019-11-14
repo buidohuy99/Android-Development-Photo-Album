@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -22,6 +23,7 @@ import androidx.core.app.NavUtils;
 import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.R;
 import com.example.myalbum.events.OnClickEvent;
+import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.utilities.UtilityListeners;
 
 import java.lang.ref.WeakReference;
@@ -44,6 +46,7 @@ public class SearchAlbumActivity extends Activity {
 
     //Events
     private OnClickEvent searchButton_OnClick = new OnClickEvent();
+    private OnItemClickEvent albumList_OnItemClick = new OnItemClickEvent();
 
     //Handlers
     private static class IncomingHandler extends Handler {
@@ -148,8 +151,23 @@ public class SearchAlbumActivity extends Activity {
             });
             searchButton.setOnClickListener(searchButton_OnClick);
 
-            //Album List
-            albumList.setOnItemClickListener(UtilityListeners.listView_OnItemClick_ClearFocus(this));
+        //Album List
+            albumList_OnItemClick.register(UtilityListeners.listView_OnItemClick_ClearFocus(SearchAlbumActivity.this));
+            albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Intent newActivity = new Intent(SearchAlbumActivity.this, AlbumActivity.class);
+
+                    Bundle myData = new Bundle();
+                    myData.putString("nameAlbum", renderAlbums.get(i).getAlbumName());
+                    myData.putInt("IDAlbum", renderAlbums.get(i).getId());
+
+                    newActivity.putExtras(myData);
+                    startActivity(newActivity);
+                }
+            });
+
+            albumList.setOnItemClickListener(albumList_OnItemClick);
 
     }//onCreate
 

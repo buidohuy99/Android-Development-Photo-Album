@@ -90,12 +90,14 @@ public class AlbumActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
-//                Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
-//
-//                Bundle myData = new Bundle();
-//
-//                newActivity.putExtras(myData);
-//                startActivity(newActivity);
+                Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
+
+                Bundle myData = new Bundle();
+                myData.putInt("IDAlbum", IDAlbum);
+                myData.putInt("IDImage", list.get(i).getPos());
+
+                newActivity.putExtras(myData);
+                startActivity(newActivity);
             }
         });
         gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -135,6 +137,7 @@ public class AlbumActivity extends Activity {
                         .create();
                 DeleteDialog.show();
                 return true;
+
             }
         });
 

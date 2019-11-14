@@ -4,100 +4,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <LinearLayout
-        android:id="@+id/action_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center"
-        android:orientation="horizontal">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-
-            <ImageButton
-                android:id="@+id/imageBack"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginStart="15dp"
-                android:src="@drawable/ic_arrow_back_black_24dp" />
-
-            <ImageButton
-                android:id="@+id/imageFavor"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-
-                android:layout_toStartOf="@+id/imageShare"
-                android:src="@drawable/ic_star_border_black_24dp" />
-
-            <ImageButton
-                android:id="@+id/imageShare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_toStartOf="@+id/imageDelete"
-                android:src="?attr/actionModeShareDrawable" />
-
-            <ImageButton
-                android:id="@+id/imageDelete"
-                android:layout_width="55dp"
-                android:layout_height="45dp"
-                android:layout_marginEnd="10dp"
-                android:layout_toStartOf="@+id/image3Dots"
-                android:src="@android:drawable/ic_menu_delete" />
-
-            <ImageButton
-                android:id="@+id/image3Dots"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="15dp"
-                android:src="@drawable/ic_more_vert_black_24dp"
-                android:onClick="showMenu"/>
-        </RelativeLayout>
-    </LinearLayout>
-
-
-    <ImageView
-        android:id="@+id/imageView"
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/ViewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/scrollView"
-        android:layout_below="@+id/action_bar"
+
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="50dp"
         android:layout_marginEnd="20dp"
         android:layout_marginBottom="50dp"
-        android:adjustViewBounds="false"
-        app:srcCompat="@mipmap/ic_launcher" />
+        >
+    </androidx.viewpager.widget.ViewPager>
 
     <HorizontalScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="400dp"
-        android:layout_height="100dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="25dp"
-        android:background="#44ffffff"
-        android:scrollbars="none">
+            android:id="@+id/scrollView"
+            android:layout_width="400dp"
+            android:layout_height="100dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="25dp"
+            android:background="#44ffffff"
+            android:scrollbars="none">
 
 
-        <LinearLayout
-            android:id="@+id/viewGroup"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal" />
-    </HorizontalScrollView>
+            <LinearLayout
+                android:id="@+id/container"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
 
-</RelativeLayout>
+    </RelativeLayout>
 
 

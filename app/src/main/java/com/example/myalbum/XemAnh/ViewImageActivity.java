@@ -1,35 +1,46 @@
 package com.example.myalbum.XemAnh;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
+import android.widget.LinearLayout;
 
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+
+import com.example.myalbum.DAO.DatabaseHandler;
+import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 
-public class ViewImageActivity extends Activity {
+import java.util.ArrayList;
+import java.util.List;
 
-    ViewGroup scrollViewgroup;
-    ImageView icon;
-    ImageView imageSelected;
+public class ViewImageActivity extends FragmentActivity {
 
-    Integer[] thumnails = {
-            R.drawable.small_01,
-            R.drawable.small_02,
-            R.drawable.small_03,
-            R.drawable.small_04,
-            R.drawable.small_05,
-            R.drawable.small_06
-    };
+    private int IDAlbum;
+    private int IDImage;
+    private List<Image> listImage;
+    public void getData() {
+        //Get data from HomeActivity
+        Intent callingIntent = getIntent();
+        Bundle myBundle = callingIntent.getExtras();
+        IDAlbum = myBundle.getInt("IDAlbum");
+        IDImage = myBundle.getInt("IDImage");
+        listImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
 
-    Integer[] largeImages = {
+    }
+    private ArrayList<Integer> images;
+    private BitmapFactory.Options options;
+    private ViewPager viewPager;
+    private FragmentStatePagerAdapter adapter;
+    private LinearLayout thumbnailsContainer;
+
+    private final static int[] largeImages= new int[]{
             R.drawable.large_01,
             R.drawable.large_02,
             R.drawable.large_03,
@@ -38,51 +49,71 @@ public class ViewImageActivity extends Activity {
             R.drawable.large_06
     };
 
+//    Integer[] thumnails = {
+//            R.drawable.small_01,
+//            R.drawable.small_02,
+//            R.drawable.small_03,
+//            R.drawable.small_04,
+//            R.drawable.small_05,
+//            R.drawable.small_06
+//    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        imageSelected = (ImageView) findViewById(R.id.imageView);
-        scrollViewgroup = (ViewGroup) findViewById(R.id.viewGroup);
 
-        for(int i=0; i< thumnails.length ; i++)
-        {
-            final View singleFrame = getLayoutInflater().inflate(R.layout.item_thumbnails,null);
-            singleFrame.setId(i);
+        images = new ArrayList<>();
 
-            ImageView icon = (ImageView) singleFrame.findViewById(R.id.icon);
-            icon.setImageResource(thumnails[i]);
+        viewPager =(ViewPager)findViewById(R.id.ViewPager);
+        thumbnailsContainer = (LinearLayout) findViewById(R.id.container);
 
-            scrollViewgroup.addView(singleFrame);
+        setImagesData();
 
-            singleFrame.setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                @Override
-                public void onClick(View v) {
-                    showLargeImage(singleFrame.getId());
-                }
-            });
+        adapter = new ViewPagerAdapter (getSupportFragmentManager(),images);
+        viewPager.setAdapter(adapter);
+
+        inflateThumbnails();
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main,menu);
+        return true;
+    }
+
+    private void inflateThumbnails() {
+        for (int i = 0; i < images.size(); i++) {
+            View imageLayout = getLayoutInflater().inflate(R.layout.item_thumbnails, null);
+            ImageView imageView = (ImageView) imageLayout.findViewById(R.id.icon);
+            imageView.setOnClickListener(onChagePageClickListener(i));
+            options = new BitmapFactory.Options();
+            options.inSampleSize = 3;
+            options.inDither = false;
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), images.get(i), options );
+            imageView.setImageBitmap(bitmap);
+            //set to image view
+            imageView.setImageBitmap(bitmap);
+            //add imageview
+            thumbnailsContainer.addView(imageLayout);
         }
-
-    }
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    protected  void showLargeImage(int frameID)
-    {
-        Drawable selectedLargeImage = getResources().getDrawable(largeImages[frameID], getTheme());
-        imageSelected.setBackground(selectedLargeImage);
     }
 
-  //  @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.menu,menu);
-//        return true;
-//    }
-
-    public void showMenu(View view)
-    {
-        PopupMenu menu = new PopupMenu(this, view);
-        menu.inflate(R.menu.menu);
-        menu.show();
+    private View.OnClickListener onChagePageClickListener(final int i) {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewPager.setCurrentItem(i);
+            }
+        };
     }
+
+    private void setImagesData() {
+        for(int i=0;i<largeImages.length;i++)
+        {
+            images.add(largeImages[i]);
+        }
+    }
+
 }

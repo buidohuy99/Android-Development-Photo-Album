@@ -13,14 +13,22 @@ import com.example.myalbum.R;
 
 import java.util.ArrayList;
 
+import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
+import ja.burhanrashid52.photoeditor.ViewType;
 
 class BrushInfo
 {
     int size = 20;
     int opacity= 100;
     int color = R.color.black;
+}
+
+class InputText
+{
+    String text="hello there";
+    int color;
 }
 
 public class PhotoEditorHandler extends Activity implements MainCallbacks{
@@ -32,10 +40,15 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     ImageButton addTextButton;
     ImageButton addBrushButton;
 
+    BrushInfo brushInfo;
+    InputText inputText;
+
     FragmentTransaction ft;
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
-    BrushInfo brushInfo;
+    AddTextFragment textFragment;
+
+    boolean isEditingText = false;
 
 
 
@@ -49,13 +62,50 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
                 .setPinchTextScalable(true)
                 .build();
 
+        photoEditor.setOnPhotoEditorListener(new OnPhotoEditorListener() {
+            @Override
+            public void onEditTextChangeListener(View rootView, String text, int colorCode) {
+                isEditingText = true;
+                textFragment = AddTextFragment.newInstance(inputText.text,inputText.color);
+                ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.FragmentHolder, textFragment);
+
+                while(isEditingText == true)
+                {
+                    //wait for user to finish editing text
+                }
+                photoEditor.editText(rootView, inputText.text, inputText.color);
+            }
+
+            @Override
+            public void onAddViewListener(ViewType viewType, int numberOfAddedViews) {
+
+            }
+
+            @Override
+            public void onRemoveViewListener(ViewType viewType, int numberOfAddedViews) {
+
+            }
+
+            @Override
+            public void onStartViewChangeListener(ViewType viewType) {
+
+            }
+
+            @Override
+            public void onStopViewChangeListener(ViewType viewType) {
+
+            }
+        });
+
         addEmojiButton = findViewById(R.id.addEmojiButton);
         addBrushButton = findViewById(R.id.addBrushButton);
+
         brushInfo = new BrushInfo();
+        inputText = new InputText();
 
         ArrayList<String> emoji = PhotoEditor.getEmojis(PhotoEditorHandler.this);
         emojiFragment = AddEmojFragment.newInstance(emoji);
-
 
 
         addEmojiButton.setOnClickListener(new View.OnClickListener() {
@@ -85,6 +135,22 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             }
         });
 
+        addTextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isEditingText = true;
+                textFragment = AddTextFragment.newInstance(inputText.text,inputText.color);
+                ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.FragmentHolder, textFragment);
+
+                while(isEditingText == true)
+                {
+                    //wait for user to finish adding text
+                }
+                photoEditor.addText(inputText.text, inputText.color);
+            }
+        });
+
     }
 
     @Override
@@ -109,6 +175,13 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             photoEditor.setBrushColor(bundle.getInt("Color"));
             brushInfo.color= bundle.getInt("Color");
 
+        }
+
+        if (sender == "TextFragment")
+        {
+            inputText.text = bundle.getString("inputText");
+            inputText.color = bundle.getInt("Color");
+            isEditingText = false;
         }
     }
 }

@@ -180,6 +180,7 @@ public class BrushFragment extends Fragment implements FragmentCallbacks {
         return paintLayout;
 
 
+
     }
 
     @Override

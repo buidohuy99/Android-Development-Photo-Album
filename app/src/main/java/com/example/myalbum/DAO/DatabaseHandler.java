@@ -237,4 +237,14 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(sqlDeleteAllImages);
         db.close();
     }
+
+    public void updateImage(Image image, int IDImage) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID_IMAGE, IDImage);
+
+
+        db.update(TABLE_IMAGE, values, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?" , new String[] { String.valueOf(image.getIdAlbum()), String.valueOf((image.getPos())) });
+        db.close();
+    }
 }

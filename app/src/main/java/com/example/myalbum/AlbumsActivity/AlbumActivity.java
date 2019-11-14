@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,6 +32,7 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 import com.example.myalbum.XemAnh.ViewImageActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AlbumActivity extends Activity {
@@ -43,13 +46,13 @@ public class AlbumActivity extends Activity {
 
     //Biến
     List<Image> list;
+    List<Image> listTemp = new ArrayList<Image>();
     ImageAdapter adapter;
     String nameAlbum;
 
     int IDAlbum;
 
     public void init() {
-        text = findViewById(R.id.nameAlbum);
         gridView = findViewById(R.id.gridview);
         button = findViewById(R.id.add);
 
@@ -77,10 +80,12 @@ public class AlbumActivity extends Activity {
         init();
 
         //Cai đặt các đối tượng
-        text.setText(nameAlbum);
+        this.setTitle(nameAlbum);
+
         adapter = new ImageAdapter(this, list);
         gridView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -103,7 +108,7 @@ public class AlbumActivity extends Activity {
                             public void onClick(DialogInterface dialog, int which) {
                                 Toast.makeText(getApplicationContext(), String.valueOf(position), Toast.LENGTH_LONG).show();
 
-                                removeImage(IDAlbum, position);
+                                removeImage( position);
 
                             }
                         })
@@ -111,6 +116,20 @@ public class AlbumActivity extends Activity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton("Move", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent newActivity = new Intent(AlbumActivity.this, MoveCopyImageActivity.class);
+
+                                Bundle myData = new Bundle();
+                                myData.putInt("Type", 1);
+//                                myData.putInt("IDAlbum", list.get(position).getIdAlbum());
+//                                myData.putInt("IDImage", list.get(position).getPos());
+//                                myData.putParcelableArrayList("Mylist", (ArrayList<? extends Parcelable>) list);
+                                newActivity.putExtras(myData);
+                                startActivity(newActivity);
                             }
                         })
                         .create();
@@ -123,22 +142,32 @@ public class AlbumActivity extends Activity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openGallery();
+                AlertDialog AddImageDialog = new AlertDialog.Builder(AlbumActivity.this)
+                        .setTitle("Chọn chức năng\n")
+                        .setPositiveButton("Thêm", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                openGallery();
+                            }
+                        })
+                        .setNeutralButton("Chụp ảnh", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                        .create();
+                AddImageDialog.show();
             }
         });
     }
 
-    private void removeImage(int idAlbum, int position) {
-        DatabaseHandler.getInstance(AlbumActivity.this).deleteAllImageAt(idAlbum);
+    private void removeImage( int position) {
         list.remove(position);
         adapter.notifyDataSetChanged();
 
-        for(int i=0; i<list.size(); i++)
-        {
-            list.get(i).setPos(i);
-            DatabaseHandler.getInstance(AlbumActivity.this).addImage(list.get(i).getUrlHinh(),list.get(i).getPos(),list.get(i).getIdAlbum());
-        }
-
+        MyThread t2 = new MyThread(position);
+        t2.start();
 
     }
 
@@ -183,15 +212,27 @@ public class AlbumActivity extends Activity {
             if (data.getClipData() != null) {
                 ClipData mClipData = data.getClipData();
 
+                listTemp.clear();
                 for (int i = 0; i < mClipData.getItemCount(); i++) {
 
                     ClipData.Item item = mClipData.getItemAt(i);
                     Uri uri = item.getUri();
                     Image newImage =new Image(uri.toString(), IDAlbum, list.size());
                     list.add(newImage);
-                    DatabaseHandler.getInstance(AlbumActivity.this).addImage(uri.toString(),newImage.getPos(),newImage.getIdAlbum());
-                }
+                    adapter.notifyDataSetChanged();
+                    listTemp.add(newImage);
 
+                }
+                MyThreadAddImage t2 = new MyThreadAddImage();
+                t2.start();
+
+            }
+            else
+            {
+                Uri imageUri = data.getData();
+                Image newImage =new Image(imageUri.toString(), IDAlbum, list.size());
+                list.add(newImage);
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(imageUri.toString(),newImage.getPos(),newImage.getIdAlbum());
             }
         }
 
@@ -216,5 +257,35 @@ public class AlbumActivity extends Activity {
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    public class MyThread extends Thread{
+        private int position;
+        public MyThread(int position) {
+            this.position = position;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, position);
+            for(int i=position; i<list.size(); i++)
+            {
+                DatabaseHandler.getInstance(AlbumActivity.this).updateImage(list.get(i),i);
+                list.get(i).setPos(i);
+            }
+        }//run
+    }//MyThread
+
+    public class MyThreadAddImage extends Thread{
+        @Override
+        public void run() {
+            super.run();
+            for(int i=0; i<listTemp.size(); i++)
+            {
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(listTemp.get(i).getUrlHinh(),listTemp.get(i).getPos(),listTemp.get(i).getIdAlbum());
+
+            }
+        }//run
+    }//MyThread
 }
 

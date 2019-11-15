@@ -2,11 +2,14 @@ package com.example.myalbum.EditingPhoto;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 
 import android.app.FragmentTransaction;
+import android.widget.LinearLayout;
 
 
 import com.example.myalbum.R;
@@ -36,6 +39,11 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
     PhotoEditorView mPhotoEditorView;
     PhotoEditor photoEditor;
+    ImageButton closeFragmentButton;
+
+    HorizontalScrollView editBar;
+    LinearLayout navigateBar;
+
     ImageButton addEmojiButton;
     ImageButton addTextButton;
     ImageButton addBrushButton;
@@ -44,6 +52,8 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     InputText inputText;
 
     FragmentTransaction ft;
+    Fragment currentFragment;
+
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
     AddTextFragment textFragment;
@@ -96,6 +106,9 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
             }
         });
+        closeFragmentButton = findViewById(R.id.CloseFragmentButton);
+        editBar = findViewById(R.id.editBar);
+        navigateBar = findViewById(R.id.navigateBar);
 
         addEmojiButton = findViewById(R.id.addEmojiButton);
         addBrushButton = findViewById(R.id.addBrushButton);
@@ -104,18 +117,23 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         brushInfo = new BrushInfo();
         inputText = new InputText();
 
-        ArrayList<String> emoji = PhotoEditor.getEmojis(PhotoEditorHandler.this);
-        emojiFragment = AddEmojFragment.newInstance(emoji);
-
+        closeFragmentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ft = getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.FragmentHolder));
+                ft.commit();
+                view.setVisibility(View.INVISIBLE);
+                editBar.setVisibility(View.VISIBLE);
+                navigateBar.setVisibility(View.VISIBLE);
+            }
+        });
 
         addEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                photoEditor.setBrushDrawingMode(false);
-                ft = getFragmentManager().beginTransaction();
-                ft.replace(R.id.FragmentHolder, emojiFragment);
-                ft.addToBackStack(null);
-                ft.commit();
+                ArrayList<String> emoji = PhotoEditor.getEmojis(PhotoEditorHandler.this);
+                emojiFragment = AddEmojFragment.newInstance(emoji);
+                addFragment(emojiFragment);
             }
         });
 
@@ -125,13 +143,13 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             public void onClick(View view) {
                 ft = getFragmentManager().beginTransaction();
                 brushFragment = BrushFragment.newInstance(brushInfo.size, brushInfo.opacity, brushInfo.color);
-                photoEditor.setBrushDrawingMode(true);
+
                 photoEditor.setBrushSize(brushInfo.size);
                 photoEditor.setOpacity(brushInfo.opacity);
                 photoEditor.setBrushColor(brushInfo.color);
-                ft.replace(R.id.FragmentHolder, brushFragment);
-                ft.addToBackStack(null);
-                ft.commit();
+                addFragment(brushFragment);
+                //photoEditor.setBrushDrawingMode(true);
+
             }
         });
 
@@ -140,10 +158,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             public void onClick(View view) {
                 isEditingText = true;
                 textFragment = AddTextFragment.newInstance("hello there",R.color.black);
-                ft = getFragmentManager().beginTransaction();
-                ft.replace(R.id.FragmentHolder, textFragment);
-                ft.addToBackStack(null);
-                ft.commit();
+                addFragment(textFragment);
 
                 //photoEditor.addText(inputText.text, inputText.color);
             }
@@ -181,5 +196,21 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             inputText.color = bundle.getInt("Color");
             isEditingText = false;
         }
+
+    }
+
+    private void addFragment(Fragment fragment)
+    {
+        if (fragment != brushFragment)
+        {
+            photoEditor.setBrushDrawingMode(false);
+        }
+        ft = getFragmentManager().beginTransaction();
+        ft.replace(R.id.FragmentHolder, fragment);
+        ft.commit();
+        closeFragmentButton.setVisibility(View.VISIBLE);
+        editBar.setVisibility(View.INVISIBLE);
+        navigateBar.setVisibility(View.INVISIBLE);
+
     }
 }

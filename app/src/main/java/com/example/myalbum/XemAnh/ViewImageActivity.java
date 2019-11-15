@@ -1,5 +1,6 @@
 package com.example.myalbum.XemAnh;
 
+import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +14,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.myalbum.AlbumsActivity.AlbumActivity;
+import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
@@ -21,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ViewImageActivity extends FragmentActivity {
+
+    public static final String BUNDLE ="BackAlbum";
 
     private int IDAlbum;
     private int IDImage;
@@ -39,6 +44,7 @@ public class ViewImageActivity extends FragmentActivity {
     private ViewPager viewPager;
     private FragmentStatePagerAdapter adapter;
     private LinearLayout thumbnailsContainer;
+    ActionBar actionBar;
 
     private final static int[] largeImages= new int[]{
             R.drawable.large_01,
@@ -58,10 +64,23 @@ public class ViewImageActivity extends FragmentActivity {
 //            R.drawable.small_06
 //    };
     @Override
+    public boolean onNavigateUp(){
+        Intent newActivity = new Intent(ViewImageActivity.this, AlbumActivity.class);
+
+        Bundle myData = new Bundle();
+        myData.putInt("IDAlbum", IDAlbum);
+
+        newActivity.putExtra(BUNDLE, myData);
+        startActivity(newActivity);
+        return true;
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        actionBar= getActionBar();
+        actionBar.setHomeButtonEnabled(true);
 
         images = new ArrayList<>();
 

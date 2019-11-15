@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -51,6 +52,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //HomeActivity's Globals
     private final static int FIND_ALBUM_THREADCODE = 1;
+    public static final String ALBUM_TO ="Album";
+
 
     //Page widgets
     private AutoCompleteTextView searchBar;
@@ -155,6 +158,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_activity);
+        Toast.makeText(getApplicationContext(),"ONCREATE", Toast.LENGTH_LONG).show();
+
 
         //Bind
         searchBar = findViewById(R.id.searchBar);
@@ -242,7 +247,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 myData.putString("nameAlbum", allAlbums.get(i).getAlbumName());
                 myData.putInt("IDAlbum", allAlbums.get(i).getId());
 
-                newActivity.putExtras(myData);
+                newActivity.putExtra(ALBUM_TO, myData);
                 startActivity(newActivity);
             }
         });

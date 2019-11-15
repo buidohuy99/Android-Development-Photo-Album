@@ -66,15 +66,14 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             @Override
             public void onEditTextChangeListener(View rootView, String text, int colorCode) {
                 isEditingText = true;
-                textFragment = AddTextFragment.newInstance(inputText.text,inputText.color);
+                textFragment = AddTextFragment.newInstance(text,colorCode);
                 ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.FragmentHolder, textFragment);
+                ft.addToBackStack(null);
+                ft.commit();
 
-                while(isEditingText == true)
-                {
-                    //wait for user to finish editing text
-                }
-                photoEditor.editText(rootView, inputText.text, inputText.color);
+
+                //photoEditor.editText(rootView, inputText.text, inputText.color);
             }
 
             @Override
@@ -100,6 +99,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
         addEmojiButton = findViewById(R.id.addEmojiButton);
         addBrushButton = findViewById(R.id.addBrushButton);
+        addTextButton = findViewById(R.id.addTextButton);
 
         brushInfo = new BrushInfo();
         inputText = new InputText();
@@ -139,15 +139,13 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             @Override
             public void onClick(View view) {
                 isEditingText = true;
-                textFragment = AddTextFragment.newInstance(inputText.text,inputText.color);
+                textFragment = AddTextFragment.newInstance("hello there",R.color.black);
                 ft = getFragmentManager().beginTransaction();
                 ft.replace(R.id.FragmentHolder, textFragment);
+                ft.addToBackStack(null);
+                ft.commit();
 
-                while(isEditingText == true)
-                {
-                    //wait for user to finish adding text
-                }
-                photoEditor.addText(inputText.text, inputText.color);
+                //photoEditor.addText(inputText.text, inputText.color);
             }
         });
 

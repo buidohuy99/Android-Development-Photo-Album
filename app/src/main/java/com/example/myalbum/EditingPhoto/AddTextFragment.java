@@ -52,9 +52,10 @@ public class AddTextFragment extends Fragment implements FragmentCallbacks{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        ConstraintLayout textLayout = (ConstraintLayout) inflater.inflate(R.layout.edit_brush_fragment_layout, null);
+        ConstraintLayout textLayout = (ConstraintLayout) inflater.inflate(R.layout.edit_text_fragment_layout, null);
         editText = (EditText) textLayout.findViewById(R.id.inputText);
         colorSeekBar = (ColorSeekBar) textLayout.findViewById(R.id.sbColor);
+        button = (Button) textLayout.findViewById(R.id.btnDone);
 
         final Bundle bundle = getArguments();
         editText.setText(bundle.getString("inputText"));
@@ -64,7 +65,7 @@ public class AddTextFragment extends Fragment implements FragmentCallbacks{
             @Override
             public void onColorChangeListener(int i) {
                 selectedColor = i;
-                editText.setTextColor(bundle.getInt("Color"));
+                editText.setTextColor(i);
             }
         });
 

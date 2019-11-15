@@ -8,9 +8,8 @@
 
     <ja.burhanrashid52.photoeditor.PhotoEditorView
         android:id="@+id/photoEditorView"
-        android:layout_width="match_parent"
-        android:layout_height="477dp"
-        android:layout_margin="30dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:contentDescription=""
         android:scaleType="center"
@@ -18,115 +17,120 @@
 
     </ja.burhanrashid52.photoeditor.PhotoEditorView>
 
-
-    <FrameLayout
-        android:id="@+id/FragmentHolder"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="100dp">
+        android:layout_height="200dp">
 
-    </FrameLayout>
+        <FrameLayout
+            android:id="@+id/FragmentHolder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp">
+        </FrameLayout>
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="15dp"
+            app:layout_constraintBottom_toTopOf="@+id/navigateBar">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/addEmojiButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:scaleType="fitCenter"
+                    android:src ="@drawable/edit_add_icon_button"
+                    android:layout_margin="3dp"/>
+
+                <ImageButton
+
+                    android:id="@+id/addTextButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:scaleType="fitCenter"
+                    android:src ="@drawable/edit_add_text_button"
+                    android:layout_margin="3dp" />
+
+                <ImageButton
+
+                    android:id="@+id/addBrushButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/edit_draw_button"
+                    android:layout_margin="3dp" />
+
+                <Button
+
+                    android:id="@+id/buttonEdit5"
+                    style="@style/Widget.AppCompat.Button.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="edit_5" />
+
+                <Button
+
+                    android:id="@+id/buttonEdit6"
+                    style="@style/Widget.AppCompat.Button.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="edit_6" />
+
+                <Button
+
+                    android:id="@+id/buttonEdit7"
+                    style="@style/Widget.AppCompat.Button.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="edit_7" />
+
+                <Button
+
+                    android:id="@+id/buttonEdit8"
+                    style="@style/Widget.AppCompat.Button.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="edit_8" />
+            </LinearLayout>
+
+        </HorizontalScrollView>
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonEdit1"
-                style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="edit_1" />
-
-            <ImageButton
-                android:id="@+id/addEmojiButton"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:scaleType="fitCenter"
-                android:src ="@drawable/edit_add_icon_button"
-                android:layout_margin="3dp"/>
-
-            <ImageButton
-
-                android:id="@+id/addTextButton"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:scaleType="fitCenter"
-                android:src ="@drawable/edit_add_text_button"
-                android:layout_margin="3dp" />
-
-            <ImageButton
-
-                android:id="@+id/addBrushButton"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/edit_draw_button"
-                android:layout_margin="3dp" />
+            android:id="@+id/navigateBar"
+            android:layout_margin="30dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <Button
 
-                android:id="@+id/buttonEdit5"
+                android:id="@+id/buttonSave"
                 style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="edit_5" />
+                android:layout_weight="1"
+                android:text="save" />
 
             <Button
-
-                android:id="@+id/buttonEdit6"
+                android:id="@+id/buttonCancel"
                 style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="edit_6" />
-
-            <Button
-
-                android:id="@+id/buttonEdit7"
-                style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="edit_7" />
-
-            <Button
-
-                android:id="@+id/buttonEdit8"
-                style="@style/Widget.AppCompat.Button.Small"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="edit_8" />
+                android:layout_weight="1"
+                android:text="cancel" />
         </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    </HorizontalScrollView>
 
-    <LinearLayout
-        android:layout_margin="30dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
 
-        <Button
 
-            android:id="@+id/buttonSave"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="save" />
-
-        <Button
-            android:id="@+id/buttonCancel"
-            style="@style/Widget.AppCompat.Button.Small"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="cancel" />
-    </LinearLayout>
 
 </LinearLayout>

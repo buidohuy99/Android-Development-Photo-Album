@@ -31,7 +31,7 @@ class BrushInfo
 class InputText
 {
     String text="hello there";
-    int color;
+    int color = R.color.black;
 }
 
 public class PhotoEditorHandler extends Activity implements MainCallbacks{
@@ -74,13 +74,18 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
         photoEditor.setOnPhotoEditorListener(new OnPhotoEditorListener() {
             @Override
-            public void onEditTextChangeListener(View rootView, String text, int colorCode) {
-                isEditingText = true;
-                textFragment = AddTextFragment.newInstance(text,colorCode);
-                ft = getFragmentManager().beginTransaction();
-                ft.replace(R.id.FragmentHolder, textFragment);
-                ft.addToBackStack(null);
-                ft.commit();
+            public void onEditTextChangeListener(final View rootView, String text, int colorCode) {
+                textFragment = AddTextFragment.newInstance("",R.color.black);
+                addFragment(textFragment);
+
+                textFragment.setOnTextEditorListener(new AddTextFragment.TextEditor() {
+
+                    @Override
+                    public void onDone(String inputText, int colorCode) {
+                        photoEditor.editText(rootView, inputText, colorCode);
+                    }
+                });
+
 
 
                 //photoEditor.editText(rootView, inputText.text, inputText.color);
@@ -156,9 +161,18 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         addTextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isEditingText = true;
-                textFragment = AddTextFragment.newInstance("hello there",R.color.black);
+                textFragment = AddTextFragment.newInstance("",R.color.black);
                 addFragment(textFragment);
+
+                textFragment.setOnTextEditorListener(new AddTextFragment.TextEditor() {
+                    @Override
+                    public void onDone(String inputText, int colorCode) {
+                        photoEditor.addText(inputText,colorCode);
+                    }
+                });
+
+
+
 
                 //photoEditor.addText(inputText.text, inputText.color);
             }
@@ -201,16 +215,29 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
     private void addFragment(Fragment fragment)
     {
+
         if (fragment != brushFragment)
         {
             photoEditor.setBrushDrawingMode(false);
         }
         ft = getFragmentManager().beginTransaction();
-        ft.replace(R.id.FragmentHolder, fragment);
-        ft.commit();
-        closeFragmentButton.setVisibility(View.VISIBLE);
-        editBar.setVisibility(View.INVISIBLE);
-        navigateBar.setVisibility(View.INVISIBLE);
+
+        if (fragment != textFragment)
+        {
+            ft.replace(R.id.FragmentHolder, fragment);
+            ft.commit();
+            closeFragmentButton.setVisibility(View.VISIBLE);
+            editBar.setVisibility(View.INVISIBLE);
+            navigateBar.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            textFragment.show(ft,"single");
+        }
+
+
 
     }
+
+
 }

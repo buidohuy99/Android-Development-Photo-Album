@@ -1,5 +1,6 @@
 package com.example.myalbum.EditingPhoto;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -11,16 +12,25 @@ import android.widget.EditText;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+
+
 import com.divyanshu.colorseekbar.ColorSeekBar;
 import com.example.myalbum.R;
 
-public class AddTextFragment extends Fragment implements FragmentCallbacks{
+
+public class AddTextFragment extends DialogFragment implements FragmentCallbacks{
     Context context = null;
     PhotoEditorHandler main;
 
     EditText editText;
     ColorSeekBar colorSeekBar;
-    Button button;
+    public Button button;
+
+    private TextEditor mTextEditor;
+
+    public interface TextEditor {
+        void onDone(String inputText, int colorCode);
+    }
 
     int selectedColor;
 
@@ -77,6 +87,8 @@ public class AddTextFragment extends Fragment implements FragmentCallbacks{
                 bundle.putString("inputText",text);
                 bundle.putInt("Color", selectedColor);
                 main.onMsgFromFragToMain("TextFragment",bundle);
+                mTextEditor.onDone(text, selectedColor);
+                dismiss();
             }
         });
 
@@ -90,5 +102,9 @@ public class AddTextFragment extends Fragment implements FragmentCallbacks{
 
 
 
+    }
+
+    public void setOnTextEditorListener(TextEditor textEditor) {
+        mTextEditor = textEditor;
     }
 }

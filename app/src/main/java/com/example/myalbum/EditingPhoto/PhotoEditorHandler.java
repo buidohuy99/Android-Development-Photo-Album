@@ -12,6 +12,8 @@ import android.app.FragmentTransaction;
 import android.widget.LinearLayout;
 
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import com.example.myalbum.R;
 
 import java.util.ArrayList;
@@ -42,7 +44,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     ImageButton closeFragmentButton;
 
     HorizontalScrollView editBar;
-    LinearLayout navigateBar;
+    ConstraintLayout navigateBar;
 
     ImageButton addEmojiButton;
     ImageButton addTextButton;

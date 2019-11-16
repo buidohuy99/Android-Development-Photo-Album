@@ -19,6 +19,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".EditingPhoto.PhotoEditorHandler">
+
+        </activity>
+
         <activity android:name=".AlbumsActivity.SearchAlbumActivity"
             android:label="Tìm kiếm album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">

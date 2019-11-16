@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
@@ -41,22 +42,13 @@ public class MoveCopyImageActivity extends Activity {
         Intent callingIntent = getIntent();
         Bundle myBundle = callingIntent.getExtras();
         type = myBundle.getInt("Type");
-        idAlbum = myBundle.getInt("IDAlbum");
-        idImage = myBundle.getByte("IDImage");
-
-
+        idImage = myBundle.getInt("IDImage");
 
     }
 
     @Override
     public boolean onNavigateUp(){
-        Intent newActivity = new Intent(MoveCopyImageActivity.this, AlbumActivity.class);
-
-        Bundle myData = new Bundle();
-        myData.putInt("IDAlbum", idAlbum);
-
-        newActivity.putExtra(BUNDLE, myData);
-        startActivity(newActivity);
+        finish();
         return true;
     }
 
@@ -65,6 +57,7 @@ public class MoveCopyImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.move_copy_image_layout);
 
+        Toast.makeText(getApplicationContext(), String.valueOf(idImage) + String.valueOf(type) , Toast.LENGTH_LONG).show();
 
         actionBar= getActionBar();
         actionBar.setHomeButtonEnabled(true);
@@ -88,25 +81,17 @@ public class MoveCopyImageActivity extends Activity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(type == 1)
-                {
-                    int count = DatabaseHandler.getInstance(MoveCopyImageActivity.this).getNumberOfImagesAtAlbum(idAlbum);
-                    Image image = DatabaseHandler.getInstance(MoveCopyImageActivity.this).getImageAt(idAlbum,idImage);
-                    DatabaseHandler.getInstance(MoveCopyImageActivity.this).updateIDAlbumIDImage(image,i,count);
 
                     Intent returnIntent = new Intent();
                     Bundle myBundle = new Bundle();
-                    myBundle.putInt("IDAlbum", idAlbum);
+                    myBundle.putInt("newIDAlbum", i);
                     myBundle.putInt("IDImage", idImage);
 
-                    returnIntent.putExtra("result",myBundle);
+                    returnIntent.putExtra("Result",myBundle);
                     setResult(Activity.RESULT_OK,returnIntent);
-
                     finish();
 
 
-
-                }
             }
         });
     }

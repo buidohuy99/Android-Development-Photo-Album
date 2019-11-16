@@ -65,20 +65,14 @@ public class ViewImageActivity extends FragmentActivity {
 //    };
     @Override
     public boolean onNavigateUp(){
-        Intent newActivity = new Intent(ViewImageActivity.this, AlbumActivity.class);
-
-        Bundle myData = new Bundle();
-        myData.putInt("IDAlbum", IDAlbum);
-
-        newActivity.putExtra(BUNDLE, myData);
-        startActivity(newActivity);
+        finish();
         return true;
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        getData();
         actionBar= getActionBar();
         actionBar.setHomeButtonEnabled(true);
 

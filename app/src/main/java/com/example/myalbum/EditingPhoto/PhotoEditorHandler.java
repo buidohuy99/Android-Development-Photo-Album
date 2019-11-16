@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 
@@ -45,6 +46,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
     HorizontalScrollView editBar;
     ConstraintLayout navigateBar;
+    ConstraintLayout fragmentWindow;
 
     ImageButton addEmojiButton;
     ImageButton addTextButton;
@@ -116,6 +118,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         closeFragmentButton = findViewById(R.id.CloseFragmentButton);
         editBar = findViewById(R.id.editBar);
         navigateBar = findViewById(R.id.navigateBar);
+        fragmentWindow = findViewById(R.id.FragmentWindow);
 
         addEmojiButton = findViewById(R.id.addEmojiButton);
         addBrushButton = findViewById(R.id.addBrushButton);
@@ -132,6 +135,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
                 view.setVisibility(View.INVISIBLE);
                 editBar.setVisibility(View.VISIBLE);
                 navigateBar.setVisibility(View.VISIBLE);
+                fragmentWindow.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -231,6 +235,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             closeFragmentButton.setVisibility(View.VISIBLE);
             editBar.setVisibility(View.INVISIBLE);
             navigateBar.setVisibility(View.INVISIBLE);
+            fragmentWindow.setVisibility(View.VISIBLE);
         }
         else
         {

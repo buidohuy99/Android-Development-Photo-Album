@@ -55,7 +55,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity android:name=".AlbumsActivity.MoveCopyImageActivity"/>
+        <activity android:name=".AlbumsActivity.MoveCopyImageActivity"
+            android:label="Các ảnh trong album"
+            android:parentActivityName=".AlbumsActivity.AlbumActivity">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
+        </activity>
     </application>
 
 </manifest>

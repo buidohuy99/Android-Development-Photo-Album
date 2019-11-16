@@ -19,13 +19,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     //Các table
-        //Table album
+    //Table album
     private static final String TABLE_ALBUM = "ALBUM";
     private static final String AlBUM_ID = "id";
     private static final String ALBUM_NAME = "name";
     private static final String ALBUM_DATE = "date";
-        //Các table khác viết sau đây
-        //...
+    //Các table khác viết sau đây
+    //...
 
     private static final String TABLE_IMAGE = "IMAGE";
     private static final String KEY_ID_IMAGE = "id";
@@ -34,8 +34,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     //Singleton
     private static DatabaseHandler databaseObject = null;
 
-    public static DatabaseHandler getInstance(Context context){
-        if(databaseObject == null) {
+    public static DatabaseHandler getInstance(Context context) {
+        if (databaseObject == null) {
             databaseObject = new DatabaseHandler(context);
         }
         return databaseObject;
@@ -78,7 +78,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(AlBUM_ID,album.getId());
+        values.put(AlBUM_ID, album.getId());
         values.put(ALBUM_NAME, album.getAlbumName());
         values.put(ALBUM_DATE, album.getDate());
 
@@ -89,22 +89,22 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public Album getAlbum(int albumId) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_ALBUM, null, AlBUM_ID + " = ?", new String[] { String.valueOf(albumId) },null, null, null);
-        if(cursor != null)
+        Cursor cursor = db.query(TABLE_ALBUM, null, AlBUM_ID + " = ?", new String[]{String.valueOf(albumId)}, null, null, null);
+        if (cursor != null)
             cursor.moveToFirst();
         Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
         return album;
     }
 
     public List<Album> getAllAlbums() {
-        List<Album>  albumList = new ArrayList<Album>();
+        List<Album> albumList = new ArrayList<Album>();
         String query = "SELECT * FROM " + TABLE_ALBUM;
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
 
-        while(cursor.isAfterLast() == false) {
+        while (cursor.isAfterLast() == false) {
             Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
             albumList.add(album);
             cursor.moveToNext();
@@ -118,15 +118,15 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(ALBUM_NAME, album.getAlbumName());
         values.put(ALBUM_DATE, album.getDate());
 
-        db.update(TABLE_ALBUM, values, AlBUM_ID + " = ?", new String[] { String.valueOf(album.getId()) });
+        db.update(TABLE_ALBUM, values, AlBUM_ID + " = ?", new String[]{String.valueOf(album.getId())});
         db.close();
     }
 
     public void deleteAlbum(int albumId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_ALBUM, AlBUM_ID + " = ?", new String[] { String.valueOf(albumId) });
+        db.delete(TABLE_ALBUM, AlBUM_ID + " = ?", new String[]{String.valueOf(albumId)});
         String sqlDeleteAllImages = String.format(
-                        "DELETE FROM %s " +
+                "DELETE FROM %s " +
                         "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumId);
         db.execSQL(sqlDeleteAllImages);
         db.close();
@@ -137,7 +137,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         String sql = String.format(
                 "SELECT COUNT(*)" +
                         "FROM %s"
-                        , TABLE_ALBUM);
+                , TABLE_ALBUM);
         Cursor answer = db.rawQuery(sql, null);
 
         answer.moveToFirst();
@@ -148,12 +148,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return amount;
     }
 
-    public void addImage(String image, int idImage, int albumId ) {
+    public void addImage(String image, int idImage, int albumId) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_ID_IMAGE, idImage);
-        values.put(ID_ALBUM , albumId);
+        values.put(ID_ALBUM, albumId);
         values.put(IMAGE, image);
 
         db.insert(TABLE_IMAGE, null, values);
@@ -168,7 +168,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         cursor.moveToFirst();
 
-        while(cursor.isAfterLast() == false) {
+        while (cursor.isAfterLast() == false) {
             String url = cursor.getString(2);
             int pos = cursor.getInt(0);
             listImage.add(new Image(url, albumID, pos));
@@ -187,7 +187,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 "SELECT * " +
                         "FROM %s " +
                         "WHERE %s = %d AND %s = %d "
-                        ,TABLE_IMAGE, ID_ALBUM, albumID, KEY_ID_IMAGE, imageID);
+                , TABLE_IMAGE, ID_ALBUM, albumID, KEY_ID_IMAGE, imageID);
         Cursor answer = db.rawQuery(sql, null);
 
         answer.moveToFirst();
@@ -203,23 +203,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public int getNumberOfImages(int albumID) {
         SQLiteDatabase db = this.getReadableDatabase();
         String sql = String.format(
-                    "SELECT COUNT(*) " +
-                    "FROM %s " +
-                    "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumID);
+                "SELECT COUNT(*) " +
+                        "FROM %s " +
+                        "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumID);
         Cursor answer = db.rawQuery(sql, null);
-        int amount=0;
+        int amount = 0;
         answer.moveToFirst();
-        if(answer.isAfterLast() == false)
+        if (answer.isAfterLast() == false)
             amount = answer.getInt(0);
         answer.close();
 
         db.close();
         return amount;
     }
-    public void deleteImage(int albumID, int imageID)
-    {
+
+    public void deleteImage(int albumID, int imageID) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_IMAGE,  ID_ALBUM + " = ? AND " + KEY_ID_IMAGE  +" = ?" , new String[] { String.valueOf(albumID),String.valueOf(imageID) });
+        db.delete(TABLE_IMAGE, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?", new String[]{String.valueOf(albumID), String.valueOf(imageID)});
         String sqlDeleteAllImages = String.format(
                 "DELETE FROM %s " +
                         "WHERE %s = %d AND %s = %d", TABLE_IMAGE, ID_ALBUM, albumID, KEY_ID_IMAGE, imageID);
@@ -227,24 +227,52 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    public void deleteAllImageAt(int albumID)
-    {
+    public void deleteAllImageAt(int albumID) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_IMAGE,  ID_ALBUM + " = ? " , new String[] { String.valueOf(albumID) });
+        db.delete(TABLE_IMAGE, ID_ALBUM + " = ? ", new String[]{String.valueOf(albumID)});
         String sqlDeleteAllImages = String.format(
                 "DELETE FROM %s " +
-                        "WHERE %s = %d", TABLE_IMAGE, ID_ALBUM, albumID  );
+                        "WHERE %s = %d", TABLE_IMAGE, ID_ALBUM, albumID);
         db.execSQL(sqlDeleteAllImages);
         db.close();
     }
 
-    public void updateImage(Image image, int IDImage) {
+    public void updateIDImage(Image image, int IDImage) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(KEY_ID_IMAGE, IDImage);
 
 
-        db.update(TABLE_IMAGE, values, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?" , new String[] { String.valueOf(image.getIdAlbum()), String.valueOf((image.getPos())) });
+        db.update(TABLE_IMAGE, values, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?", new String[]{String.valueOf(image.getIdAlbum()), String.valueOf((image.getPos()))});
         db.close();
     }
+
+    public void updateIDAlbumIDImage(Image image, int IDAlbum, int IDImage) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(ID_ALBUM, IDAlbum);
+        values.put(KEY_ID_IMAGE, IDImage);
+
+
+        db.update(TABLE_IMAGE, values, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?", new String[]{String.valueOf(image.getIdAlbum()), String.valueOf((image.getPos()))});
+        db.close();
+    }
+
+    public int getNumberOfImagesAtAlbum(int IDAlbum) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = String.format(
+                "SELECT COUNT(*)" +
+                        "FROM %s" +
+                        "WHERE %s = &d"
+                , TABLE_IMAGE, ID_ALBUM , IDAlbum);
+        Cursor answer = db.rawQuery(sql, null);
+
+        answer.moveToFirst();
+        int amount = answer.getInt(0);
+        answer.close();
+
+        db.close();
+        return amount;
+    }
+
 }

@@ -29,6 +29,16 @@
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
 
+        <activity android:name=".XemAnh.ViewImageActivity"
+            android:label="Các ảnh trong album"
+            android:parentActivityName=".AlbumsActivity.AlbumActivity">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
+        </activity>
+
         <activity android:name=".AlbumsActivity.AlbumActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">
@@ -38,7 +48,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity android:name=".XemAnh.ViewImageActivity"></activity>
     </application>
 
 </manifest>

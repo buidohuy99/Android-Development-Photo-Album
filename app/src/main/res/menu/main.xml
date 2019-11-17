@@ -21,7 +21,7 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_edit"
         android:orderInCategory="180"
         android:title="Edit"
         app:showAsAction="never" />

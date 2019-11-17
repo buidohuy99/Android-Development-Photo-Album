@@ -9,17 +9,6 @@
         android:orientation="vertical"
         android:padding="3dp" >
 
-        <TextView
-            android:id="@+id/nameAlbum"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="3dp"
-            android:text="TÊN ALBUM"
-            android:textAlignment="center"
-            android:textColor="#000000"
-            android:textSize="50dp"
-            android:textStyle="bold" />
-
         <GridView
             android:id="@+id/gridview"
             android:layout_width="match_parent"
@@ -27,10 +16,11 @@
             android:layout_margin="1dp"
             android:columnWidth="100dp"
             android:gravity="center"
-            android:horizontalSpacing="5dp"
+            android:horizontalSpacing="1dp"
             android:numColumns="auto_fit"
             android:stretchMode="columnWidth"
-            android:verticalSpacing="10dp" >
+            android:verticalSpacing="1dp"
+            android:choiceMode="multipleChoice">
         </GridView>
 
     </LinearLayout>
@@ -42,4 +32,10 @@
         android:layout_gravity="bottom|end"
         android:background="@drawable/plus_icon"
         android:id="@+id/add"/>
+    <ProgressBar
+        android:id="@+id/myBarCir"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal|center_vertical"/>
 </FrameLayout>

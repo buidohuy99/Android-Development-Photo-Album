@@ -2,11 +2,16 @@ package com.example.myalbum.AlbumsActivity;
 
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,6 +21,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -27,40 +33,65 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 import com.example.myalbum.XemAnh.ViewImageActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AlbumActivity extends Activity {
 
     private static final int PICK_IMAGE = 100;
+    private static final int MOVE_IMAGE = 90;
+    public static final String BACK_ALBUM ="BackAlbum";
+    public static final String ALBUM_TO ="Album";
+
+
 
     //List các đối tượng
     TextView text;
     GridView gridView;
     Button button;
+    ProgressBar progressBar ;
 
     //Biến
     List<Image> list;
+    List<Image> listTemp = new ArrayList<Image>();
     ImageAdapter adapter;
     String nameAlbum;
 
+
     int IDAlbum;
+    int IDAlbumtoMove;
 
     public void init() {
-        text = findViewById(R.id.nameAlbum);
         gridView = findViewById(R.id.gridview);
         button = findViewById(R.id.add);
+        progressBar = (ProgressBar) findViewById(R.id.myBarCir);
+        progressBar.setVisibility(View.INVISIBLE);
 
     }
 
     public void getData() {
         //Get data from HomeActivity
         Intent callingIntent = getIntent();
-        Bundle myBundle = callingIntent.getExtras();
-        IDAlbum = myBundle.getInt("IDAlbum");
-        nameAlbum = myBundle.getString("nameAlbum") + String.valueOf(IDAlbum);
-        list = DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
+        Bundle myBundle = callingIntent.getBundleExtra(ALBUM_TO);
+
+        if (myBundle != null)
+        {
+            IDAlbum = myBundle.getInt("IDAlbum");
+            nameAlbum = myBundle.getString("nameAlbum") + String.valueOf(IDAlbum);
+            list = DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
+        }
+
+        myBundle = callingIntent.getBundleExtra(BACK_ALBUM);
+
+        if(myBundle!= null)
+        {
+            IDAlbum = myBundle.getInt("IDAlbum");
+            nameAlbum = DatabaseHandler.getInstance(AlbumActivity.this).getAlbum(IDAlbum).getAlbumName();
+            list = DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
+        }
 
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,14 +105,17 @@ public class AlbumActivity extends Activity {
         init();
 
         //Cai đặt các đối tượng
-        text.setText(nameAlbum);
+        this.setTitle(nameAlbum);
+
         adapter = new ImageAdapter(this, list);
         gridView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+
+        //Sét sự kiện click ảnh
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
                 Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
 
                 Bundle myData = new Bundle();
@@ -93,17 +127,79 @@ public class AlbumActivity extends Activity {
             }
         });
 
+        //Sét sự kiện click ảnh lâu
+        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog DeleteDialog = new AlertDialog.Builder(AlbumActivity.this)
+                        .setTitle("Bạn muốn xóa ảnh này?\n")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(getApplicationContext(), String.valueOf(position), Toast.LENGTH_LONG).show();
+
+                                removeImage( position);
+
+                            }
+                        })
+                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton("Move", new DialogInterface.OnClickListener() {
+                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                IDAlbumtoMove = position;
+                                Intent newActivity = new Intent(AlbumActivity.this, MoveCopyImageActivity.class);
+
+                                Bundle myData = new Bundle();
+
+                                newActivity.putExtras(myData);
+                                startActivityForResult(newActivity, MOVE_IMAGE);
+                            }
+                        })
+                        .create();
+                DeleteDialog.show();
+                return true;
+
+            }
+        });
 
 
-
-
-                button.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openGallery();
+                AlertDialog AddImageDialog = new AlertDialog.Builder(AlbumActivity.this)
+                        .setTitle("Chọn chức năng\n")
+                        .setPositiveButton("Thêm", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                openGallery();
+                            }
+                        })
+                        .setNeutralButton("Chụp ảnh", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        })
+                        .create();
+                AddImageDialog.show();
             }
         });
     }
+
+
+
+    private void removeImage( int position) {
+        list.remove(position);
+        adapter.notifyDataSetChanged();
+        new VerySlowTask().execute(position);
+    }
+
     @Override
     protected void onPause()
     {
@@ -114,6 +210,7 @@ public class AlbumActivity extends Activity {
     {
         super.onResume();
         adapter.notifyDataSetChanged();
+//        adapter.notifyDataSetChanged();
     }
     @Override
     protected void onStop()
@@ -145,14 +242,41 @@ public class AlbumActivity extends Activity {
             if (data.getClipData() != null) {
                 ClipData mClipData = data.getClipData();
 
+                listTemp.clear();
                 for (int i = 0; i < mClipData.getItemCount(); i++) {
 
                     ClipData.Item item = mClipData.getItemAt(i);
                     Uri uri = item.getUri();
                     Image newImage =new Image(uri.toString(), IDAlbum, list.size());
                     list.add(newImage);
-                    DatabaseHandler.getInstance(AlbumActivity.this).addImage(uri.toString(),newImage.getPos(),newImage.getIdAlbum());
+                    adapter.notifyDataSetChanged();
+                    gridView.smoothScrollToPosition(list.size() - 1);
+                    listTemp.add(newImage);
 
+                }
+                MyThreadAddImage t2 = new MyThreadAddImage();
+                t2.start();
+
+            }
+            else
+            {
+                Uri imageUri = data.getData();
+                Image newImage =new Image(imageUri.toString(), IDAlbum, list.size());
+                list.add(newImage);
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(imageUri.toString(),newImage.getPos(),newImage.getIdAlbum());
+            }
+        }
+        else
+        {
+            if(resultCode == RESULT_OK && requestCode == MOVE_IMAGE) {
+                Bundle myBundle = data.getBundleExtra("Result");
+                int idalbum = myBundle.getInt("newIDAlbum");
+                int idimage = IDAlbumtoMove;
+
+                if (idalbum != IDAlbum)
+                {
+                    list.remove(idimage);
+                    new MoveImage().execute(idalbum, idimage);
                 }
 
             }
@@ -177,6 +301,92 @@ public class AlbumActivity extends Activity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public class MyThreadAddImage extends Thread{
+        @Override
+        public void run() {
+            super.run();
+            for(int i=0; i<listTemp.size(); i++)
+            {
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(listTemp.get(i).getUrlHinh(),listTemp.get(i).getPos(),listTemp.get(i).getIdAlbum());
+
+            }
+        }//run
+    }//MyThread
+
+
+    private class VerySlowTask extends AsyncTask<Integer, Void, Void> {
+        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
+
+        String waitMsg = "Wait\nProcess is being done... ";
+        protected void onPreExecute()
+        {
+            this.dialog.setMessage(waitMsg);
+            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+            this.dialog.show();
+        }
+
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, integers[0]);
+
+            for(int i=integers[0]; i<list.size(); i++)
+            {
+                DatabaseHandler.getInstance(AlbumActivity.this).updateIDImage(list.get(i),i);
+                list.get(i).setPos(i);
+            }
+
+            return null;
+        }
+        protected void onPostExecute(final Void unused) {
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+
+        }
+
+    }
+
+    private class MoveImage extends AsyncTask<Integer, Void, Void> {
+        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
+
+        String waitMsg = "Wait\nProcess is being done... ";
+        protected void onPreExecute()
+        {
+            this.dialog.setMessage(waitMsg);
+            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+            this.dialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            Integer numberOfImages = DatabaseHandler.getInstance(AlbumActivity.this).getNumberOfImages(integers[0]);
+
+            Image image = DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum,integers[1]);
+            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, integers[1]);
+
+            for(int i=integers[1]; i<list.size(); i++)
+            {
+                DatabaseHandler.getInstance(AlbumActivity.this).updateIDImage(list.get(i),i);
+                list.get(i).setPos(i);
+            }
+
+            DatabaseHandler.getInstance(AlbumActivity.this).addImage(image.getUrlHinh(),numberOfImages,integers[0]);
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... value) {
+            adapter.notifyDataSetChanged();
+        }
+        protected void onPostExecute(final Void unused) {
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+
         }
     }
 }

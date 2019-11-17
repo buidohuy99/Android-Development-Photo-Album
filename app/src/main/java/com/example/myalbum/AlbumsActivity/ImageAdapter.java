@@ -1,6 +1,10 @@
 package com.example.myalbum.AlbumsActivity;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -8,9 +12,14 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 
@@ -18,11 +27,11 @@ import java.util.List;
 public class ImageAdapter extends BaseAdapter {
     Context context;
     List<Image> picture;
+
     public ImageAdapter(Context mainActivity, List<Image> list) {
         this.context= mainActivity;
         this.picture=list;
     }
-
 
     @Override
     public int getCount() {
@@ -54,20 +63,26 @@ public class ImageAdapter extends BaseAdapter {
             imageView.setLayoutParams(new GridView.LayoutParams(gridsize, gridsize));
 //imageView.setLayoutParams(new GridView.LayoutParams(100, 100));//NOT a good practice
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//            imageView.setPadding(1, 1, 1, );
+            imageView.setPadding(1, 1, 3, 1);
         } else {
             imageView = (ImageView) view;
         }
 
-        Glide.with(context).load(picture.get(i).getUrlHinh())
+        Uri uri = Uri.parse(picture.get(i).getUrlHinh()) ;
+        Glide.with(context).load(uri)
                 .placeholder(R.drawable.loading)
                 .error(R.drawable.error)
+                .dontAnimate()
                 .into(imageView);
+
         imageView.setId(i);
+
+
 
         return imageView;
 
-    }//getView
+    }//
+
 
 
 

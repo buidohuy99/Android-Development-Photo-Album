@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,21 +70,17 @@ public class ImageAdapter extends BaseAdapter {
             imageView = (ImageView) view;
         }
 
-        Uri uri = Uri.parse(picture.get(i).getUrlHinh()) ;
-        Glide.with(context).load(uri)
+        Glide.with(context).load(picture.get(i).getUrlHinh())
                 .placeholder(R.drawable.loading)
                 .error(R.drawable.error)
-                .dontAnimate()
                 .into(imageView);
 
         imageView.setId(i);
 
 
-
         return imageView;
 
     }//
-
 
 
 

@@ -10,10 +10,12 @@ import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MenuItem;
@@ -43,21 +45,19 @@ public class AlbumActivity extends Activity {
     private static final int MOVE_IMAGE = 90;
     public static final String BACK_ALBUM ="BackAlbum";
     public static final String ALBUM_TO ="Album";
-
+    public static final String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
 
     //List các đối tượng
-    TextView text;
     GridView gridView;
     Button button;
     ProgressBar progressBar ;
 
     //Biến
     List<Image> list;
-    List<Image> listTemp = new ArrayList<Image>();
     ImageAdapter adapter;
     String nameAlbum;
-
+    List<Uri> uriList = new ArrayList<Uri>();
 
     int IDAlbum;
     int IDAlbumtoMove;
@@ -242,29 +242,29 @@ public class AlbumActivity extends Activity {
         if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
             if (data.getClipData() != null) {
                 ClipData mClipData = data.getClipData();
-
-                listTemp.clear();
+                uriList.clear();
                 for (int i = 0; i < mClipData.getItemCount(); i++) {
 
                     ClipData.Item item = mClipData.getItemAt(i);
                     Uri uri = item.getUri();
-                    Image newImage =new Image(uri.toString(), IDAlbum, list.size());
-                    list.add(newImage);
-                    adapter.notifyDataSetChanged();
-                    gridView.smoothScrollToPosition(list.size() - 1);
-                    listTemp.add(newImage);
-
+                    uriList.add(uri);
                 }
-                MyThreadAddImage t2 = new MyThreadAddImage();
-                t2.start();
 
+                new UploadImage().execute(uriList);
             }
             else
             {
                 Uri imageUri = data.getData();
-                Image newImage =new Image(imageUri.toString(), IDAlbum, list.size());
+
+                Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String picturePath = cursor.getString(columnIndex);
+                cursor.close();
+
+                Image newImage =new Image(picturePath, IDAlbum, list.size());
                 list.add(newImage);
-                DatabaseHandler.getInstance(AlbumActivity.this).addImage(imageUri.toString(),newImage.getPos(),newImage.getIdAlbum());
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
             }
         }
         else
@@ -285,6 +285,7 @@ public class AlbumActivity extends Activity {
 
     }
 
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -304,18 +305,6 @@ public class AlbumActivity extends Activity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    public class MyThreadAddImage extends Thread{
-        @Override
-        public void run() {
-            super.run();
-            for(int i=0; i<listTemp.size(); i++)
-            {
-                DatabaseHandler.getInstance(AlbumActivity.this).addImage(listTemp.get(i).getUrlHinh(),listTemp.get(i).getPos(),listTemp.get(i).getIdAlbum());
-
-            }
-        }//run
-    }//MyThread
 
 
     private class VerySlowTask extends AsyncTask<Integer, Void, Void> {
@@ -389,6 +378,47 @@ public class AlbumActivity extends Activity {
             }
 
         }
+    }
+
+    private class UploadImage extends AsyncTask<List<Uri>,Void,Void>{
+        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
+        String waitMsg = "Wait\nLoading image is being done... ";
+        protected void onPreExecute() {
+            this.dialog.setMessage(waitMsg);
+            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+            this.dialog.show();
+        }
+        @Override
+        protected Void doInBackground(List<Uri>... lists) {
+            for(int i= 0 ; i<lists[0].size(); i++)
+            {
+                Cursor cursor = getContentResolver().query(uriList.get(i), filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String picturePath = cursor.getString(columnIndex);
+                cursor.close();
+
+                Image newImage =new Image(picturePath, IDAlbum, list.size());
+                list.add(newImage);
+                DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
+                publishProgress();
+
+            }
+            return null;
+        }
+        @Override
+        protected void onProgressUpdate(Void... value) {
+            adapter.notifyDataSetChanged();
+            gridView.smoothScrollToPosition(list.size()-1);
+        }
+        // can use UI thread here
+        protected void onPostExecute(final Void unused) {
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+        }
+
+
     }
 }
 

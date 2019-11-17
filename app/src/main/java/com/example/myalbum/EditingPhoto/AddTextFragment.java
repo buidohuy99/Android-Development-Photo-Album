@@ -11,7 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
-
+import androidx.core.content.ContextCompat;
 
 
 import com.divyanshu.colorseekbar.ColorSeekBar;
@@ -32,7 +32,7 @@ public class AddTextFragment extends DialogFragment implements FragmentCallbacks
         void onDone(String inputText, int colorCode);
     }
 
-    int selectedColor;
+    int selectedColor = 0;
 
     public static AddTextFragment newInstance(String input, int color)
     {
@@ -70,6 +70,7 @@ public class AddTextFragment extends DialogFragment implements FragmentCallbacks
         final Bundle bundle = getArguments();
         editText.setText(bundle.getString("inputText"));
         editText.setTextColor(bundle.getInt("Color"));
+        selectedColor = bundle.getInt("Color");
 
         colorSeekBar.setOnColorChangeListener(new ColorSeekBar.OnColorChangeListener() {
             @Override

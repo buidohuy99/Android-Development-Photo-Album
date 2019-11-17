@@ -37,7 +37,7 @@
                 android:id="@+id/CloseFragmentButton"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:padding="3dp"
+                android:layout_margin="5dp"
                 android:scaleType="fitCenter"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintRight_toRightOf="parent"

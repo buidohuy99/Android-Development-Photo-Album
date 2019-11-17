@@ -3,6 +3,7 @@ package com.example.myalbum.EditingPhoto;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -79,7 +80,8 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         photoEditor.setOnPhotoEditorListener(new OnPhotoEditorListener() {
             @Override
             public void onEditTextChangeListener(final View rootView, String text, int colorCode) {
-                textFragment = AddTextFragment.newInstance("",R.color.black);
+
+                textFragment = AddTextFragment.newInstance(text,colorCode);
                 addFragment(textFragment);
 
                 textFragment.setOnTextEditorListener(new AddTextFragment.TextEditor() {

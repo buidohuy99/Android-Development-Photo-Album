@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -18,6 +19,7 @@ import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
+import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
 import java.util.ArrayList;
@@ -94,6 +96,20 @@ public class ViewImageActivity extends FragmentActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main,menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem)
+    {
+        int id = menuItem.getItemId();
+        if (id == R.id.action_settings)
+        {
+            Intent intent =new Intent(this, PhotoEditorHandler.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
+
     }
 
     private void inflateThumbnails() {

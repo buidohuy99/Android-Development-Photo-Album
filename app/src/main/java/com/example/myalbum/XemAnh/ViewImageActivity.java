@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -90,9 +91,20 @@ public class ViewImageActivity extends Activity {
         int id = menuItem.getItemId();
         if (id == R.id.action_edit)
         {
+            int temp = viewPager.getCurrentItem();
+            Toast.makeText(getApplicationContext(), String.valueOf(temp) + "+ " +String.valueOf(IDAlbum ), Toast.LENGTH_LONG).show();
+
             Intent intent =new Intent(this, PhotoEditorHandler.class);
+            Bundle myData = new Bundle();
+            myData.putInt("IDAlbum", IDAlbum);
+            myData.putInt("IDImage", temp);
+            intent.putExtras(myData);
             startActivity(intent);
             return true;
+        }
+        if(id == R.id.action_addtoalbum)
+        {
+
         }
         return false;
 
@@ -113,7 +125,10 @@ public class ViewImageActivity extends Activity {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Toast.makeText(getApplicationContext(), String.valueOf(i) + "+ " +String.valueOf(IDAlbum ), Toast.LENGTH_LONG).show();
+
                 viewPager.setCurrentItem(i);
+
             }
         };
     }

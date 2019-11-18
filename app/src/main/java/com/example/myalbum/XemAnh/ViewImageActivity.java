@@ -3,13 +3,9 @@ package com.example.myalbum.XemAnh;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
-import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,7 +35,6 @@ public class ViewImageActivity extends Activity {
     private ViewPager viewPager;
     private CustomAdapterViewPager customAdapterViewPager;
     private LinearLayout thumbnailsContainer;
-    private BitmapFactory.Options options;
 
     private void getData()
     {
@@ -109,14 +104,7 @@ public class ViewImageActivity extends Activity {
             ImageView imageView = (ImageView) imageLayout.findViewById(R.id.thumbnail);
             imageView.setOnClickListener(onChangePageClickListener(i));
 
-
-//            Image imgtemp = DatabaseHandler.getInstance(this).getImageAt(IDAlbum,i);
-//
-//            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imgtemp.getUrlHinh()),64,64);
             Glide.with(this).load(listImage.get(i).getUrlHinh()).placeholder(R.drawable.loading).error(R.drawable.error).into(imageView);
-            //set to image view
-            //imageView.setImageBitmap(bitmap);
-            //add imageview
             thumbnailsContainer.addView(imageLayout);
         }
     }

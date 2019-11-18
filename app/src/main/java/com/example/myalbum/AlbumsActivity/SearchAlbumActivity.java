@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -29,10 +30,12 @@ import com.example.myalbum.utilities.UtilityListeners;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import static com.example.myalbum.AlbumsActivity.AlbumActivity.ALBUM_TO;
+
 public class SearchAlbumActivity extends Activity {
     //Page widgets
     private AutoCompleteTextView searchBar;
-    private ListView albumList;
+    private GridView albumList;
     private Button searchButton;
     private ProgressBar loadingCir;
 
@@ -81,7 +84,7 @@ public class SearchAlbumActivity extends Activity {
         for (int i = 0; i < allAlbums.size();i++)
         {
             album = allAlbums.get(i);
-            if (album.getAlbumName().equals(name))
+            if (album.getAlbumName().contains(name))
             {
                 result.add(album);
             }
@@ -152,22 +155,21 @@ public class SearchAlbumActivity extends Activity {
             searchButton.setOnClickListener(searchButton_OnClick);
 
         //Album List
-            albumList_OnItemClick.register(UtilityListeners.listView_OnItemClick_ClearFocus(SearchAlbumActivity.this));
-            albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    Intent newActivity = new Intent(SearchAlbumActivity.this, AlbumActivity.class);
+        albumList_OnItemClick.register(UtilityListeners.listView_OnItemClick_ClearFocus(SearchAlbumActivity.this));
+        albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent newActivity = new Intent(SearchAlbumActivity.this, AlbumActivity.class);
 
-                    Bundle myData = new Bundle();
-                    myData.putString("nameAlbum", renderAlbums.get(i).getAlbumName());
-                    myData.putInt("IDAlbum", renderAlbums.get(i).getId());
+                Bundle myData = new Bundle();
+                myData.putString("nameAlbum", renderAlbums.get((int)l).getAlbumName());
+                myData.putInt("IDAlbum", renderAlbums.get((int)l).getId());
 
-                    newActivity.putExtras(myData);
-                    startActivity(newActivity);
-                }
-            });
-
-            albumList.setOnItemClickListener(albumList_OnItemClick);
+                newActivity.putExtra(ALBUM_TO, myData);
+                startActivity(newActivity);
+            }
+        });
+        albumList.setOnItemClickListener(albumList_OnItemClick);
 
     }//onCreate
 

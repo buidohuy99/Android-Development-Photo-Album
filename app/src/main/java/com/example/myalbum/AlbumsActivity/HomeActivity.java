@@ -4,21 +4,31 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.NavUtils;
+import androidx.core.view.ViewCompat;
 
 import com.example.myalbum.R;
 
@@ -28,6 +38,7 @@ import com.example.myalbum.events.OnClickEvent;
 import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
+import com.example.myalbum.utilities.HeaderGridView;
 import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
 
@@ -52,12 +63,13 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //HomeActivity's Globals
     private final static int FIND_ALBUM_THREADCODE = 1;
+    private final static int LOAD_ALL_ALBUM_THREADCODE = 2;
     public static final String ALBUM_TO ="Album";
 
 
     //Page widgets
     private AutoCompleteTextView searchBar;
-    private ListView albumList;
+    private HeaderGridView albumList;
     private Button searchButton;
     private Button addAlbumButton;
     private ProgressBar loadingCir;
@@ -117,7 +129,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumsAdapter.notifyDataSetChanged();
         //Remove database
         DatabaseHandler.getInstance(HomeActivity.this).deleteAlbum(albumID);
-        albumList.smoothScrollToPosition(albumsAdapter.getCount()-1);
     }
 
         //Find album by name
@@ -128,7 +139,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         for (int i = 0; i < source.size();i++)
         {
             album = source.get(i);
-            if (album.getAlbumName().equals(name))
+            if (album.getAlbumName().contains(name))
             {
                 result.add(album);
             }
@@ -137,63 +148,21 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         return result;
     }
 
-    //Function to process messages send to main thread from other thread
-    private void handleMessage(Message msg){
-        //Message from find album thread
-        if(msg.what == FIND_ALBUM_THREADCODE) {
-            ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
-            ArrayList<Album> source = (ArrayList<Album>) allAlbums;
-            Intent newActivity = new Intent(this, SearchAlbumActivity.class);
-            newActivity.putExtra("Source", source);
-            newActivity.putExtra("Render Info", filtered);
-            newActivity.putExtra("AutoComplete", hint);
-            loadingCir.setVisibility(View.INVISIBLE);
-            startActivity(newActivity);
-        }
-    }
-
-    //-------------------------------------------Life-cycle------------------------------------------
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.home_activity);
-        Toast.makeText(getApplicationContext(),"ONCREATE", Toast.LENGTH_LONG).show();
-
-
-        //Bind
-        searchBar = findViewById(R.id.searchBar);
-        searchButton = findViewById(R.id.searchButton);
-        addAlbumButton = findViewById(R.id.addAlbumButton);
-        albumList = findViewById(R.id.albumList);
-        loadingCir = findViewById(R.id.progress_circular);
-
-        //Get all albums
-        allAlbums = new ArrayList<Album>();
-        allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
-
-        hint = new ArrayList<String>();
-
-        //Populate hints with album name
-        for(int i = 0 ; i< allAlbums.size(); i++) {
-            hint.add(allAlbums.get(i).getAlbumName());
-        }
-
+    private void bindFunctionalities(){
         //Add adapters
-            //For displaying all albums
+        //For displaying all albums
         albumsAdapter = new AlbumsAdapter(this,
                 allAlbums,
                 R.layout.albumlist_row);
         albumList.setAdapter(albumsAdapter);
 
-            //For autocomplete field
+        //For autocomplete field
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, hint);
         searchBar.setAdapter(autoCompleteAdapter);
-
         //Set listeners + events
 
-            //Add Album Button
+        //Add Album Button
         addAlbumButton_OnClick.register(UtilityListeners.view_OnClick_ClearFocus(HomeActivity.this));
         addAlbumButton_OnClick.register(new View.OnClickListener() {
             @Override
@@ -205,10 +174,10 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         });
         addAlbumButton.setOnClickListener(addAlbumButton_OnClick);
 
-            //Search Bar
+        //Search Bar
         searchBar.setOnFocusChangeListener(UtilityListeners.editText_OnFocusChange(HomeActivity.this));
 
-            //Search Button
+        //Search Button
         searchButton_OnClick.register(UtilityListeners.view_OnClick_ClearFocus(HomeActivity.this));
         searchButton_OnClick.register( new View.OnClickListener() {
             @Override
@@ -236,7 +205,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         });
         searchButton.setOnClickListener(searchButton_OnClick);
 
-            //Album List
+        //Album List
         albumList_OnItemClick.register(UtilityListeners.listView_OnItemClick_ClearFocus(HomeActivity.this));
         albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
             @Override
@@ -244,8 +213,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
 
                 Bundle myData = new Bundle();
-                myData.putString("nameAlbum", allAlbums.get(i).getAlbumName());
-                myData.putInt("IDAlbum", allAlbums.get(i).getId());
+                myData.putString("nameAlbum", allAlbums.get((int)l).getAlbumName());
+                myData.putInt("IDAlbum", allAlbums.get((int)l).getId());
 
                 newActivity.putExtra(ALBUM_TO, myData);
                 startActivity(newActivity);
@@ -253,16 +222,17 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         });
         albumList.setOnItemClickListener(albumList_OnItemClick);
 
-            //Delete
+        //Delete
         albumList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                final int truePos = (int)id;
                 AlertDialog DeleteDialog = new AlertDialog.Builder(HomeActivity.this)
                         .setTitle("Bạn muốn xóa album này?\n")
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                removeAlbum(position);
+                                removeAlbum(truePos);
                             }
                         })
                         .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
@@ -276,6 +246,73 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 return true;
             }
         });
+
+    }
+
+    //Function to process messages send to main thread from other thread
+    private void handleMessage(Message msg){
+        //Message from find album thread
+        if(msg.what == FIND_ALBUM_THREADCODE) {
+            ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
+            ArrayList<Album> source = (ArrayList<Album>) allAlbums;
+            Intent newActivity = new Intent(this, SearchAlbumActivity.class);
+            newActivity.putExtra("Source", source);
+            newActivity.putExtra("Render Info", filtered);
+            newActivity.putExtra("AutoComplete", hint);
+            loadingCir.setVisibility(View.INVISIBLE);
+            startActivity(newActivity);
+        }
+        if(msg.what == LOAD_ALL_ALBUM_THREADCODE) {
+            bindFunctionalities();
+            loadingCir.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    //-------------------------------------------Life-cycle------------------------------------------
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.home_activity);
+
+        //Create header area
+        final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
+                .findViewById(android.R.id.content)).getChildAt(0);
+
+        View headerArea = this.getLayoutInflater().inflate(R.layout.albumlist_header, viewGroup, false);
+
+        //Bind
+        searchBar = headerArea.findViewById(R.id.searchBar);
+        searchButton = headerArea.findViewById(R.id.searchButton);
+        addAlbumButton = headerArea.findViewById(R.id.addAlbumButton);
+        albumList = findViewById(R.id.albumList);
+        loadingCir = findViewById(R.id.progress_circular);
+
+        //Add header to gridview
+        albumList.addHeaderView(headerArea);
+
+        //Create thread for loading
+        Thread loadThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
+                //Populate hints with album name
+                for(int i = 0 ; i< allAlbums.size(); i++) {
+                    hint.add(allAlbums.get(i).getAlbumName());
+                }
+                Message msg = updateHandler.obtainMessage(LOAD_ALL_ALBUM_THREADCODE);
+                updateHandler.sendMessage(msg);
+            }
+        });
+
+
+        //Create necessary arrays
+        allAlbums = new ArrayList<Album>();
+        hint = new ArrayList<String>();
+
+        //Run the thread
+        loadingCir.setVisibility(View.VISIBLE);
+        loadThread.run();
 
     }
 
@@ -317,7 +354,9 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onResume()
     {
         super.onResume();
-        albumsAdapter.notifyDataSetChanged();
+        if(albumsAdapter != null) {
+            albumsAdapter.notifyDataSetChanged();
+        }
     }
 
 }

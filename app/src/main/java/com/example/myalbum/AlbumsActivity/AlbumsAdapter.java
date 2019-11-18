@@ -3,12 +3,16 @@ package com.example.myalbum.AlbumsActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.myalbum.DAO.DatabaseHandler;
@@ -24,11 +28,11 @@ public class AlbumsAdapter extends BaseAdapter {
     List<Album> displayAlbums;
 
     //Context of current Activity/ Fragment
-    Context currentContext;
+    Activity currentContext;
     //XML Layout to inflate per album
     int layoutToInflate;
 
-    AlbumsAdapter(Context context, List<Album> displayAlbums, int resource){
+    AlbumsAdapter(Activity context, List<Album> displayAlbums, int resource){
         this.displayAlbums = displayAlbums;
         currentContext = context;
         layoutToInflate = resource;
@@ -60,10 +64,10 @@ public class AlbumsAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent)
     {
         //Stores all Views in this row (at position)
-        AlbumRowViewsHolder thisRowViews;
+        final AlbumRowViewsHolder thisRowViews;
 
         //View representing current Row
-        View currentRow;
+        final View currentRow;
 
         //check if there is existing scrap album row View not in use/ outside of screen
         //convertView is just a Row/View that moves outside of the screen
@@ -72,7 +76,7 @@ public class AlbumsAdapter extends BaseAdapter {
             //If there is none, use the inflater of current Activity
             LayoutInflater inflater = ((Activity) currentContext).getLayoutInflater();
             //... to create a new view of a row from .xml file
-            currentRow = inflater.inflate(R.layout.albumlist_row,null);
+            currentRow = inflater.inflate(R.layout.albumlist_row, null);
 
             //Create a View Holder to hold all Views from currentRow View/ViewGroup
             thisRowViews = new AlbumRowViewsHolder();
@@ -80,13 +84,24 @@ public class AlbumsAdapter extends BaseAdapter {
             thisRowViews.albumImage = currentRow.findViewById(R.id.albumImage);
             thisRowViews.albumName = currentRow.findViewById(R.id.albumName);
             thisRowViews.imagesNumber = currentRow.findViewById(R.id.imagesNumber);
+
             //Associate the row with the View Holder object, containing Views inside it
             currentRow.setTag(thisRowViews);
+            thisRowViews.albumImage.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    ViewGroup.LayoutParams params = thisRowViews.albumImage.getLayoutParams();
+                    params.height = 300;
+                    thisRowViews.albumImage.setLayoutParams(params);
+                    thisRowViews.albumImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+            });
         }else {
             //If there is an existing view, set currentRow to it
             //and get the Views inside the row to change contents
             currentRow = convertView;
             thisRowViews = (AlbumRowViewsHolder)convertView.getTag();
+            Glide.with(currentContext).clear(thisRowViews.albumImage);
         }
         //Add contents to the Views inside the Row or
         //Update the contents of the Views inside found scrap Row
@@ -96,16 +111,18 @@ public class AlbumsAdapter extends BaseAdapter {
         Integer numberOfImages = DatabaseHandler.getInstance(currentContext).getNumberOfImages(album.getId());
         thisRowViews.imagesNumber.setText(numberOfImages.toString());
         //Set album thumbnail
-        if(numberOfImages - 1<0)
-            thisRowViews.albumImage.setImageResource(android.R.drawable.gallery_thumb);
+        if(numberOfImages - 1 < 0)
+            Glide.with(currentContext).load(R.drawable.nopictures)
+                    .into(thisRowViews.albumImage);
         else {
-            Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), 0);
-            Glide.with(thisRowViews.albumImage.getContext()).load(latestImage.getUrlHinh())
+            Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), numberOfImages-1);
+            Glide.with(currentContext).load(latestImage.getUrlHinh())
                     .placeholder(R.drawable.loading)
                     .error(R.drawable.error)
                     .into(thisRowViews.albumImage);
         }
 
+        currentRow.setId(position);
         //Return the Row for display
         return currentRow;
     }

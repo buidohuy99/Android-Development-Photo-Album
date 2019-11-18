@@ -5,7 +5,7 @@
         android:id="@+id/action_favor"
         android:icon="@drawable/ic_star_border_black_24dp"
         android:orderInCategory="140"
-        android:title="Share"
+        android:title="Favourite"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_share"
@@ -21,7 +21,7 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_edit"
         android:orderInCategory="180"
         android:title="Edit"
         app:showAsAction="never" />

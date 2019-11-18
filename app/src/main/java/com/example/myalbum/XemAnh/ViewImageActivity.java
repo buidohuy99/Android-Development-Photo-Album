@@ -1,9 +1,10 @@
 package com.example.myalbum.XemAnh;
 
+import android.app.Activity;
 import android.app.ActionBar;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,60 +12,41 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
+import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
 import java.util.List;
 
-public class ViewImageActivity extends FragmentActivity {
-
-    public static final String BUNDLE ="BackAlbum";
-
+public class ViewImageActivity extends Activity {
     private int IDAlbum;
     private int IDImage;
     private List<Image> listImage;
-    public void getData() {
+    private ViewPager viewPager;
+    private CustomAdapterViewPager customAdapterViewPager;
+    private LinearLayout thumbnailsContainer;
+
+    private void getData()
+    {
         //Get data from HomeActivity
         Intent callingIntent = getIntent();
         Bundle myBundle = callingIntent.getExtras();
+
         IDAlbum = myBundle.getInt("IDAlbum");
         IDImage = myBundle.getInt("IDImage");
         listImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
-
     }
-    private ArrayList<Integer> images;
-    private BitmapFactory.Options options;
-    private ViewPager viewPager;
-    private FragmentStatePagerAdapter adapter;
-    private LinearLayout thumbnailsContainer;
-    ActionBar actionBar;
 
-    private final static int[] largeImages= new int[]{
-            R.drawable.large_01,
-            R.drawable.large_02,
-            R.drawable.large_03,
-            R.drawable.large_04,
-            R.drawable.large_05,
-            R.drawable.large_06
-    };
-
-//    Integer[] thumnails = {
-//            R.drawable.small_01,
-//            R.drawable.small_02,
-//            R.drawable.small_03,
-//            R.drawable.small_04,
-//            R.drawable.small_05,
-//            R.drawable.small_06
-//    };
     @Override
     public boolean onNavigateUp(){
         finish();
@@ -74,19 +56,23 @@ public class ViewImageActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        viewPager = (ViewPager)findViewById(R.id.view_page);
         getData();
-        actionBar= getActionBar();
-        actionBar.setHomeButtonEnabled(true);
+        //actionBar= getActionBar();
+        //actionBar.setHomeButtonEnabled(true);
 
-        images = new ArrayList<>();
+        getData();
 
-        viewPager =(ViewPager)findViewById(R.id.ViewPager);
+        Album album =DatabaseHandler.getInstance(this).getAlbum(IDAlbum);
+        this.setTitle(album.getAlbumName());
+
+        customAdapterViewPager = new CustomAdapterViewPager(this,listImage);
+
+        viewPager.setAdapter(customAdapterViewPager);
+        viewPager.setCurrentItem(IDImage);
+
         thumbnailsContainer = (LinearLayout) findViewById(R.id.container);
-
-        setImagesData();
-
-        adapter = new ViewPagerAdapter (getSupportFragmentManager(),images);
-        viewPager.setAdapter(adapter);
 
         inflateThumbnails();
 
@@ -102,7 +88,7 @@ public class ViewImageActivity extends FragmentActivity {
     public boolean onOptionsItemSelected(MenuItem menuItem)
     {
         int id = menuItem.getItemId();
-        if (id == R.id.action_settings)
+        if (id == R.id.action_edit)
         {
             Intent intent =new Intent(this, PhotoEditorHandler.class);
             startActivity(intent);
@@ -113,23 +99,17 @@ public class ViewImageActivity extends FragmentActivity {
     }
 
     private void inflateThumbnails() {
-        for (int i = 0; i < images.size(); i++) {
+        for (int i = 0; i < listImage.size(); i++) {
             View imageLayout = getLayoutInflater().inflate(R.layout.item_thumbnails, null);
-            ImageView imageView = (ImageView) imageLayout.findViewById(R.id.icon);
-            imageView.setOnClickListener(onChagePageClickListener(i));
-            options = new BitmapFactory.Options();
-            options.inSampleSize = 3;
-            options.inDither = false;
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), images.get(i), options );
-            imageView.setImageBitmap(bitmap);
-            //set to image view
-            imageView.setImageBitmap(bitmap);
-            //add imageview
+            ImageView imageView = (ImageView) imageLayout.findViewById(R.id.thumbnail);
+            imageView.setOnClickListener(onChangePageClickListener(i));
+
+            Glide.with(this).load(listImage.get(i).getUrlHinh()).placeholder(R.drawable.loading).error(R.drawable.error).into(imageView);
             thumbnailsContainer.addView(imageLayout);
         }
     }
 
-    private View.OnClickListener onChagePageClickListener(final int i) {
+    private View.OnClickListener onChangePageClickListener(final int i) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -137,12 +117,4 @@ public class ViewImageActivity extends FragmentActivity {
             }
         };
     }
-
-    private void setImagesData() {
-        for(int i=0;i<largeImages.length;i++)
-        {
-            images.add(largeImages[i]);
-        }
-    }
-
 }

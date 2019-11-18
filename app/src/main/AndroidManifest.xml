@@ -33,7 +33,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-
         <activity android:name=".AlbumsActivity.AlbumActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">

@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
+import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
@@ -68,6 +69,9 @@ public class ViewImageActivity extends Activity {
 
         getData();
 
+        Album album =DatabaseHandler.getInstance(this).getAlbum(IDAlbum);
+        this.setTitle(album.getAlbumName());
+
         customAdapterViewPager = new CustomAdapterViewPager(this,listImage);
 
         viewPager.setAdapter(customAdapterViewPager);
@@ -106,12 +110,12 @@ public class ViewImageActivity extends Activity {
             imageView.setOnClickListener(onChangePageClickListener(i));
 
 
-            Image imgtemp = DatabaseHandler.getInstance(this).getImageAt(IDAlbum,i);
-
-            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imgtemp.getUrlHinh()),64,64);
-
+//            Image imgtemp = DatabaseHandler.getInstance(this).getImageAt(IDAlbum,i);
+//
+//            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imgtemp.getUrlHinh()),64,64);
+            Glide.with(this).load(listImage.get(i).getUrlHinh()).placeholder(R.drawable.loading).error(R.drawable.error).into(imageView);
             //set to image view
-            imageView.setImageBitmap(bitmap);
+            //imageView.setImageBitmap(bitmap);
             //add imageview
             thumbnailsContainer.addView(imageLayout);
         }

@@ -5,9 +5,11 @@ import android.app.ActionBar;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
@@ -25,6 +28,7 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 public class ViewImageActivity extends Activity {
@@ -34,7 +38,7 @@ public class ViewImageActivity extends Activity {
     private ViewPager viewPager;
     private CustomAdapterViewPager customAdapterViewPager;
     private LinearLayout thumbnailsContainer;
-    //private BitmapFactory.Options options;
+    private BitmapFactory.Options options;
 
     private void getData()
     {
@@ -59,8 +63,8 @@ public class ViewImageActivity extends Activity {
 
         viewPager = (ViewPager)findViewById(R.id.view_page);
         getData();
-        actionBar= getActionBar();
-        actionBar.setHomeButtonEnabled(true);
+        //actionBar= getActionBar();
+        //actionBar.setHomeButtonEnabled(true);
 
         getData();
 
@@ -85,7 +89,7 @@ public class ViewImageActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem menuItem)
     {
         int id = menuItem.getItemId();
-        if (id == R.id.action_settings)
+        if (id == R.id.action_edit)
         {
             Intent intent =new Intent(this, PhotoEditorHandler.class);
             startActivity(intent);
@@ -101,9 +105,11 @@ public class ViewImageActivity extends Activity {
             ImageView imageView = (ImageView) imageLayout.findViewById(R.id.thumbnail);
             imageView.setOnClickListener(onChangePageClickListener(i));
 
-            String filepath = listImage.get(i).getUrlHinh();
 
-            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(filepath),64,64);
+            Image imgtemp = DatabaseHandler.getInstance(this).getImageAt(IDAlbum,i);
+
+            Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(imgtemp.getUrlHinh()),64,64);
+
             //set to image view
             imageView.setImageBitmap(bitmap);
             //add imageview
@@ -118,11 +124,5 @@ public class ViewImageActivity extends Activity {
                 viewPager.setCurrentItem(i);
             }
         };
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main,menu);
-        return true;
     }
 }

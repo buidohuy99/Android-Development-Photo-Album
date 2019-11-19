@@ -30,6 +30,7 @@ import com.bumptech.glide.Glide;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.example.myalbum.XemAnh.ViewImageActivity;
 
 import java.util.ArrayList;
 
@@ -57,6 +58,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
     PhotoEditorView mPhotoEditorView;
     PhotoEditor photoEditor;
+    PhotoEditor.OnSaveListener saveListener;
 
 
     HorizontalScrollView editBar;
@@ -67,6 +69,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     ImageButton undoButton;
     ImageButton redoButton;
     ImageButton saveButton;
+    ImageButton cancelButton;
 
     ImageButton addEmojiButton;
     ImageButton addTextButton;
@@ -80,9 +83,22 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     BrushFragment brushFragment;
     AddTextFragment textFragment;
 
+    void findLayoutView()
+    {
+        setContentView(R.layout.editimage_layout);
+        closeFragmentButton = findViewById(R.id.CloseFragmentButton);
+        editBar = findViewById(R.id.editBar);
+        navigateBar = findViewById(R.id.navigateBar);
+        fragmentWindow = findViewById(R.id.FragmentWindow);
+        undoButton = findViewById(R.id.UndoButton);
+        redoButton = findViewById(R.id.RedoButton);
+        saveButton = findViewById(R.id.buttonSave);
+        cancelButton = findViewById(R.id.buttonCancel);
 
-
-
+        addEmojiButton = findViewById(R.id.addEmojiButton);
+        addBrushButton = findViewById(R.id.addBrushButton);
+        addTextButton = findViewById(R.id.addTextButton);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,11 +110,12 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         IDImage = myBundle.getInt("IDImage");
         context = this;
 
-        findLayoutView();
 
         image = DatabaseHandler.getInstance(PhotoEditorHandler.this).getImageAt(IDAlbum,IDImage);
 
-        setContentView(R.layout.editimage_layout);
+
+
+        findLayoutView();
         mPhotoEditorView = (PhotoEditorView) findViewById(R.id.photoEditorView);
 
         Glide.with(this).load(image.getUrlHinh())
@@ -150,6 +167,20 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
             }
         });
+
+
+
+        saveListener = new PhotoEditor.OnSaveListener() {
+            @Override
+            public void onSuccess(@NonNull String imagePath) {
+                Toast.makeText(context, "Image Saved Successfully", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Toast.makeText(context, "Failed to save Image", Toast.LENGTH_LONG).show();
+            }
+        };
 
         brushInfo = new BrushInfo();
 
@@ -228,21 +259,14 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
-                checkWritePermission();
+                saveFile();
+                finish();
+                //photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
 
-                photoEditor.saveAsFile(image.getUrlHinh(), new PhotoEditor.OnSaveListener() {
-                    @Override
-                    public void onSuccess(@NonNull String imagePath) {
-                        Toast.makeText(context, "Image Saved Successfully", Toast.LENGTH_LONG).show();
-                    }
 
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Toast.makeText(context, "Failed to save Image", Toast.LENGTH_LONG).show();
-                    }
-                });
             }
         });
+
     }
 
     @Override
@@ -303,33 +327,44 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
     }
 
-    void checkWritePermission()
+    void saveFile()
     {
-        // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    WRITE_PERMISSION);
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(context, "app need write external storage permmison", Toast.LENGTH_LONG).show();
+            } else {
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        110);
+
+            }
+        } else {
+            // Permission has already been granted
+            photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
         }
+
+
+
     }
 
-
-    void findLayoutView()
+    void returnToImageActivity()
     {
-        closeFragmentButton = findViewById(R.id.CloseFragmentButton);
-        editBar = findViewById(R.id.editBar);
-        navigateBar = findViewById(R.id.navigateBar);
-        fragmentWindow = findViewById(R.id.FragmentWindow);
-        undoButton = findViewById(R.id.UndoButton);
-        redoButton = findViewById(R.id.RedoButton);
-        saveButton = findViewById(R.id.buttonSave);
+        Intent intent = new Intent(this, ViewImageActivity.class);
 
-        addEmojiButton = findViewById(R.id.addEmojiButton);
-        addBrushButton = findViewById(R.id.addBrushButton);
-        addTextButton = findViewById(R.id.addTextButton);
+        Bundle mBundle = new Bundle();
+        mBundle.putInt("IDAlbum", IDAlbum);
+        mBundle.putInt("IDImage", IDImage);
+        intent.putExtras(mBundle);
+        startActivity(intent);
     }
+
+
 
 }

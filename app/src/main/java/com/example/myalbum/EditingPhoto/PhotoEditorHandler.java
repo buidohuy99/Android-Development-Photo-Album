@@ -41,7 +41,7 @@ class BrushInfo
 
 public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
-    static final int WRITE_PERMISSION = 101;
+    static final int WRITE_PERMISSION = 110;
 
     Context context;
     int IDAlbum;
@@ -75,6 +75,25 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
     AddTextFragment textFragment;
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case WRITE_PERMISSION: {
+                finish();
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
+                    finish();
+                } else {
+                    Toast.makeText(context, "Permission not granted", Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+        }
+    }
 
     @Override
     public boolean onNavigateUp(){
@@ -259,7 +278,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             @Override
             public void onClick(final View view) {
                 saveFile();
-                finish();
+                //finish();
                 //photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
             }
         });
@@ -339,19 +358,15 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
             // Permission is not granted
             // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                Toast.makeText(context, "app need write external storage permmison", Toast.LENGTH_LONG).show();
-            } else {
+
                 // No explanation needed; request the permission
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_CONTACTS},
-                        110);
-
-            }
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        WRITE_PERMISSION);
         } else {
             // Permission has already been granted
             photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
+            finish();
         }
 
 

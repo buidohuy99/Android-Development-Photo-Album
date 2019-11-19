@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 
@@ -49,7 +50,12 @@ public class CustomAdapterViewPager extends PagerAdapter {
         String path;
         path = imgList.get(position).getUrlHinh();
 
-        Glide.with(context).load(path).placeholder(R.drawable.loading).error(R.drawable.error).into(imgDisplay);
+        Glide.with(context).load(path)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.error)
+                .into(imgDisplay);
         container.addView(viewLayout);
 
         return viewLayout;

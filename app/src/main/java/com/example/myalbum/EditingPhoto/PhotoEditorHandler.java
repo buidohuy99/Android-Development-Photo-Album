@@ -3,8 +3,6 @@ package com.example.myalbum.EditingPhoto;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,6 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.bumptech.glide.Glide;
 import com.example.myalbum.DAO.DatabaseHandler;
@@ -39,7 +40,7 @@ class BrushInfo
     int color = R.color.black;
 }
 
-public class PhotoEditorHandler extends Activity implements MainCallbacks{
+public class PhotoEditorHandler extends FragmentActivity implements MainCallbacks{
 
     static final int WRITE_PERMISSION = 110;
 
@@ -205,7 +206,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         closeFragmentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ft = getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.FragmentHolder));
+                ft = getSupportFragmentManager().beginTransaction().remove(getSupportFragmentManager().findFragmentById(R.id.FragmentHolder));
                 ft.commit();
                 view.setVisibility(View.INVISIBLE);
                 editBar.setVisibility(View.VISIBLE);
@@ -228,7 +229,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             @SuppressLint("ResourceAsColor")
             @Override
             public void onClick(View view) {
-                ft = getFragmentManager().beginTransaction();
+                ft = getSupportFragmentManager().beginTransaction();
                 brushFragment = BrushFragment.newInstance(brushInfo.size, brushInfo.opacity, brushInfo.color);
 
                 photoEditor.setBrushSize(brushInfo.size);
@@ -330,7 +331,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         {
             photoEditor.setBrushDrawingMode(false);
         }
-        ft = getFragmentManager().beginTransaction();
+        ft = getSupportFragmentManager().beginTransaction();
 
         if (fragment != textFragment)
         {

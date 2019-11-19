@@ -116,7 +116,6 @@ public class AlbumActivity extends Activity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(), String.valueOf(list.get(i).getPos()) + "+ " +String.valueOf(list.get(i).getIdAlbum()), Toast.LENGTH_LONG).show();
                 Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
 
                 Bundle myData = new Bundle();
@@ -137,7 +136,7 @@ public class AlbumActivity extends Activity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(), String.valueOf(position), Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Image deleted", Toast.LENGTH_LONG).show();
 
                                 removeImage( position);
 

@@ -1,32 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="140dp"
-    android:padding="20dp"
+    android:layout_height="match_parent"
+    android:padding="2dp"
     android:background="@drawable/black_border">
     <ImageView
         android:id="@+id/albumImage"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginEnd="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"
         />
-    <TextView
-        android:id="@+id/albumName"
-        android:layout_height="100dp"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_marginRight="20dp"
-        android:layout_marginEnd="20dp"
-        android:textAlignment="center"
-        android:gravity="center_vertical"
-        android:text="placeHolder"/>
-    <TextView
-        android:id="@+id/imagesNumber"
-        android:layout_width="70dp"
-        android:layout_height="100dp"
-        android:textAlignment="center"
-        android:gravity="center_vertical"
-        android:text="0"/>
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:background="#73000000">
+        <TextView
+            android:id="@+id/albumName"
+            android:layout_height="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:gravity="center_vertical"
+            android:text="placeHolder"
+            android:maxLines="1"
+            android:ellipsize="end"
+            />
+        <TextView
+            android:id="@+id/imagesNumber"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:textAlignment="center"
+            android:gravity="center_vertical"
+            android:textColor="@color/white"
+            android:text="0"/>
+    </LinearLayout>
+</FrameLayout>

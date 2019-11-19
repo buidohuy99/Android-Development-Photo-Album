@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.myalbum.R;
 import com.example.myalbum.utilities.UtilityGlobals;
 
 public class AddAlbumDialog {
@@ -27,7 +28,8 @@ public class AddAlbumDialog {
     public void show() {
         if(dialog == null) {
             //Make View
-            DialogView = new EditText(activity);
+            DialogView = activity.getLayoutInflater().inflate(R.layout.addalbumdialog_layout, null);
+            final EditText albumNameField = DialogView.findViewById(R.id.albumNameField);
             //Make dialog
             dialog = new AlertDialog.Builder(activity)
                     .setTitle(title)
@@ -36,20 +38,20 @@ public class AddAlbumDialog {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Bundle bd = new Bundle();
-                            bd.putString("albumName", ((EditText) DialogView).getText().toString());
-                            ((EditText) DialogView).setText("");
+                            bd.putString("albumName", albumNameField.getText().toString());
+                            albumNameField.setText("");
                             activity.onMessageToActivity(UtilityGlobals.ADD_ALBUM_DIALOG, bd);
                         }
                     })
                     .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            ((EditText) DialogView).setText("");
+                            albumNameField.setText("");
                             dialog.dismiss();
                         }
                     })
                     .create();
         }
-       dialog.show();
+        dialog.show();
     }
 }

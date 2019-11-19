@@ -145,22 +145,24 @@ public class AlbumActivity extends Activity {
                         .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(getApplicationContext(), list.get(position).getUrlHinh(), Toast.LENGTH_LONG).show();
+
                                 dialog.dismiss();
                             }
                         })
-                        .setNegativeButton("Move", new DialogInterface.OnClickListener() {
-                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                IDAlbumtoMove = position;
-                                Intent newActivity = new Intent(AlbumActivity.this, MoveCopyImageActivity.class);
-
-                                Bundle myData = new Bundle();
-
-                                newActivity.putExtras(myData);
-                                startActivityForResult(newActivity, MOVE_IMAGE);
-                            }
-                        })
+//                        .setNegativeButton("Move", new DialogInterface.OnClickListener() {
+//                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//                            @Override
+//                            public void onClick(DialogInterface dialogInterface, int i) {
+//                                IDAlbumtoMove = position;
+//                                Intent newActivity = new Intent(AlbumActivity.this, MoveCopyImageActivity.class);
+//
+//                                Bundle myData = new Bundle();
+//
+//                                newActivity.putExtras(myData);
+//                                startActivityForResult(newActivity, MOVE_IMAGE);
+//                            }
+//                        })
                         .create();
                 DeleteDialog.show();
                 return true;
@@ -197,7 +199,7 @@ public class AlbumActivity extends Activity {
     private void removeImage( int position) {
         list.remove(position);
         adapter.notifyDataSetChanged();
-        new VerySlowTask().execute(position);
+        new DeleteImageTask().execute(position);
     }
 
     @Override
@@ -209,7 +211,16 @@ public class AlbumActivity extends Activity {
     protected void onResume()
     {
         super.onResume();
+        List<Image> tempListImage =  DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
+        if(list.size() != tempListImage.size())
+        {
+            list.clear();
+            for(int i = 0; i< tempListImage.size(); i++)
+                list.add(tempListImage.get(i));
+        }
         adapter.notifyDataSetChanged();
+        Toast.makeText(getApplicationContext(), "ON RESUME", Toast.LENGTH_LONG).show();
+
 //        adapter.notifyDataSetChanged();
     }
     @Override
@@ -266,21 +277,21 @@ public class AlbumActivity extends Activity {
                 DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
             }
         }
-        else
-        {
-            if(resultCode == RESULT_OK && requestCode == MOVE_IMAGE) {
-                Bundle myBundle = data.getBundleExtra("Result");
-                int idalbum = myBundle.getInt("newIDAlbum");
-                int idimage = IDAlbumtoMove;
-
-                if (idalbum != IDAlbum)
-                {
-                    list.remove(idimage);
-                    new MoveImage().execute(idalbum, idimage);
-                }
-
-            }
-        }
+//        else
+//        {
+//            if(resultCode == RESULT_OK && requestCode == MOVE_IMAGE) {
+//                Bundle myBundle = data.getBundleExtra("Result");
+//                int idalbum = myBundle.getInt("newIDAlbum");
+//                int idimage = IDAlbumtoMove;
+//
+//                if (idalbum != IDAlbum)
+//                {
+//                    list.remove(idimage);
+//                    new MoveImage().execute(idalbum, idimage);
+//                }
+//
+//            }
+//        }
 
     }
 
@@ -306,7 +317,7 @@ public class AlbumActivity extends Activity {
     }
 
 
-    private class VerySlowTask extends AsyncTask<Integer, Void, Void> {
+    private class DeleteImageTask extends AsyncTask<Integer, Void, Void> {
         private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
 
         String waitMsg = "Wait\nProcess is being done... ";
@@ -339,45 +350,45 @@ public class AlbumActivity extends Activity {
 
     }
 
-    private class MoveImage extends AsyncTask<Integer, Void, Void> {
-        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
-
-        String waitMsg = "Wait\nProcess is being done... ";
-        protected void onPreExecute()
-        {
-            this.dialog.setMessage(waitMsg);
-            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
-            this.dialog.show();
-        }
-
-        @Override
-        protected Void doInBackground(Integer... integers) {
-            Integer numberOfImages = DatabaseHandler.getInstance(AlbumActivity.this).getNumberOfImages(integers[0]);
-
-            Image image = DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum,integers[1]);
-            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, integers[1]);
-
-            for(int i=integers[1]; i<list.size(); i++)
-            {
-                DatabaseHandler.getInstance(AlbumActivity.this).updateIDImage(list.get(i),i);
-                list.get(i).setPos(i);
-            }
-
-            DatabaseHandler.getInstance(AlbumActivity.this).addImage(image.getUrlHinh(),numberOfImages,integers[0]);
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... value) {
-            adapter.notifyDataSetChanged();
-        }
-        protected void onPostExecute(final Void unused) {
-            if (this.dialog.isShowing()) {
-                this.dialog.dismiss();
-            }
-
-        }
-    }
+//    private class MoveImage extends AsyncTask<Integer, Void, Void> {
+//        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
+//
+//        String waitMsg = "Wait\nProcess is being done... ";
+//        protected void onPreExecute()
+//        {
+//            this.dialog.setMessage(waitMsg);
+//            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+//            this.dialog.show();
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Integer... integers) {
+//            Integer numberOfImages = DatabaseHandler.getInstance(AlbumActivity.this).getNumberOfImages(integers[0]);
+//
+//            Image image = DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum,integers[1]);
+//            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, integers[1]);
+//
+//            for(int i=integers[1]; i<list.size(); i++)
+//            {
+//                DatabaseHandler.getInstance(AlbumActivity.this).updateIDImage(list.get(i),i);
+//                list.get(i).setPos(i);
+//            }
+//
+//            DatabaseHandler.getInstance(AlbumActivity.this).addImage(image.getUrlHinh(),numberOfImages,integers[0]);
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onProgressUpdate(Void... value) {
+//            adapter.notifyDataSetChanged();
+//        }
+//        protected void onPostExecute(final Void unused) {
+//            if (this.dialog.isShowing()) {
+//                this.dialog.dismiss();
+//            }
+//
+//        }
+//    }
 
     private class UploadImage extends AsyncTask<List<Uri>,Void,Void>{
         private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);

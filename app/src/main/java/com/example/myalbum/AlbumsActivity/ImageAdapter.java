@@ -72,6 +72,8 @@ public class ImageAdapter extends BaseAdapter {
 
         Glide.with(context).load(picture.get(i).getUrlHinh())
                 .placeholder(R.drawable.loading)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .error(R.drawable.error)
                 .into(imageView);
 

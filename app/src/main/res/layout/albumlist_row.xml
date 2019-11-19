@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:padding="2dp"
     android:background="@drawable/black_border">
-    <ImageView
+    <com.example.myalbum.utilities.SquareImageView
         android:id="@+id/albumImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

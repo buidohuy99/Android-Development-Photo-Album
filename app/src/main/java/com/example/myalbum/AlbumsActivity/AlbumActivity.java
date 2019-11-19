@@ -62,6 +62,26 @@ public class AlbumActivity extends Activity {
     int IDAlbum;
     int IDAlbumtoMove;
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case PICK_IMAGE: {
+
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Intent gallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    gallery.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    startActivityForResult(gallery, PICK_IMAGE);
+                } else {
+                    //do nothing
+                }
+                return;
+            }
+        }
+    }
+
+
     public void init() {
         gridView = findViewById(R.id.gridview);
         button = findViewById(R.id.add);
@@ -145,7 +165,6 @@ public class AlbumActivity extends Activity {
                         .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(), list.get(position).getUrlHinh(), Toast.LENGTH_LONG).show();
 
                                 dialog.dismiss();
                             }
@@ -219,7 +238,6 @@ public class AlbumActivity extends Activity {
                 list.add(tempListImage.get(i));
         }
         adapter.notifyDataSetChanged();
-        Toast.makeText(getApplicationContext(), "ON RESUME", Toast.LENGTH_LONG).show();
 
 //        adapter.notifyDataSetChanged();
     }

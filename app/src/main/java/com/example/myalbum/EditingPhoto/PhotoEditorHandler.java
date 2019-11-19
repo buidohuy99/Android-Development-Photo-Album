@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
@@ -137,6 +138,8 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         mPhotoEditorView = (PhotoEditorView) findViewById(R.id.photoEditorView);
 
         Glide.with(this).load(image.getUrlHinh())
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
                 .placeholder(R.drawable.loading)
                 .error(R.drawable.error)
                 .into(mPhotoEditorView.getSource());
@@ -366,6 +369,8 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
         } else {
             // Permission has already been granted
             photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
+            Intent returnIntent = new Intent();
+            setResult(Activity.RESULT_OK,returnIntent);
             finish();
         }
 

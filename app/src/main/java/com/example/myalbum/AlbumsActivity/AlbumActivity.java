@@ -137,7 +137,6 @@ public class AlbumActivity extends Activity {
                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(), String.valueOf(position), Toast.LENGTH_LONG).show();
 
                                 removeImage( position);
 
@@ -146,6 +145,8 @@ public class AlbumActivity extends Activity {
                         .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                Toast.makeText(getApplicationContext(), list.get(position).getUrlHinh(), Toast.LENGTH_LONG).show();
+
                                 dialog.dismiss();
                             }
                         })

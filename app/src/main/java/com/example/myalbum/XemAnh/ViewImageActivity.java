@@ -23,6 +23,7 @@ import androidx.annotation.RequiresApi;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
@@ -44,7 +45,9 @@ public class ViewImageActivity extends Activity {
     private int IDAlbumtoMove;
     private static final int ADD_IMAGE_TO_ALBUM = 90;
     private static final int MOVE_IMGAE_TO_ALBUM = 100;
+    private static final int EDIT_IMAGE= 101;
 
+    int CurrentImage;
 
 
     private void getData()
@@ -90,6 +93,27 @@ public class ViewImageActivity extends Activity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+//
+//        List<Image> newImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
+//
+//        listImage.clear();
+//        for(int i = 0; i< newImage.size();i++)
+//        {
+//            newImage.add(newImage.get(i));
+//        }
+//        viewPager.setAdapter(null);
+//        customAdapterViewPager.notifyDataSetChanged();
+//        viewPager.setAdapter(customAdapterViewPager);
+//        thumbnailsContainer.removeAllViews();
+//        inflateThumbnails();
+
+
+
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main,menu);
         return true;
@@ -99,6 +123,7 @@ public class ViewImageActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
         if (id == R.id.action_edit) {
+            CurrentImage = viewPager.getCurrentItem();
             int temp = viewPager.getCurrentItem();
             Toast.makeText(getApplicationContext(), String.valueOf(temp) + "+ " + String.valueOf(IDAlbum), Toast.LENGTH_LONG).show();
 
@@ -107,7 +132,7 @@ public class ViewImageActivity extends Activity {
             myData.putInt("IDAlbum", IDAlbum);
             myData.putInt("IDImage", temp);
             intent.putExtras(myData);
-            startActivity(intent);
+            startActivityForResult(intent, EDIT_IMAGE);
             return true;
         }
         if (id == R.id.action_addtoalbum) {
@@ -153,7 +178,11 @@ public class ViewImageActivity extends Activity {
             ImageView imageView = (ImageView) imageLayout.findViewById(R.id.thumbnail);
             imageView.setOnClickListener(onChangePageClickListener(i));
 
-            Glide.with(this).load(listImage.get(i).getUrlHinh()).placeholder(R.drawable.loading).error(R.drawable.error).into(imageView);
+            Glide.with(this).load(listImage.get(i).getUrlHinh())
+                    .placeholder(R.drawable.loading)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .error(R.drawable.error).into(imageView);
             thumbnailsContainer.addView(imageLayout);
         }
     }
@@ -200,6 +229,22 @@ public class ViewImageActivity extends Activity {
             {
                 new moveImageToAlbum().execute(idalbum, idimage);
             }
+        }
+
+        if (resultCode == RESULT_OK && requestCode == EDIT_IMAGE) {
+//            List<Image> newImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
+////            listImage.clear();
+////            for(int i = 0; i< newImage.size();i++)
+////            {
+////                newImage.add(newImage.get(i));
+////            }
+
+            viewPager.setAdapter(null);
+            customAdapterViewPager.notifyDataSetChanged();
+            viewPager.setAdapter(customAdapterViewPager);
+            viewPager.setCurrentItem(CurrentImage);
+            thumbnailsContainer.removeAllViews();
+            inflateThumbnails();
         }
 
     }

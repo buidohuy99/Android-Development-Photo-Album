@@ -19,6 +19,7 @@ import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.example.myalbum.utilities.SquareImageView;
 
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class AlbumsAdapter extends BaseAdapter {
 
     //Create a wrapper for holding all Views inside an Album Row
     class AlbumRowViewsHolder {
-        ImageView albumImage;
+        SquareImageView albumImage;
         TextView albumName;
         TextView imagesNumber;
     }
@@ -87,15 +88,6 @@ public class AlbumsAdapter extends BaseAdapter {
 
             //Associate the row with the View Holder object, containing Views inside it
             currentRow.setTag(thisRowViews);
-            thisRowViews.albumImage.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    ViewGroup.LayoutParams params = thisRowViews.albumImage.getLayoutParams();
-                    params.height = 300;
-                    thisRowViews.albumImage.setLayoutParams(params);
-                    thisRowViews.albumImage.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                }
-            });
         }else {
             //If there is an existing view, set currentRow to it
             //and get the Views inside the row to change contents

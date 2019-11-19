@@ -125,7 +125,6 @@ public class ViewImageActivity extends Activity {
         if (id == R.id.action_edit) {
             CurrentImage = viewPager.getCurrentItem();
             int temp = viewPager.getCurrentItem();
-            Toast.makeText(getApplicationContext(), String.valueOf(temp) + "+ " + String.valueOf(IDAlbum), Toast.LENGTH_LONG).show();
 
             Intent intent = new Intent(this, PhotoEditorHandler.class);
             Bundle myData = new Bundle();
@@ -147,7 +146,6 @@ public class ViewImageActivity extends Activity {
         if (id == R.id.action_delete)
         {
             int pos = viewPager.getCurrentItem();
-            Toast.makeText(getApplicationContext(), String.valueOf(pos) + "+ " + String.valueOf(IDAlbum), Toast.LENGTH_LONG).show();
             viewPager.setAdapter(null);
             listImage.remove(pos);
             customAdapterViewPager.notifyDataSetChanged();
@@ -192,7 +190,6 @@ public class ViewImageActivity extends Activity {
             @Override
             public void onClick(View v) {
                 viewPager.setCurrentItem(i);
-                Toast.makeText(getApplicationContext(), String.valueOf(viewPager.getCurrentItem())+"+" + String.valueOf(listImage.get(i).getPos()) + "+ " +String.valueOf(IDAlbum ), Toast.LENGTH_LONG).show();
 
 
             }
@@ -271,7 +268,6 @@ public class ViewImageActivity extends Activity {
         @Override
         protected void onProgressUpdate(Void... value) {
             super.onProgressUpdate(value);
-            Toast.makeText(getApplicationContext(), "Thêm thành công", Toast.LENGTH_LONG).show();
         }
         protected void onPostExecute(final Void unused) {
             if (this.dialog.isShowing()) {
@@ -310,7 +306,6 @@ public class ViewImageActivity extends Activity {
         @Override
         protected void onProgressUpdate(Integer... value) {
             super.onProgressUpdate(value);
-            Toast.makeText(getApplicationContext(), "Xóa thành công"  , Toast.LENGTH_LONG).show();
         }
         protected void onPostExecute(final Void unused) {
             if (this.dialog.isShowing()) {

@@ -1,6 +1,5 @@
 package com.example.myalbum.EditingPhoto;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -22,6 +21,7 @@ import android.widget.SeekBar;
 
 import androidx.annotation.RequiresApi;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.Fragment;
 
 import com.divyanshu.colorseekbar.ColorSeekBar;
 import com.example.myalbum.R;

@@ -3,7 +3,6 @@ package com.example.myalbum.EditingPhoto;
 import android.content.Context;
 import android.os.Bundle;
 
-import android.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,8 @@ import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
 
 import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.R;

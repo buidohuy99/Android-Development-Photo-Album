@@ -1,17 +1,19 @@
 package com.example.myalbum.EditingPhoto;
 
-import android.app.DialogFragment;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 
 import com.divyanshu.colorseekbar.ColorSeekBar;
@@ -52,6 +54,8 @@ public class AddTextFragment extends DialogFragment implements FragmentCallbacks
         {
             context = getActivity();
             main = (PhotoEditorHandler) getActivity();
+            //getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+
         }
         catch (IllegalStateException e)
         {
@@ -92,7 +96,6 @@ public class AddTextFragment extends DialogFragment implements FragmentCallbacks
                 dismiss();
             }
         });
-
 
         return textLayout;
     }

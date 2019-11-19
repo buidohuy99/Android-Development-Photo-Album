@@ -4,22 +4,15 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
-
-import android.app.FragmentTransaction;
-import android.widget.LinearLayout;
 import android.widget.Toast;
-
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -82,6 +75,12 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
     AddTextFragment textFragment;
+
+    @Override
+    public boolean onNavigateUp(){
+        finish();
+        return true;
+    }
 
     void findLayoutView()
     {
@@ -262,8 +261,13 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
                 saveFile();
                 finish();
                 //photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
+            }
+        });
 
-
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
             }
         });
 

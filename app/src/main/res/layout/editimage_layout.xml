@@ -15,7 +15,7 @@
         android:layout_marginTop="5dp"
         android:layout_weight="1"
         android:contentDescription=""
-        android:scaleType="center"
+        android:scaleType="fitCenter"
         app:photo_src="@mipmap/ic_launcher">
 
     </ja.burhanrashid52.photoeditor.PhotoEditorView>

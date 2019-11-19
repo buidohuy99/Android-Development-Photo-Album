@@ -3,6 +3,7 @@
     package="com.example.myalbum">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -19,8 +20,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".EditingPhoto.PhotoEditorHandler">
+        <activity android:name=".EditingPhoto.PhotoEditorHandler"
+            android:label="Edit Image"
+            android:parentActivityName=".XemAnh.ViewImageActivity">
 
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.myalbum.XemAnh.ViewImageActivity" />
 
         </activity>
 

@@ -1,10 +1,16 @@
 package com.example.myalbum.EditingPhoto;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
@@ -12,11 +18,19 @@ import android.widget.ImageButton;
 
 import android.app.FragmentTransaction;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
+import com.example.myalbum.DAO.DatabaseHandler;
+import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.example.myalbum.XemAnh.ViewImageActivity;
 
 import java.util.ArrayList;
 
@@ -32,47 +46,83 @@ class BrushInfo
     int color = R.color.black;
 }
 
-class InputText
-{
-    String text="hello there";
-    int color = R.color.black;
-}
-
 public class PhotoEditorHandler extends Activity implements MainCallbacks{
+
+    static final int WRITE_PERMISSION = 101;
+
+    Context context;
+    int IDAlbum;
+    int IDImage;
+    Image image;
 
 
     PhotoEditorView mPhotoEditorView;
     PhotoEditor photoEditor;
-    ImageButton closeFragmentButton;
+    PhotoEditor.OnSaveListener saveListener;
+
 
     HorizontalScrollView editBar;
     ConstraintLayout navigateBar;
     ConstraintLayout fragmentWindow;
+
+    ImageButton closeFragmentButton;
+    ImageButton undoButton;
+    ImageButton redoButton;
+    ImageButton saveButton;
+    ImageButton cancelButton;
 
     ImageButton addEmojiButton;
     ImageButton addTextButton;
     ImageButton addBrushButton;
 
     BrushInfo brushInfo;
-    InputText inputText;
 
     FragmentTransaction ft;
-    Fragment currentFragment;
 
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
     AddTextFragment textFragment;
 
-    boolean isEditingText = false;
+    void findLayoutView()
+    {
+        setContentView(R.layout.editimage_layout);
+        closeFragmentButton = findViewById(R.id.CloseFragmentButton);
+        editBar = findViewById(R.id.editBar);
+        navigateBar = findViewById(R.id.navigateBar);
+        fragmentWindow = findViewById(R.id.FragmentWindow);
+        undoButton = findViewById(R.id.UndoButton);
+        redoButton = findViewById(R.id.RedoButton);
+        saveButton = findViewById(R.id.buttonSave);
+        cancelButton = findViewById(R.id.buttonCancel);
 
-
-
+        addEmojiButton = findViewById(R.id.addEmojiButton);
+        addBrushButton = findViewById(R.id.addBrushButton);
+        addTextButton = findViewById(R.id.addTextButton);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.editimage_layout);
+
+        Intent myCallerIntent = getIntent();
+        Bundle myBundle = myCallerIntent.getExtras();
+        IDAlbum = myBundle.getInt("IDAlbum");
+        IDImage = myBundle.getInt("IDImage");
+        context = this;
+
+
+        image = DatabaseHandler.getInstance(PhotoEditorHandler.this).getImageAt(IDAlbum,IDImage);
+
+
+
+        findLayoutView();
         mPhotoEditorView = (PhotoEditorView) findViewById(R.id.photoEditorView);
+
+        Glide.with(this).load(image.getUrlHinh())
+                .placeholder(R.drawable.loading)
+                .error(R.drawable.error)
+                .into(mPhotoEditorView.getSource());
+
         photoEditor = new PhotoEditor.Builder(this, mPhotoEditorView)
                 .setPinchTextScalable(true)
                 .build();
@@ -117,17 +167,22 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
             }
         });
-        closeFragmentButton = findViewById(R.id.CloseFragmentButton);
-        editBar = findViewById(R.id.editBar);
-        navigateBar = findViewById(R.id.navigateBar);
-        fragmentWindow = findViewById(R.id.FragmentWindow);
 
-        addEmojiButton = findViewById(R.id.addEmojiButton);
-        addBrushButton = findViewById(R.id.addBrushButton);
-        addTextButton = findViewById(R.id.addTextButton);
+
+
+        saveListener = new PhotoEditor.OnSaveListener() {
+            @Override
+            public void onSuccess(@NonNull String imagePath) {
+                Toast.makeText(context, "Image Saved Successfully", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Toast.makeText(context, "Failed to save Image", Toast.LENGTH_LONG).show();
+            }
+        };
 
         brushInfo = new BrushInfo();
-        inputText = new InputText();
 
         closeFragmentButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,6 +195,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
                 fragmentWindow.setVisibility(View.INVISIBLE);
             }
         });
+
 
         addEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,6 +242,31 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
             }
         });
 
+        undoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                photoEditor.undo();
+            }
+        });
+
+        redoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                photoEditor.redo();
+            }
+        });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+                saveFile();
+                finish();
+                //photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
+
+
+            }
+        });
+
     }
 
     @Override
@@ -214,9 +295,7 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
         if (sender == "TextFragment")
         {
-            inputText.text = bundle.getString("inputText");
-            inputText.color = bundle.getInt("Color");
-            isEditingText = false;
+            //do nothing
         }
 
     }
@@ -247,6 +326,45 @@ public class PhotoEditorHandler extends Activity implements MainCallbacks{
 
 
     }
+
+    void saveFile()
+    {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                Toast.makeText(context, "app need write external storage permmison", Toast.LENGTH_LONG).show();
+            } else {
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_CONTACTS},
+                        110);
+
+            }
+        } else {
+            // Permission has already been granted
+            photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
+        }
+
+
+
+    }
+
+    void returnToImageActivity()
+    {
+        Intent intent = new Intent(this, ViewImageActivity.class);
+
+        Bundle mBundle = new Bundle();
+        mBundle.putInt("IDAlbum", IDAlbum);
+        mBundle.putInt("IDImage", IDImage);
+        intent.putExtras(mBundle);
+        startActivity(intent);
+    }
+
 
 
 }

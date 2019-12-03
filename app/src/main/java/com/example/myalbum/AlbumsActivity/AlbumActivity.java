@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,13 +27,14 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import android.view.MenuItem;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
 import androidx.core.content.ContextCompat;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
+import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 import com.example.myalbum.XemAnh.ViewImageActivity;
 
@@ -169,19 +171,6 @@ public class AlbumActivity extends Activity {
                                 dialog.dismiss();
                             }
                         })
-//                        .setNegativeButton("Move", new DialogInterface.OnClickListener() {
-//                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-//                            @Override
-//                            public void onClick(DialogInterface dialogInterface, int i) {
-//                                IDAlbumtoMove = position;
-//                                Intent newActivity = new Intent(AlbumActivity.this, MoveCopyImageActivity.class);
-//
-//                                Bundle myData = new Bundle();
-//
-//                                newActivity.putExtras(myData);
-//                                startActivityForResult(newActivity, MOVE_IMAGE);
-//                            }
-//                        })
                         .create();
                 DeleteDialog.show();
                 return true;
@@ -213,7 +202,27 @@ public class AlbumActivity extends Activity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menualbum,menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        if (id == R.id.action_slideshow) {
 
+            Intent intent = new Intent(this, SlideshowActivity.class);
+            Bundle myData = new Bundle();
+            myData.putInt("IDAlbum", IDAlbum);
+            intent.putExtra("AlbumActivity", myData);
+            startActivity(intent);
+            return true;
+        }
+
+        return false;
+
+    }
 
     private void removeImage( int position) {
         list.remove(position);
@@ -314,25 +323,25 @@ public class AlbumActivity extends Activity {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (getParentActivityIntent() == null) {
-                    Log.i("SearchActivity",
-
-                            "Fix Manifest to indicate the parentActivityName");
-
-                    onBackPressed();
-                } else {
-                    NavUtils.navigateUpFromSameTask(this);
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
+//    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()) {
+//            case android.R.id.home:
+//                if (getParentActivityIntent() == null) {
+//                    Log.i("SearchActivity",
+//
+//                            "Fix Manifest to indicate the parentActivityName");
+//
+//                    onBackPressed();
+//                } else {
+//                    NavUtils.navigateUpFromSameTask(this);
+//                }
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
 
 
     private class DeleteImageTask extends AsyncTask<Integer, Void, Void> {

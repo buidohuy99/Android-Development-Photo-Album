@@ -95,19 +95,6 @@ public class ViewImageActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-//
-//        List<Image> newImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
-//
-//        listImage.clear();
-//        for(int i = 0; i< newImage.size();i++)
-//        {
-//            newImage.add(newImage.get(i));
-//        }
-//        viewPager.setAdapter(null);
-//        customAdapterViewPager.notifyDataSetChanged();
-//        viewPager.setAdapter(customAdapterViewPager);
-//        thumbnailsContainer.removeAllViews();
-//        inflateThumbnails();
 
 
 

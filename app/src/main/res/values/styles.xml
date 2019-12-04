@@ -3,10 +3,16 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.DeviceDefault.Light.DarkActionBar">
         <item name="android:actionBarStyle">@style/ActionBarStyle</item>
+        <item name="android:actionModeStyle">@style/ActionModeStyle</item>
     </style>
 
     <style name="ActionBarStyle" parent="@android:style/Widget.DeviceDefault.Light.ActionBar">
         <item name="android:background">#5a97ed</item>
+        <item name="android:titleTextStyle">@style/ActionBarTitleText</item>
+    </style>
+
+    <style name="ActionModeStyle" parent="@android:style/Widget.DeviceDefault.Light.ActionMode">
+        <item name="android:background">#37629e</item>
         <item name="android:titleTextStyle">@style/ActionBarTitleText</item>
     </style>
 

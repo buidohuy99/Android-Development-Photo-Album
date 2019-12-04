@@ -1,12 +1,15 @@
 package com.example.myalbum.AlbumsActivity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +36,12 @@ import java.util.ArrayList;
 import static com.example.myalbum.AlbumsActivity.AlbumActivity.ALBUM_TO;
 
 public class SearchAlbumActivity extends Activity {
+
+    //Activity states
+    private boolean isOnEdit = false;
+    public ActionMode actionmode;
+    private GridViewItemCallBack gridViewItemCallBack;
+
     //Page widgets
     private AutoCompleteTextView searchBar;
     private GridView albumList;
@@ -103,9 +112,9 @@ public class SearchAlbumActivity extends Activity {
         getActionBar().setHomeButtonEnabled(true);
 
         Intent received = getIntent();
-        allAlbums = (ArrayList<Album>) received.getSerializableExtra("Source");
+        allAlbums = received.getParcelableArrayListExtra("Source");
         hint = (ArrayList<String>) received.getSerializableExtra("AutoComplete");
-        renderAlbums = (ArrayList<Album>) received.getSerializableExtra("Render Info");
+        renderAlbums = received.getParcelableArrayListExtra("Render Info");
 
         //Bind
         searchBar = findViewById(R.id.searchBar);
@@ -178,23 +187,76 @@ public class SearchAlbumActivity extends Activity {
         return true;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (getParentActivityIntent() == null) {
-                    Log.i("SearchActivity",
+    public boolean onNavigateUp() {
+        finish();
+        return true;
+    }
 
-                            "Fix Manifest to indicate the parentActivityName");
+    private class GridViewItemCallBack implements ActionMode.Callback {
 
-                    onBackPressed();
-                } else {
-                    NavUtils.navigateUpFromSameTask(this);
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        private HomeActivity currentContext;
+        private AlertDialog DeleteDialog;
+        private ActionMode currentMode;
+
+        public GridViewItemCallBack(HomeActivity mainContext) {
+            currentContext = mainContext;
+            DeleteDialog = new AlertDialog.Builder(currentContext)
+                    .setTitle("Bạn muốn xóa các mục đã lựa chọn?\n")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            isOnEdit = false;
+                            //deleteSelected();
+                            currentMode.finish();
+                        }
+                    })
+                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create();
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if(item.getItemId() == R.id.action_delete_album){
+                DeleteDialog.show();
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            isOnEdit = false;
+            actionmode = null;
+            if(albumsAdapter != null) {
+                albumsAdapter.clearSelected();
+                albumsAdapter.notifyDataSetChanged();
+            }
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.editbar_album, menu);
+            currentMode = mode;
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if(albumsAdapter != null) {
+            albumsAdapter.notifyDataSetChanged();
         }
     }
 }

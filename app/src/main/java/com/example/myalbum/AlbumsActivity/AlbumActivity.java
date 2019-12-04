@@ -313,27 +313,11 @@ public class AlbumActivity extends Activity {
 
     }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (getParentActivityIntent() == null) {
-                    Log.i("SearchActivity",
-
-                            "Fix Manifest to indicate the parentActivityName");
-
-                    onBackPressed();
-                } else {
-                    NavUtils.navigateUpFromSameTask(this);
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
+    public boolean onNavigateUp() {
+        finish();
+        return true;
     }
-
 
     private class DeleteImageTask extends AsyncTask<Integer, Void, Void> {
         private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);

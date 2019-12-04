@@ -132,6 +132,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void deleteAlbums(int[] albumIDs) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String sqlDeleteAllAlbums = String.format(
+                "DELETE FROM %s " +
+                        "WHERE %s IN (%d) ", TABLE_ALBUM, ID_ALBUM, albumIDs);
+        db.execSQL(sqlDeleteAllAlbums);
+        String sqlDeleteAllImages = String.format(
+                "DELETE FROM %s " +
+                        "WHERE %s IN (%d) ", TABLE_IMAGE, ID_ALBUM, albumIDs);
+        db.execSQL(sqlDeleteAllImages);
+        db.close();
+    }
+
     public int getNumberOfAlbums() {
         SQLiteDatabase db = this.getReadableDatabase();
         String sql = String.format(

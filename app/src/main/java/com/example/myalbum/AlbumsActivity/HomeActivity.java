@@ -4,31 +4,22 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
+import android.view.ActionMode;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.GridView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.NavUtils;
-import androidx.core.view.ViewCompat;
 
 import com.example.myalbum.R;
 
@@ -47,14 +38,10 @@ import com.example.myalbum.DTOs.Album;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 //test
 import com.example.myalbum.DAO.DatabaseHandler;
-
-import org.w3c.dom.Text;
 //end test
 
 public class HomeActivity extends Activity implements ActivityCallBacks {
@@ -64,8 +51,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     //HomeActivity's Globals
     private final static int FIND_ALBUM_THREADCODE = 1;
     private final static int LOAD_ALL_ALBUM_THREADCODE = 2;
+    private final static int SET_SELECTED_THREADCODE = 3;
+
     public static final String ALBUM_TO ="Album";
 
+    //HomeActivity states
+    private boolean isOnEdit = false;
+    public ActionMode actionmode;
+    private GridViewItemCallBack gridViewItemCallBack;
 
     //Page widgets
     private AutoCompleteTextView searchBar;
@@ -148,12 +141,26 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         return result;
     }
 
-    private void bindFunctionalities(){
+    private void bindFunctionalities(final ArrayList<Integer> selectedAlbums){
         //Add adapters
         //For displaying all albums
         albumsAdapter = new AlbumsAdapter(this,
                 allAlbums,
                 R.layout.albumlist_row);
+        if(selectedAlbums != null) {
+            //Create thread for setting selected
+            Thread setSelectedThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    albumsAdapter.setSelected(selectedAlbums);
+                    Message msg = updateHandler.obtainMessage(SET_SELECTED_THREADCODE);
+                    updateHandler.sendMessage(msg);
+                }
+            });
+
+            loadingCir.setVisibility(View.VISIBLE);
+            setSelectedThread.run();
+        }
         albumList.setAdapter(albumsAdapter);
 
         //For autocomplete field
@@ -210,14 +217,20 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList_OnItemClick.register(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            if(isOnEdit){
+                albumsAdapter.toggleSelected((int) l);
+                albumsAdapter.notifyDataSetChanged();
+            }
+            else {
                 Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
 
                 Bundle myData = new Bundle();
-                myData.putString("nameAlbum", allAlbums.get((int)l).getAlbumName());
-                myData.putInt("IDAlbum", allAlbums.get((int)l).getId());
+                myData.putString("nameAlbum", allAlbums.get((int) l).getAlbumName());
+                myData.putInt("IDAlbum", allAlbums.get((int) l).getId());
 
                 newActivity.putExtra(ALBUM_TO, myData);
                 startActivity(newActivity);
+            }
             }
         });
         albumList.setOnItemClickListener(albumList_OnItemClick);
@@ -226,23 +239,10 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                final int truePos = (int)id;
-                AlertDialog DeleteDialog = new AlertDialog.Builder(HomeActivity.this)
-                        .setTitle("Bạn muốn xóa album này?\n")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                removeAlbum(truePos);
-                            }
-                        })
-                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        })
-                        .create();
-                DeleteDialog.show();
+                if(isOnEdit) return false;
+                startMyEditMode();
+                albumsAdapter.toggleSelected((int)id);
+                albumsAdapter.notifyDataSetChanged();
                 return true;
             }
         });
@@ -252,20 +252,42 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     //Function to process messages send to main thread from other thread
     private void handleMessage(Message msg){
         //Message from find album thread
-        if(msg.what == FIND_ALBUM_THREADCODE) {
-            ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
-            ArrayList<Album> source = (ArrayList<Album>) allAlbums;
-            Intent newActivity = new Intent(this, SearchAlbumActivity.class);
-            newActivity.putExtra("Source", source);
-            newActivity.putExtra("Render Info", filtered);
-            newActivity.putExtra("AutoComplete", hint);
-            loadingCir.setVisibility(View.INVISIBLE);
-            startActivity(newActivity);
+        switch (msg.what) {
+            case FIND_ALBUM_THREADCODE:
+                ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
+                ArrayList<Album> source = (ArrayList<Album>) allAlbums;
+                Intent newActivity = new Intent(this, SearchAlbumActivity.class);
+                newActivity.putParcelableArrayListExtra("Source", source);
+                newActivity.putParcelableArrayListExtra("Render Info", filtered);
+                newActivity.putExtra("AutoComplete", hint);
+                loadingCir.setVisibility(View.INVISIBLE);
+                startActivity(newActivity);
+                break;
+            case LOAD_ALL_ALBUM_THREADCODE:
+                bindFunctionalities(null);
+                loadingCir.setVisibility(View.INVISIBLE);
+                break;
+            case SET_SELECTED_THREADCODE:
+                albumsAdapter.notifyDataSetChanged();
+                loadingCir.setVisibility(View.INVISIBLE);
+                break;
         }
-        if(msg.what == LOAD_ALL_ALBUM_THREADCODE) {
-            bindFunctionalities();
-            loadingCir.setVisibility(View.INVISIBLE);
+    }
+
+    private void deleteSelected() {
+        ArrayList<Integer> selected = albumsAdapter.getSelected();
+        Toast.makeText(this,selected.toString(),Toast.LENGTH_LONG).show();
+    }
+
+    private void startMyEditMode(){
+        if(isOnEdit) return;
+        isOnEdit = true;
+        //change action bar
+        if (gridViewItemCallBack == null) {
+            gridViewItemCallBack = new GridViewItemCallBack(HomeActivity.this);
         }
+        actionmode = startActionMode(gridViewItemCallBack);
+        actionmode.setTitle("Select albums");
     }
 
     //-------------------------------------------Life-cycle------------------------------------------
@@ -291,33 +313,49 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         //Add header to gridview
         albumList.addHeaderView(headerArea);
 
-        //Create thread for loading
-        Thread loadThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
-                //Populate hints with album name
-                for(int i = 0 ; i< allAlbums.size(); i++) {
-                    hint.add(allAlbums.get(i).getAlbumName());
+        //Check saved state
+        if(savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("isOnEdit", true))
+                startMyEditMode();
+            allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
+            hint = savedInstanceState.getStringArrayList("autocompleteHints");
+            bindFunctionalities((ArrayList<Integer>)savedInstanceState.getSerializable("selectedState"));
+        }else{
+            //Create thread for loading
+            Thread loadThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
+                    //Populate hints with album name
+                    for(int i = 0 ; i< allAlbums.size(); i++) {
+                        hint.add(allAlbums.get(i).getAlbumName());
+                    }
+                    Message msg = updateHandler.obtainMessage(LOAD_ALL_ALBUM_THREADCODE);
+                    updateHandler.sendMessage(msg);
                 }
-                Message msg = updateHandler.obtainMessage(LOAD_ALL_ALBUM_THREADCODE);
-                updateHandler.sendMessage(msg);
-            }
-        });
+            });
 
+            //Create necessary arrays
+            allAlbums = new ArrayList<Album>();
+            hint = new ArrayList<String>();
 
-        //Create necessary arrays
-        allAlbums = new ArrayList<Album>();
-        hint = new ArrayList<String>();
-
-        //Run the thread
-        loadingCir.setVisibility(View.VISIBLE);
-        loadThread.run();
+            //Run the thread
+            loadingCir.setVisibility(View.VISIBLE);
+            loadThread.run();
+        }
 
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
+        loadingCir.setVisibility(View.VISIBLE);
+
+        outState.putBoolean("isOnEdit", isOnEdit);
+        outState.putParcelableArrayList("allAlbums", (ArrayList<Album>) allAlbums);
+        outState.putSerializable("selectedState", albumsAdapter.getSelected());
+        outState.putStringArrayList("autocompleteHints", hint);
+
+        loadingCir.setVisibility(View.INVISIBLE);
         super.onSaveInstanceState(outState);
     }
 
@@ -350,6 +388,65 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             }
         }
     }
+
+    private class GridViewItemCallBack implements ActionMode.Callback {
+
+        private HomeActivity currentContext;
+        private AlertDialog DeleteDialog;
+        private ActionMode currentMode;
+
+        public GridViewItemCallBack(HomeActivity mainContext) {
+            currentContext = mainContext;
+            DeleteDialog = new AlertDialog.Builder(currentContext)
+                    .setTitle("Bạn muốn xóa các mục đã lựa chọn?\n")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            isOnEdit = false;
+                            deleteSelected();
+                            currentMode.finish();
+                        }
+                    })
+                    .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create();
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if(item.getItemId() == R.id.action_delete_album){
+                DeleteDialog.show();
+            }
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            isOnEdit = false;
+            actionmode = null;
+            if(albumsAdapter != null) {
+                albumsAdapter.clearSelected();
+                albumsAdapter.notifyDataSetChanged();
+            }
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.editbar_album, menu);
+            currentMode = mode;
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+    }
+
     @Override
     protected void onResume()
     {

@@ -14,6 +14,7 @@ public class AddAlbumDialog {
     private String title;
     private HomeActivity activity;
     private AlertDialog dialog = null;
+    private AlertDialog alertError = null;
     private View DialogView = null;
 
     //New Instance
@@ -21,7 +22,14 @@ public class AddAlbumDialog {
         AddAlbumDialog myDialog = new AddAlbumDialog();
         myDialog.activity = activity;
         myDialog.title = title;
-
+        myDialog.alertError = new AlertDialog.Builder(activity)
+                .setTitle("Huhu có lỗi rồi")
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).create();
         return myDialog;
     }
 
@@ -37,6 +45,11 @@ public class AddAlbumDialog {
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            if(albumNameField.getText().toString().replaceAll("\\ ","").equals("")) {
+                                dialog.dismiss();
+                                alertError.show();
+                                return;
+                            }
                             Bundle bd = new Bundle();
                             bd.putString("albumName", albumNameField.getText().toString());
                             albumNameField.setText("");

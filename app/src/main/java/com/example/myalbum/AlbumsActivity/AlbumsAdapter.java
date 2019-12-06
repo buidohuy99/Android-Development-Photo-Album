@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
 
 public class AlbumsAdapter extends BaseAdapter implements Serializable {
 
@@ -41,11 +39,11 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
     }
 
     public void toggleSelected(int position) {
-        Boolean isSelected = selected.get(displayAlbums.get(position).getId());
+        Boolean isSelected = selected.get(position);
         if (isSelected != null)
-            selected.put(displayAlbums.get(position).getId(), !isSelected);
+            selected.put(position, !isSelected);
         else
-            selected.put(displayAlbums.get(position).getId(), true);
+            selected.put(position, true);
     }
 
     public void setSelected(ArrayList<Integer> selectedIDs) {
@@ -130,7 +128,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         //Update the contents of the Views inside found scrap Row
         Album album = displayAlbums.get(position);
         //Set selected overlay
-        Boolean selectState = selected.get(album.getId());
+        Boolean selectState = selected.get(position);
         thisRowViews.checkedOverlay.setVisibility(selectState != null && selectState ? View.VISIBLE : View.INVISIBLE);
         //Set album name
         thisRowViews.albumName.setText(album.getAlbumName());

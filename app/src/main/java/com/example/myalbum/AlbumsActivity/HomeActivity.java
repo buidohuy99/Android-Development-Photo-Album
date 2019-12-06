@@ -52,11 +52,18 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private final static int FIND_ALBUM_THREADCODE = 1;
     private final static int LOAD_ALL_ALBUM_THREADCODE = 2;
     private final static int SET_SELECTED_THREADCODE = 3;
+    private final static int RELOAD_ALL_ALBUM_THREADCODE = 4;
+    private final static int DELETE_SELECTS_THREADCODE= 5;
+
+    //Intent codes
+    private final static int SEARCH_ALBUM = 101;
 
     public static final String ALBUM_TO ="Album";
 
+
     //HomeActivity states
     private boolean isOnEdit = false;
+    private boolean activityHindered = false;
     public ActionMode actionmode;
     private GridViewItemCallBack gridViewItemCallBack;
 
@@ -124,24 +131,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         DatabaseHandler.getInstance(HomeActivity.this).deleteAlbum(albumID);
     }
 
-        //Find album by name
-    private ArrayList<Album> findAlbumByName(List<Album> source, String name){
+    //Find album by name
+    private ArrayList<Album> findAlbumByName(String name){
         if(name == null) return null;
-        ArrayList<Album> result = new ArrayList<Album>();
-        Album album;
-        for (int i = 0; i < source.size();i++)
-        {
-            album = source.get(i);
-            if (album.getAlbumName().contains(name))
-            {
-                result.add(album);
-            }
-        }
-
-        return result;
+        List<Album> result = DatabaseHandler.getInstance(this).findAlbumByName(name);
+        return (ArrayList<Album>)result;
     }
 
-    private void bindFunctionalities(final ArrayList<Integer> selectedAlbums){
+    private void resetAdapters(final ArrayList<Integer> selectedAlbums){
         //Add adapters
         //For displaying all albums
         albumsAdapter = new AlbumsAdapter(this,
@@ -167,6 +164,11 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_dropdown_item_1line, hint);
         searchBar.setAdapter(autoCompleteAdapter);
+    }
+
+    private void bindFunctionalities(final ArrayList<Integer> selectedAlbums){
+
+        resetAdapters(selectedAlbums);
         //Set listeners + events
 
         //Add Album Button
@@ -199,7 +201,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 Thread findThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        ArrayList<Album> filtered = findAlbumByName(allAlbums, find);
+                        ArrayList<Album> filtered = findAlbumByName(find);
                         Message msg = updateHandler.obtainMessage(FIND_ALBUM_THREADCODE, filtered);
                         updateHandler.sendMessage(msg);
                     }
@@ -229,6 +231,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 myData.putInt("IDAlbum", allAlbums.get((int) l).getId());
 
                 newActivity.putExtra(ALBUM_TO, myData);
+                activityHindered = true;
                 startActivity(newActivity);
             }
             }
@@ -255,13 +258,17 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         switch (msg.what) {
             case FIND_ALBUM_THREADCODE:
                 ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
-                ArrayList<Album> source = (ArrayList<Album>) allAlbums;
                 Intent newActivity = new Intent(this, SearchAlbumActivity.class);
-                newActivity.putParcelableArrayListExtra("Source", source);
                 newActivity.putParcelableArrayListExtra("Render Info", filtered);
-                newActivity.putExtra("AutoComplete", hint);
+                newActivity.putStringArrayListExtra("AutoComplete", hint);
+                newActivity.putExtra("Search Word", (searchBar.getText()).toString());
                 loadingCir.setVisibility(View.INVISIBLE);
-                startActivity(newActivity);
+                activityHindered = true;
+                startActivityForResult(newActivity, SEARCH_ALBUM);
+                break;
+            case RELOAD_ALL_ALBUM_THREADCODE: case DELETE_SELECTS_THREADCODE:
+                resetAdapters(null);
+                loadingCir.setVisibility(View.INVISIBLE);
                 break;
             case LOAD_ALL_ALBUM_THREADCODE:
                 bindFunctionalities(null);
@@ -275,8 +282,39 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     }
 
     private void deleteSelected() {
-        ArrayList<Integer> selected = albumsAdapter.getSelected();
-        Toast.makeText(this,selected.toString(),Toast.LENGTH_LONG).show();
+        Thread deleteSelects = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<Integer> selected = albumsAdapter.getSelected();
+                if(selected.size() == 0) {
+                    Message msg = updateHandler.obtainMessage(DELETE_SELECTS_THREADCODE, null);
+                    updateHandler.sendMessage(msg);
+                    return;
+                }
+                //update autoComplete
+                //Remove display
+                ArrayList<Album> toDelete = new ArrayList<>();
+                for(int i = 0 ; i < selected.size(); i++) {
+                    Album temp = allAlbums.get(selected.get(i));
+                    toDelete.add(temp);
+                    selected.set(i, temp.getId());
+                };
+                Integer[] chosenIds = selected.toArray(new Integer[0]);
+                for(int i = 0 ; i < toDelete.size(); i++) {
+                    hint.remove(toDelete.get(i).getAlbumName());
+                    allAlbums.remove(toDelete.get(i));
+                };
+
+                //Remove database
+                DatabaseHandler.getInstance(HomeActivity.this).deleteAlbums(chosenIds);
+
+                Message msg = updateHandler.obtainMessage(DELETE_SELECTS_THREADCODE);
+                updateHandler.sendMessage(msg);
+            }
+        });
+
+        loadingCir.setVisibility(View.VISIBLE);
+        deleteSelects.run();
     }
 
     private void startMyEditMode(){
@@ -315,7 +353,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
         //Check saved state
         if(savedInstanceState != null) {
-            if (savedInstanceState.getBoolean("isOnEdit", true))
+            if (savedInstanceState.getBoolean("isOnEdit"))
                 startMyEditMode();
             allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
             hint = savedInstanceState.getStringArrayList("autocompleteHints");
@@ -348,15 +386,44 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        loadingCir.setVisibility(View.VISIBLE);
+        if(!activityHindered) {
+            loadingCir.setVisibility(View.VISIBLE);
 
-        outState.putBoolean("isOnEdit", isOnEdit);
-        outState.putParcelableArrayList("allAlbums", (ArrayList<Album>) allAlbums);
-        outState.putSerializable("selectedState", albumsAdapter.getSelected());
-        outState.putStringArrayList("autocompleteHints", hint);
+            outState.putBoolean("isOnEdit", isOnEdit);
+            outState.putParcelableArrayList("allAlbums", (ArrayList<Album>) allAlbums);
+            outState.putSerializable("selectedState", albumsAdapter.getSelected());
+            outState.putStringArrayList("autocompleteHints", hint);
 
-        loadingCir.setVisibility(View.INVISIBLE);
+            loadingCir.setVisibility(View.INVISIBLE);
+        }
+        if (actionmode != null) actionmode.finish();
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == SEARCH_ALBUM && resultCode == RESULT_OK) {
+            Intent received = data;
+            ArrayList<String> temp = received.getStringArrayListExtra("AutoComplete");
+
+            Thread reloadAlbums =  new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
+                    Message msg = updateHandler.obtainMessage(RELOAD_ALL_ALBUM_THREADCODE);
+                    updateHandler.sendMessage(msg);
+                }
+            });
+
+            if(temp.size() != hint.size()) {
+                //Run the thread
+                hint = temp;
+                loadingCir.setVisibility(View.VISIBLE);
+                reloadAlbums.run();
+            }
+        }
+
     }
 
     //-------------------------------------Interfaces Implementations---------------------------------
@@ -451,6 +518,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onResume()
     {
         super.onResume();
+        activityHindered = false;
         if(albumsAdapter != null) {
             albumsAdapter.notifyDataSetChanged();
         }

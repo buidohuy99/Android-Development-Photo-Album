@@ -348,6 +348,14 @@ public class SearchAlbumActivity extends Activity {
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent intent = getIntent();
+        intent.putStringArrayListExtra("AutoComplete", hint);
+        setResult(RESULT_OK, intent);
+        super.onBackPressed();
+    }
+
     //-------------------------------Misc------------------------
 
     private class GridViewItemCallBack implements ActionMode.Callback {

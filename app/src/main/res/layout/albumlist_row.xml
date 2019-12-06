@@ -12,6 +12,16 @@
         android:scaleType="centerCrop"
         android:layout_gravity="center"
         />
+    <com.example.myalbum.utilities.SquareImageView
+        android:id="@+id/checkedOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:layout_gravity="center"
+        android:visibility="invisible"
+        android:src="@drawable/checked_mark"
+        android:background="#994287f5"
+        android:padding="15dp"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -38,14 +48,4 @@
             android:textColor="@color/white"
             android:text="0"/>
     </LinearLayout>
-    <com.example.myalbum.utilities.SquareImageView
-        android:id="@+id/checkedOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:layout_gravity="center"
-        android:visibility="invisible"
-        android:src="@drawable/checked_mark"
-        android:background="#994287f5"
-        android:padding="15dp"/>
 </FrameLayout>

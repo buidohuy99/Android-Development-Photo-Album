@@ -116,21 +116,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList.smoothScrollToPosition(albumsAdapter.getCount()-1);
     }
 
-    private void removeAlbum(int position) {
-        int albumID = allAlbums.get(position).getId();
-        String albumName = allAlbums.get(position).getAlbumName();
-        //update autoComplete
-        hint.remove(albumName);
-        ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, hint);
-        searchBar.setAdapter(autoCompleteAdapter);
-        //Remove display
-        allAlbums.remove(position);
-        albumsAdapter.notifyDataSetChanged();
-        //Remove database
-        DatabaseHandler.getInstance(HomeActivity.this).deleteAlbum(albumID);
-    }
-
     //Find album by name
     private ArrayList<Album> findAlbumByName(String name){
         if(name == null) return null;
@@ -177,7 +162,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             @Override
             public void onClick(View v) {
                 if(addAlbumDialog == null)
-                    addAlbumDialog = AddAlbumDialog.newInstance(HomeActivity.this,"Add Album Name");
+                    addAlbumDialog = AddAlbumDialog.newInstance(HomeActivity.this,"Thêm tên của album");
                 addAlbumDialog.show();
             }
         });

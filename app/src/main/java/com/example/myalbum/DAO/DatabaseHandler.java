@@ -5,12 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
+import android.util.Log;
 
 import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DatabaseHandler extends SQLiteOpenHelper {
@@ -93,7 +97,29 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         if (cursor != null)
             cursor.moveToFirst();
         Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
+
+        cursor.close();
+        db.close();
         return album;
+    }
+
+    public List<Album> findAlbumByName(String albumName) {
+        List<Album> albumList = new ArrayList<Album>();
+        String query = String.format("SELECT * FROM %s " +
+                "WHERE INSTR(LOWER(%s), LOWER(\"%s\")) > 0",TABLE_ALBUM, ALBUM_NAME, albumName);
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+
+        while (cursor.isAfterLast() == false) {
+            Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
+            albumList.add(album);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        db.close();
+        return albumList;
     }
 
     public List<Album> getAllAlbums() {
@@ -109,6 +135,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             albumList.add(album);
             cursor.moveToNext();
         }
+
+        cursor.close();
+        db.close();
         return albumList;
     }
 
@@ -127,8 +156,25 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.delete(TABLE_ALBUM, AlBUM_ID + " = ?", new String[]{String.valueOf(albumId)});
         String sqlDeleteAllImages = String.format(
                 "DELETE FROM %s " +
-                        "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumId);
+                        "WHERE %s = %d ", TABLE_IMAGE, AlBUM_ID, albumId);
         db.execSQL(sqlDeleteAllImages);
+        db.close();
+    }
+
+    public void deleteAlbums(Integer[] albumIDs) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        String listString = Arrays.toString(albumIDs).replaceAll("\\[|\\]|\\s", "");
+        String sqlDeleteAllAlbums = String.format(
+                "DELETE FROM %s " +
+                        "WHERE %s IN (%s) ", TABLE_ALBUM, AlBUM_ID, listString);
+        db.execSQL(sqlDeleteAllAlbums);
+        String sqlDeleteAllImages = String.format(
+                "DELETE FROM %s " +
+                        "WHERE %s IN (%s) ", TABLE_IMAGE, ID_ALBUM, listString);
+        db.execSQL(sqlDeleteAllImages);
+        db.setTransactionSuccessful();
+        db.endTransaction();
         db.close();
     }
 

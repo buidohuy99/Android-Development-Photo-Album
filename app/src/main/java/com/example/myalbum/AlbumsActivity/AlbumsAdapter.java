@@ -1,18 +1,11 @@
 package com.example.myalbum.AlbumsActivity;
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.myalbum.DAO.DatabaseHandler;
@@ -21,12 +14,17 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 import com.example.myalbum.utilities.SquareImageView;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class AlbumsAdapter extends BaseAdapter {
+public class AlbumsAdapter extends BaseAdapter implements Serializable {
 
     //Create a separate display Album from the true amount of Albums
     List<Album> displayAlbums;
+    private HashMap<Integer, Boolean> selected;
 
     //Context of current Activity/ Fragment
     Activity currentContext;
@@ -37,6 +35,35 @@ public class AlbumsAdapter extends BaseAdapter {
         this.displayAlbums = displayAlbums;
         currentContext = context;
         layoutToInflate = resource;
+        selected = new HashMap<Integer, Boolean>();
+    }
+
+    public void toggleSelected(int position) {
+        Boolean isSelected = selected.get(position);
+        if (isSelected != null)
+            selected.put(position, !isSelected);
+        else
+            selected.put(position, true);
+    }
+
+    public void setSelected(ArrayList<Integer> selectedIDs) {
+        for(Integer x : selectedIDs) {
+            selected.put(x, true);
+        }
+    }
+
+    public void clearSelected(){
+        selected.clear();
+    }
+
+    public ArrayList<Integer> getSelected() {
+        ArrayList<Integer> output = new ArrayList<>();
+        for (Map.Entry<Integer, Boolean> entry : selected.entrySet()) {
+            if (entry.getValue().equals(true)) {
+                output.add(entry.getKey());
+            }
+        }
+        return output;
     }
 
     @Override
@@ -59,6 +86,7 @@ public class AlbumsAdapter extends BaseAdapter {
         SquareImageView albumImage;
         TextView albumName;
         TextView imagesNumber;
+        SquareImageView checkedOverlay;
     }
 
     @Override
@@ -85,6 +113,7 @@ public class AlbumsAdapter extends BaseAdapter {
             thisRowViews.albumImage = currentRow.findViewById(R.id.albumImage);
             thisRowViews.albumName = currentRow.findViewById(R.id.albumName);
             thisRowViews.imagesNumber = currentRow.findViewById(R.id.imagesNumber);
+            thisRowViews.checkedOverlay = currentRow.findViewById(R.id.checkedOverlay);
 
             //Associate the row with the View Holder object, containing Views inside it
             currentRow.setTag(thisRowViews);
@@ -98,6 +127,10 @@ public class AlbumsAdapter extends BaseAdapter {
         //Add contents to the Views inside the Row or
         //Update the contents of the Views inside found scrap Row
         Album album = displayAlbums.get(position);
+        //Set selected overlay
+        Boolean selectState = selected.get(position);
+        thisRowViews.checkedOverlay.setVisibility(selectState != null && selectState ? View.VISIBLE : View.INVISIBLE);
+        //Set album name
         thisRowViews.albumName.setText(album.getAlbumName());
         //Get number of images
         Integer numberOfImages = DatabaseHandler.getInstance(currentContext).getNumberOfImages(album.getId());

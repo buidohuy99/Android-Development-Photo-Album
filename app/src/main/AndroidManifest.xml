@@ -2,10 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.myalbum">
 
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
 
     <application
         android:allowBackup="true"
@@ -14,6 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".Cropping.CroppingActivity"></activity>
         <activity android:name=".AlbumsActivity.HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,18 +20,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".EditingPhoto.PhotoEditorHandler"
+        <activity
+            android:name=".EditingPhoto.PhotoEditorHandler"
             android:label="Edit Image"
             android:parentActivityName=".XemAnh.ViewImageActivity">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.XemAnh.ViewImageActivity" />
-
         </activity>
-
-        <activity android:name=".AlbumsActivity.SearchAlbumActivity"
+        <activity
+            android:name=".AlbumsActivity.SearchAlbumActivity"
             android:label="Tìm kiếm album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">
 
@@ -41,7 +38,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity android:name=".AlbumsActivity.AlbumActivity"
+        <activity
+            android:name=".AlbumsActivity.AlbumActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.HomeActivity">
 
@@ -50,7 +48,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity android:name=".XemAnh.ViewImageActivity"
+        <activity
+            android:name=".XemAnh.ViewImageActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.AlbumActivity">
 
@@ -59,7 +58,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity android:name=".AlbumsActivity.MoveCopyImageActivity"
+        <activity
+            android:name=".AlbumsActivity.MoveCopyImageActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.AlbumActivity">
 
@@ -68,7 +68,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
-        <activity android:name=".AlbumsActivity.SlideshowActivity"
+        <activity
+            android:name=".AlbumsActivity.SlideshowActivity"
             android:label="Slideshow"
             android:parentActivityName=".AlbumsActivity.AlbumActivity">
 

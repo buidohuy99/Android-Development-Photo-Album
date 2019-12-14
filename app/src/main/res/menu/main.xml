@@ -25,6 +25,12 @@
         android:orderInCategory="180"
         android:title="Edit"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_crop"
+        android:orderInCategory="180"
+        android:title="Crop..."
+        app:showAsAction="never" />
     <item
         android:id="@+id/action_addtoalbum"
         android:orderInCategory="180"

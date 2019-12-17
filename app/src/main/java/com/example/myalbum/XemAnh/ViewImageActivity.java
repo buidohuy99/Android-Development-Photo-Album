@@ -3,9 +3,12 @@ package com.example.myalbum.XemAnh;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.ProgressDialog;
+import android.app.WallpaperManager;
 import android.content.ClipData;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ShareActionProvider;
 import android.widget.Toast;
+import android.widget.WrapperListAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -35,6 +39,8 @@ import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -132,9 +138,6 @@ public class ViewImageActivity extends Activity {
                 finish();
             }
 
-
-
-
         }
         if (id == R.id.action_edit) {
             CurrentImage = viewPager.getCurrentItem();
@@ -169,6 +172,7 @@ public class ViewImageActivity extends Activity {
            new RemoveImageTask().execute(pos);
 
         }
+
         if(id == R.id.action_movetoalbum)
         {
             IDAlbumtoMove = viewPager.getCurrentItem();
@@ -179,6 +183,21 @@ public class ViewImageActivity extends Activity {
             newActivity.putExtras(myData);
             startActivityForResult(newActivity, MOVE_IMGAE_TO_ALBUM);
 
+        }
+        if(id == R.id.action_wallpager)
+        {
+            int pos = viewPager.getCurrentItem();
+            Uri uriImage = Uri.parse(listImage.get(pos).getUrlHinh());
+            File file = new File(uriImage.getPath());
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+
+            try {
+                WallpaperManager manager = WallpaperManager.getInstance(getApplicationContext());
+                manager.setBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Toast.makeText(this,"OK",Toast.LENGTH_LONG).show();
         }
         return false;
 

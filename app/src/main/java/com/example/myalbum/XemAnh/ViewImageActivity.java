@@ -11,20 +11,22 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ShareActionProvider;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.view.MenuItemCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
@@ -32,6 +34,7 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -48,6 +51,7 @@ public class ViewImageActivity extends Activity {
     private static final int EDIT_IMAGE= 101;
 
     int CurrentImage;
+
 
 
     private void getData()
@@ -109,6 +113,29 @@ public class ViewImageActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
+        if(id == R.id.action_share){
+            int pos = viewPager.getCurrentItem();
+            Uri uriToImage = Uri.parse(listImage.get(pos).getUrlHinh());
+            File file = new File(uriToImage.getPath());
+
+            if(uriToImage!= null)
+            {
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setType("image/jpg");
+                startActivity(Intent.createChooser(shareIntent, "haha"));
+            }
+            else
+            {
+                finish();
+            }
+
+
+
+
+        }
         if (id == R.id.action_edit) {
             CurrentImage = viewPager.getCurrentItem();
             int temp = viewPager.getCurrentItem();

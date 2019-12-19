@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
+import com.example.myalbum.utilities.UtilityGlobals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +79,32 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    public void initSpecialAlbums(){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.beginTransaction();
+
+        //Trash : -1
+        ContentValues values = new ContentValues();
+        values.put(AlBUM_ID, UtilityGlobals.TRASH_ALBUM);
+        values.put(ALBUM_NAME, "Thùng rác");
+
+        db.insert(TABLE_ALBUM, null, values);
+
+        //Favorite : -2
+        values.put(AlBUM_ID, UtilityGlobals.FAVORITE_ALBUM);
+        values.put(ALBUM_NAME, "Yêu thích");
+
+        db.insert(TABLE_ALBUM, null, values);
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        db.close();
+    }
+
     public void addAlbum(Album album) {
         SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
 
         ContentValues values = new ContentValues();
         values.put(AlBUM_ID, album.getId());
@@ -87,6 +112,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(ALBUM_DATE, album.getDate());
 
         db.insert(TABLE_ALBUM, null, values);
+        db.setTransactionSuccessful();
+        db.endTransaction();
         db.close();
     }
 
@@ -106,7 +133,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public List<Album> findAlbumByName(String albumName) {
         List<Album> albumList = new ArrayList<Album>();
         String query = String.format("SELECT * FROM %s " +
-                "WHERE INSTR(LOWER(%s), LOWER(\"%s\")) > 0",TABLE_ALBUM, ALBUM_NAME, albumName);
+                "WHERE INSTR(LOWER(%s), LOWER(\"%s\")) > 0 AND %s >= 0 ",TABLE_ALBUM, ALBUM_NAME, albumName, AlBUM_ID);
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
         cursor.moveToFirst();
@@ -249,9 +276,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public int getNumberOfImages(int albumID) {
         SQLiteDatabase db = this.getReadableDatabase();
         String sql = String.format(
-                "SELECT COUNT(*) " +
+                "SELECT COUNT(%s) " +
                         "FROM %s " +
-                        "WHERE %s = %d ", TABLE_IMAGE, ID_ALBUM, albumID);
+                        "WHERE %s = %d ",KEY_ID_IMAGE, TABLE_IMAGE, ID_ALBUM, albumID);
         Cursor answer = db.rawQuery(sql, null);
         int amount = 0;
         answer.moveToFirst();

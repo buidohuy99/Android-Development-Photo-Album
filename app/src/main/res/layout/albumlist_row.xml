@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:layout_gravity="center"
-        />
+        android:background="@color/white" />
     <com.example.myalbum.utilities.SquareImageView
         android:id="@+id/checkedOverlay"
         android:layout_width="match_parent"
@@ -23,6 +23,7 @@
         android:background="#994287f5"
         android:padding="15dp"/>
     <LinearLayout
+        android:id="@+id/albumInfo"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal|bottom"
@@ -38,7 +39,8 @@
             android:text="placeHolder"
             android:maxLines="1"
             android:ellipsize="end"
-            />
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
         <TextView
             android:id="@+id/imagesNumber"
             android:layout_width="70dp"
@@ -48,4 +50,11 @@
             android:textColor="@color/white"
             android:text="0"/>
     </LinearLayout>
+    <RelativeLayout
+        android:id="@+id/albumWhiteOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#CCFFFFFF"
+        android:visibility="invisible">
+    </RelativeLayout>
 </FrameLayout>

@@ -47,6 +47,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <com.divyanshu.colorseekbar.ColorSeekBar
+                app:colorSeeds="@array/rainbow"
+                app:thumbBorderColor="#5a97ed"
                 android:id="@+id/sbColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,6 +72,7 @@
 
             <TextView
                 android:id="@+id/txtColor"
+                android:textColor="#E0E0E0"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -83,6 +86,8 @@
 
             <SeekBar
                 android:id="@+id/sbOpacity"
+                android:progressTint="#5a97ed"
+                android:thumbTint="#5a97ed"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -94,6 +99,7 @@
 
             <TextView
                 android:id="@+id/txtOpacity"
+                android:textColor="#E0E0E0"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -107,6 +113,8 @@
 
             <SeekBar
                 android:id="@+id/sbSize"
+                android:progressTint="#5a97ed"
+                android:thumbTint="#5a97ed"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -118,6 +126,7 @@
 
             <TextView
                 android:id="@+id/txtBrushSize"
+                android:textColor="#E0E0E0"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"

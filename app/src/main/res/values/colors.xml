@@ -18,10 +18,13 @@
     <color name="blue">#0000FF</color>
     <color name="violet">#7F00FF</color>
     <color name="magenta">#FF00FF</color>
+    <color name="white_gray">#E0E0E0</color>
+
 
 
     <array name="rainbow">
         <item>@color/white</item>
+        <item>@color/white_gray</item>
         <item>@color/bright_pink</item>
         <item>@color/red</item>
         <item>@color/orange</item>

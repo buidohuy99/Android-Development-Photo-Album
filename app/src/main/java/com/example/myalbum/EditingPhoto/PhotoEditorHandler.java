@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
+import ja.burhanrashid52.photoeditor.PhotoFilter;
 import ja.burhanrashid52.photoeditor.ViewType;
 
 class BrushInfo
@@ -190,8 +191,6 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
             }
         });
 
-
-
         saveListener = new PhotoEditor.OnSaveListener() {
             @Override
             public void onSuccess(@NonNull String imagePath) {
@@ -294,6 +293,10 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
             }
         });
 
+        
+
+
+
     }
 
     @Override
@@ -301,9 +304,8 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
 
         if (sender == "EmojiFragment")
         {
-
-
             photoEditor.addEmoji(bundle.getString("ChosenEmoji"));
+            photoEditor.setFilterEffect(PhotoFilter.BLACK_WHITE);
         }
 
         if (sender == "BrushFragment")

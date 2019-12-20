@@ -21,6 +21,8 @@
 
     <com.divyanshu.colorseekbar.ColorSeekBar
         android:id="@+id/sbColor"
+        app:colorSeeds="@array/rainbow"
+        app:thumbBorderColor="#5a97ed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"

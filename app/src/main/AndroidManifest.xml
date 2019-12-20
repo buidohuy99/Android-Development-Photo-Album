@@ -73,6 +73,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
         </activity>
+        <activity android:name=".XemAnh.DetailPicture"
+            android:label="Chi tiết"
+            android:parentActivityName=".XemAnh.ViewImageActivity">
+        <!-- Parent activity meta-data to support 4.0 and lower -->
+        <meta-data
+            android:name="android.support.PARENT_ACTIVITY"
+            android:value="com.example.myalbum.AlbumsActivity.HomeActivity" />
+            />
+        </activity>
         <activity android:name=".AlbumsActivity.MoveCopyImageActivity"
             android:label="Các ảnh trong album"
             android:parentActivityName=".AlbumsActivity.AlbumActivity">

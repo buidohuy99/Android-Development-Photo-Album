@@ -7,14 +7,18 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -32,13 +36,19 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NavUtils;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 import com.example.myalbum.XemAnh.ViewImageActivity;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AlbumActivity extends Activity {
@@ -48,6 +58,15 @@ public class AlbumActivity extends Activity {
     public static final String BACK_ALBUM ="BackAlbum";
     public static final String ALBUM_TO ="Album";
     public static final String[] filePathColumn = { MediaStore.Images.Media.DATA };
+    private static final String IMAGE_DIRECTORY_NAME = "VLEMONN";
+    static final int CAPTURE_IMAGE_REQUEST = 1;
+
+
+    File photoFile = null;
+    Uri photoURI;
+
+
+    String mCurrentPhotoPath;
 
 
     //List các đối tượng
@@ -80,7 +99,15 @@ public class AlbumActivity extends Activity {
                 }
                 return;
             }
+
+            case CAPTURE_IMAGE_REQUEST: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                        && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    captureImage();
+                }
+            }
         }
+
     }
 
 
@@ -193,13 +220,79 @@ public class AlbumActivity extends Activity {
                         .setNeutralButton("Chụp ảnh", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-
+                                captureImage();
                             }
                         })
                         .create();
                 AddImageDialog.show();
             }
         });
+    }
+    private void captureImage()
+    {
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE }, 0);
+        }
+        else
+        {
+            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                // Create the File where the photo should go
+                try {
+
+                    photoFile = createImageFile();
+                    Log.i("Mayank",photoFile.getAbsolutePath());
+                    galleryAddPic();
+
+
+                    // Continue only if the File was successfully created
+                    if (photoFile != null) {
+                        photoURI = FileProvider.getUriForFile(this,"com.example.myalbum.provider",
+                                photoFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        startActivityForResult(takePictureIntent, CAPTURE_IMAGE_REQUEST);
+                    }
+                } catch (Exception ex) {
+                    // Error occurred while creating the File
+                    displayMessage(getBaseContext(),ex.getMessage().toString());
+                }
+
+
+            }else
+            {
+                displayMessage(getBaseContext(),"Nullll");
+            }
+        }
+
+
+
+    }
+    private void displayMessage(Context context, String message)
+    {
+        Toast.makeText(context,message,Toast.LENGTH_LONG).show();
+    }
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        mCurrentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
     }
 
     @Override
@@ -276,34 +369,49 @@ public class AlbumActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
-            if (data.getClipData() != null) {
-                ClipData mClipData = data.getClipData();
-                uriList.clear();
-                for (int i = 0; i < mClipData.getItemCount(); i++) {
+        if(resultCode == RESULT_OK)
+        {
+            if(requestCode == PICK_IMAGE)
+            {
+                if (data.getClipData() != null) {
+                    ClipData mClipData = data.getClipData();
+                    uriList.clear();
+                    for (int i = 0; i < mClipData.getItemCount(); i++) {
 
-                    ClipData.Item item = mClipData.getItemAt(i);
-                    Uri uri = item.getUri();
-                    uriList.add(uri);
+                        ClipData.Item item = mClipData.getItemAt(i);
+                        Uri uri = item.getUri();
+                        uriList.add(uri);
+                    }
+
+                    new UploadImage().execute(uriList);
                 }
+                else
+                {
+                    Uri imageUri = data.getData();
 
-                new UploadImage().execute(uriList);
+                    Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
+                    cursor.moveToFirst();
+                    int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                    String picturePath = cursor.getString(columnIndex);
+                    cursor.close();
+
+                    Image newImage =new Image(picturePath, IDAlbum, list.size());
+                    list.add(newImage);
+                    DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
+                }
             }
             else
             {
-                Uri imageUri = data.getData();
-
-                Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                String picturePath = cursor.getString(columnIndex);
-                cursor.close();
-
-                Image newImage =new Image(picturePath, IDAlbum, list.size());
-                list.add(newImage);
-                DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
+                if(requestCode == CAPTURE_IMAGE_REQUEST)
+                {
+                    Image newImage =new Image(mCurrentPhotoPath, IDAlbum, list.size());
+                    list.add(newImage);
+                    DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
+                    adapter.notifyDataSetChanged();
+                }
             }
         }
+
 //        else
 //        {
 //            if(resultCode == RESULT_OK && requestCode == MOVE_IMAGE) {

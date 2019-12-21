@@ -243,6 +243,8 @@ public class AlbumActivity extends Activity {
 
                     photoFile = createImageFile();
                     Log.i("Mayank",photoFile.getAbsolutePath());
+                    galleryAddPic();
+
 
                     // Continue only if the File was successfully created
                     if (photoFile != null) {
@@ -284,6 +286,13 @@ public class AlbumActivity extends Activity {
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
         return image;
+    }
+    private void galleryAddPic() {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(mCurrentPhotoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        this.sendBroadcast(mediaScanIntent);
     }
 
     @Override
@@ -395,7 +404,7 @@ public class AlbumActivity extends Activity {
             {
                 if(requestCode == CAPTURE_IMAGE_REQUEST)
                 {
-                    Image newImage =new Image(photoURI.toString(), IDAlbum, list.size());
+                    Image newImage =new Image(mCurrentPhotoPath, IDAlbum, list.size());
                     list.add(newImage);
                     DatabaseHandler.getInstance(AlbumActivity.this).addImage(newImage.getUrlHinh(),newImage.getPos(),newImage.getIdAlbum());
                     adapter.notifyDataSetChanged();

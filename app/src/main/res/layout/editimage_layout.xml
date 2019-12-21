@@ -98,12 +98,23 @@
                     android:background="@drawable/roundcorner"/>
 
                 <ImageButton
-
                     android:id="@+id/addBrushButton"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/edit_draw_button"
+                    android:layout_marginRight="30dp"
+                    android:layout_marginBottom="5dp"
+                    android:padding="8dp"
+                    android:background="@drawable/roundcorner"/>
+
+                <ImageButton
+
+                    android:id="@+id/addFilterButton"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/edit_filter"
                     android:layout_marginRight="30dp"
                     android:layout_marginBottom="5dp"
                     android:padding="8dp"

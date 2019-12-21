@@ -1,6 +1,5 @@
 package com.example.myalbum.EditingPhoto;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,6 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myalbum.R;
 
@@ -25,7 +28,7 @@ public class FilterFragment extends Fragment implements FragmentCallbacks {
 
     static Integer[] avatar =
             {
-                    R.drawable.edit_filter_original,
+                    R.drawable.edit_filter_auto_fix,
                     R.drawable.edit_filter_auto_fix,
                     R.drawable.edit_filter_b_n_w,
                     R.drawable.edit_filter_contrast
@@ -70,13 +73,17 @@ public class FilterFragment extends Fragment implements FragmentCallbacks {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        LinearLayout layout = (LinearLayout) inflater.inflate(R.layout.edit_filter_fragment_layout, null);
+        RecyclerView filterView = (RecyclerView)inflater.inflate(
+                R.layout.edit_filter_fragment_layout, container, false);
 
-        HorizontalScrollView scrollView = layout.findViewById(R.id.scrollView);
+        FilterAdapter adapter = new FilterAdapter(description, avatar);
 
-        FilterAdapter adapter = new FilterAdapter(context,R.layout.edit_filter_adapter_layout,avatar,description,filterOptions);
+        filterView.setAdapter(adapter);
 
-        return layout;
+        LinearLayoutManager layoutManager = new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false);
+        filterView.setLayoutManager(layoutManager);
+        return filterView;
+
     }
 
     @Override

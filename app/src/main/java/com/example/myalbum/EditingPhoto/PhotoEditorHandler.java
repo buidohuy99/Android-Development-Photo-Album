@@ -79,6 +79,7 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
     AddTextFragment textFragment;
+    FilterFragment filterFragment;
 
 
     @Override
@@ -265,6 +266,8 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         addFilterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                filterFragment = FilterFragment.newInstance();
+                addFragment(filterFragment);
 
             }
         });

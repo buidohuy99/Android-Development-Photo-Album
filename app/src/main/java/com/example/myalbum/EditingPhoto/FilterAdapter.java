@@ -34,11 +34,11 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
-        private CardView cardView;
+        private View view;
 
-        public ViewHolder(@NonNull CardView itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            cardView = itemView;
+            view = itemView;
         }
     }
 
@@ -50,22 +50,22 @@ public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder
     @NonNull
     @Override
     public FilterAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        CardView cv = (CardView) LayoutInflater.from(parent.getContext())
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.edit_filter_adapter_layout, parent, false);
-        return new ViewHolder(cv);
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull FilterAdapter.ViewHolder holder, final int position) {
-        CardView cardView = holder.cardView;
+        View view = holder.view;
 
-        ImageView imageView = (ImageView)cardView.findViewById(R.id.avatar);
+        ImageView imageView = (ImageView)view.findViewById(R.id.avatar);
         imageView.setImageResource(avatar[position]);
 
-        TextView textView = (TextView)cardView.findViewById(R.id.description);
+        TextView textView = (TextView)view.findViewById(R.id.description);
         textView.setText(description[position]);
 
-        cardView.setOnClickListener(new View.OnClickListener() {
+        view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (listener != null)

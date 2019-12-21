@@ -33,7 +33,7 @@ public class DetailPicture extends Activity {
     private TextView time;
     private TextView path;
     private String detailName;
-    private long detailSize;
+    private double detailSize;
     private int detailWidthDemension;
     private int detailHeightDemension;
     private String detailTime;
@@ -71,11 +71,11 @@ public class DetailPicture extends Activity {
 
         getImageDetail(image);
 
-        name.setText("Tên: " + detailName);
-        size.setText("Dung lượng: " + detailSize+"MB");
-        demension.setText("Kích thước: "+ detailWidthDemension +"x" +detailHeightDemension);
-        time.setText("Thời gian: "+ detailTime);
-        path.setText("Đường dãn: "+ detailLocation);
+        name.setText(detailName);
+        size.setText(detailSize+"MB");
+        demension.setText(detailHeightDemension +"x" +detailWidthDemension);
+        time.setText(detailTime);
+        path.setText(detailLocation);
     }
 
     private void getImageDetail(Image img) {
@@ -96,7 +96,7 @@ public class DetailPicture extends Activity {
         }
 
         File file = new File(uriImage.getPath());
-        detailSize = (file.length()/ 1024)/1024;
+        detailSize = file.length()/ 1024/1024;
 
         detailName = url.substring(url.lastIndexOf("/")+1);
         detailLocation = url;

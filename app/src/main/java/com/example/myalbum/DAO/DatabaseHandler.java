@@ -36,6 +36,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_ID_IMAGE = "id";
     private static final String ID_ALBUM = "id_album";
     private static final String IMAGE = "image";
+    private static final String ID_OLDALBUM = "id_oldAlbum";
+
     //Singleton
     private static DatabaseHandler databaseObject = null;
 
@@ -63,8 +65,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         //Tạo  bảng danh sách các hình ảnh
         String create_images_table = String.format("CREATE TABLE %s" +
-                "(%s INTEGER , %s INTEGER, %s TEXT, " +
-                "PRIMARY KEY (%s, %s))", TABLE_IMAGE, KEY_ID_IMAGE, ID_ALBUM, IMAGE, KEY_ID_IMAGE, ID_ALBUM);
+                "(%s INTEGER , %s INTEGER, %s TEXT, %s INTEGER, " +
+                "PRIMARY KEY (%s, %s))", TABLE_IMAGE, KEY_ID_IMAGE, ID_ALBUM, IMAGE, ID_OLDALBUM, KEY_ID_IMAGE, ID_ALBUM);
         db.execSQL(create_images_table);
     }
 
@@ -232,6 +234,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.insert(TABLE_IMAGE, null, values);
         db.close();
     }
+    public void addImageWithOldIDAlbum(String image, int idImage, int albumId, int idOldAlbum) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID_IMAGE, idImage);
+        values.put(ID_ALBUM, albumId);
+        values.put(IMAGE, image);
+        values.put(ID_OLDALBUM, idOldAlbum);
+
+        db.insert(TABLE_IMAGE, null, values);
+        db.close();
+    }
 
     public List<Image> getAllImageOfAlbum(int albumID) {
 
@@ -265,7 +279,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
         answer.moveToFirst();
         String imageUrl = answer.getString(2);
-        Image thumbnail = new Image(imageUrl, albumID, imageID);
+        int oldIDAlbum = answer.getInt(3);
+        Image thumbnail = new Image(imageUrl, albumID, imageID, oldIDAlbum);
         answer.close();
 
         db.close();

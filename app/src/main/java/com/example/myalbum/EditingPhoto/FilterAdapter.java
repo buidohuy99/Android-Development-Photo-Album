@@ -10,40 +10,77 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.myalbum.R;
 
 import ja.burhanrashid52.photoeditor.PhotoFilter;
 
-public class FilterAdapter extends ArrayAdapter<String> {
-    Context context;
-    Integer[] avatar;
+public class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.ViewHolder> {
+
     String[] description;
-    PhotoFilter[] filterOptions;
+    Integer[] avatar;
 
+    //set listener interface so that others can attach listener to this adapter
+    private Listener listener;
+    interface Listener {
+        void onClick(int position);
+    }
 
-    public FilterAdapter (Context context, int layoutToBeInflated, Integer[] a, String[] d, PhotoFilter[] f)
+    public void setListener(Listener listener){
+        this.listener = listener;
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder{
+        private CardView cardView;
+
+        public ViewHolder(@NonNull CardView itemView) {
+            super(itemView);
+            cardView = itemView;
+        }
+    }
+
+    public FilterAdapter(String[] d, Integer[] a)
     {
-        super(context,layoutToBeInflated,d);
-        this.context=context;
-        this.avatar=a;
-        this.description= d;
-        this.filterOptions = f;
+        description = d;
+        avatar = a;
+    }
+    @NonNull
+    @Override
+    public FilterAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        CardView cv = (CardView) LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.edit_filter_adapter_layout, parent, false);
+        return new ViewHolder(cv);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        LayoutInflater inflater = ((Activity) context).getLayoutInflater();
-        View row = inflater.inflate(R.layout.edit_filter_adapter_layout, null);
+    public void onBindViewHolder(@NonNull FilterAdapter.ViewHolder holder, final int position) {
+        CardView cardView = holder.cardView;
 
-        // Lookup view for data population
-        ImageView avatarView = (ImageView) row.findViewById(R.id.avatar);
-        TextView descriptionView = (TextView) row.findViewById(R.id.description);
+        ImageView imageView = (ImageView)cardView.findViewById(R.id.avatar);
+        imageView.setImageResource(avatar[position]);
 
-        // Populate the data into the template view using the data object
-        avatarView.setImageResource(avatar[position]);
-        descriptionView.setText(description[position]);
-        // Return the completed view to render on screen
-        return (row);
+        TextView textView = (TextView)cardView.findViewById(R.id.description);
+        textView.setText(description[position]);
+
+        cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listener != null)
+                {
+                    listener.onClick(position);
+                }
+            }
+        });
+
     }
+
+    @Override
+    public int getItemCount() {
+        return description.length;
+    }
+
 
 }

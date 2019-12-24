@@ -165,20 +165,24 @@ public class AlbumActivity extends Activity {
         adapter.notifyDataSetChanged();
 
         //Sét sự kiện click ảnh
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        if(IDAlbum != -1)
+        {
+            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
+                    Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
 
-                Bundle myData = new Bundle();
-                myData.putInt("IDAlbum", IDAlbum);
-                myData.putInt("IDImage", list.get(i).getPos());
+                    Bundle myData = new Bundle();
+                    myData.putInt("IDAlbum", IDAlbum);
+                    myData.putInt("IDImage", list.get(i).getPos());
 
-                newActivity.putExtras(myData);
-                startActivity(newActivity);
-            }
-        });
+                    newActivity.putExtras(myData);
+                    startActivity(newActivity);
+                }
+            });
+        }
+
 
         //Sét sự kiện click ảnh lâu
         if(IDAlbum != -1)

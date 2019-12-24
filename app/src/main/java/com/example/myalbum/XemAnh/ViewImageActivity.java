@@ -169,7 +169,7 @@ public class ViewImageActivity extends Activity {
             viewPager.setAdapter(customAdapterViewPager);
             thumbnailsContainer.removeAllViews();
             inflateThumbnails();
-            new RemoveImageTask().execute(pos);
+            new moveImageToAlbum().execute(-1, pos);
 
 
         }
@@ -400,7 +400,7 @@ public class ViewImageActivity extends Activity {
                 listImage.get(i).setPos(i);
             }
 
-            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(), numberOfImages, integers[0]);
+            DatabaseHandler.getInstance(ViewImageActivity.this).addImageWithOldIDAlbum(image.getUrlHinh(), numberOfImages, integers[0], IDAlbum);
             return null;
         }
 

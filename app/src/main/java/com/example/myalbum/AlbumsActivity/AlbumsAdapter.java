@@ -173,6 +173,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         if(!currentRow.isEnabled()) currentRow.setEnabled(true);
 
         if(position == displayAlbums.size() - 1 && currentContext.getClass() == HomeActivity.class) {
+            thisRowViews.albumImage.setBackground(null);
             thisRowViews.albumInfo.setVisibility(View.INVISIBLE);
             thisRowViews.checkedOverlay.setVisibility(View.INVISIBLE);
             Glide.with(currentContext).load(R.drawable.add_album)
@@ -190,6 +191,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
 
         //if reuse view without background add background
         if(currentRow.getBackground() == null) currentRow.setBackgroundResource(R.drawable.black_border);
+        if(thisRowViews.albumImage.getBackground() == null) thisRowViews.albumImage.setBackgroundResource(R.color.white);
         if(thisRowViews.albumInfo.getVisibility() == View.INVISIBLE) thisRowViews.albumInfo.setVisibility(View.VISIBLE);
         //Add contents to the Views inside the Row or
         //Update the contents of the Views inside found scrap Row
@@ -233,6 +235,8 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
                     .into(thisRowViews.albumImage);
         }
 
+
+        currentRow.setId((int)position);
         //Return the Row for display
         return currentRow;
     }

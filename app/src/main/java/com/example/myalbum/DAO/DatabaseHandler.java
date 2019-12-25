@@ -19,9 +19,13 @@ import java.util.stream.Collectors;
 
 
 public class DatabaseHandler extends SQLiteOpenHelper {
+
+    //Database update
+    private static final int ADD_PASSWORD_FIELD = 2;
+
     //Database
     private static final String DATABASE_NAME = "Gallery";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     //Các table
     //Table album
@@ -29,6 +33,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     private static final String AlBUM_ID = "id";
     private static final String ALBUM_NAME = "name";
     private static final String ALBUM_DATE = "date";
+    private static final String ALBUM_PASS = "password";
     //Các table khác viết sau đây
     //...
 
@@ -58,7 +63,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         //Mai mốt có nhiều table thì nhó copy 2 dòng này
         //Sửa lại các biến cần thiết để tạo bảng mới
         String create_albums_table = String.format("CREATE TABLE %s" +
-                "(%s INTEGER PRIMARY KEY, %s TEXT, %s TEXT)", TABLE_ALBUM, AlBUM_ID, ALBUM_NAME, ALBUM_DATE);
+                "(%s INTEGER PRIMARY KEY, %s TEXT, %s TEXT, %s TEXT)", TABLE_ALBUM, AlBUM_ID, ALBUM_NAME, ALBUM_DATE, ALBUM_PASS);
         db.execSQL(create_albums_table);
 
         //Tạo  bảng danh sách các hình ảnh
@@ -70,13 +75,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        String drop_albums_table = String.format("DROP TABLE IF EXISTS %s", TABLE_ALBUM);
-        db.execSQL(drop_albums_table);
-
-        String drop_images_table = String.format("DROP TABLE IF EXISTS %s", TABLE_IMAGE);
-        db.execSQL(drop_images_table);
-
-        onCreate(db);
+        if(oldVersion < ADD_PASSWORD_FIELD){
+            String add_album_password= String.format("ALTER TABLE %s ADD COLUMN %s TEXT",TABLE_ALBUM, ALBUM_PASS);
+            db.execSQL(add_album_password);
+        }
     }
 
     public void initSpecialAlbums(){
@@ -110,6 +112,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(AlBUM_ID, album.getId());
         values.put(ALBUM_NAME, album.getAlbumName());
         values.put(ALBUM_DATE, album.getDate());
+        values.put(ALBUM_PASS, album.getAlbumPassword());
 
         db.insert(TABLE_ALBUM, null, values);
         db.setTransactionSuccessful();
@@ -123,7 +126,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         Cursor cursor = db.query(TABLE_ALBUM, null, AlBUM_ID + " = ?", new String[]{String.valueOf(albumId)}, null, null, null);
         if (cursor != null)
             cursor.moveToFirst();
-        Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
+        Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
 
         cursor.close();
         db.close();
@@ -139,7 +142,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         cursor.moveToFirst();
 
         while (cursor.isAfterLast() == false) {
-            Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
+            Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
             albumList.add(album);
             cursor.moveToNext();
         }
@@ -158,7 +161,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         cursor.moveToFirst();
 
         while (cursor.isAfterLast() == false) {
-            Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2));
+            Album album = new Album(cursor.getInt(0), cursor.getString(1), cursor.getString(2), cursor.getString(3));
             albumList.add(album);
             cursor.moveToNext();
         }

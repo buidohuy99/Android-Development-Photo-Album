@@ -32,7 +32,9 @@ import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.R;
 import com.example.myalbum.events.OnClickEvent;
 import com.example.myalbum.events.OnItemClickEvent;
+import com.example.myalbum.interfaces.ActivityCallBacks;
 import com.example.myalbum.utilities.SearchHistoryManager;
+import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
 
 import java.lang.ref.WeakReference;
@@ -41,7 +43,7 @@ import java.util.List;
 
 import static com.example.myalbum.AlbumsActivity.AlbumActivity.ALBUM_TO;
 
-public class SearchAlbumActivity extends Activity {
+public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     //Search Album Activity thread codes
     private final static int FIND_ALBUM_THREADCODE = 1;
@@ -64,9 +66,11 @@ public class SearchAlbumActivity extends Activity {
     private GridView albumList;
     private Button searchButton;
     private ProgressBar loadingCir;
+    private PasswordCheckDialog passwordPrompt = null;
 
     private ArrayList<Album> renderAlbums;
     private ArrayList<String> hint;
+    private Album navigateTo = null;
 
     //Adapters
     private AlbumsAdapter albumsAdapter;
@@ -164,6 +168,8 @@ public class SearchAlbumActivity extends Activity {
     private void bindFunctionalities(final ArrayList<Integer> selectedAlbums, Integer selectedSize){
         //Reset adapters
         resetAdapters(selectedAlbums, selectedSize);
+
+        passwordPrompt = PasswordCheckDialog.newInstance(SearchAlbumActivity.this, "Nhập mật khẩu xem album");
         //Set listeners + events
         //Search Bar
         searchBar.setOnFocusChangeListener(UtilityListeners.editText_OnFocusChange(this));
@@ -209,6 +215,14 @@ public class SearchAlbumActivity extends Activity {
                     actionmode.setTitle(albumsAdapter.getSelectedCount() + " items selected");
                 }
                 else {
+
+                    if(renderAlbums.get((int)l).getAlbumPassword() != null) {
+                        navigateTo = renderAlbums.get((int)l);
+                        passwordPrompt.setCompare(renderAlbums.get((int)l).getAlbumPassword());
+                        passwordPrompt.show();
+                        return;
+                    }
+
                     Intent newActivity = new Intent(SearchAlbumActivity.this, AlbumActivity.class);
 
                     Bundle myData = new Bundle();
@@ -280,6 +294,20 @@ public class SearchAlbumActivity extends Activity {
                 resetAdapters(null, null);
                 loadingCir.setVisibility(View.INVISIBLE);
                 break;
+        }
+    }
+
+    private void resolveCheckPassword(boolean state, Album album) {
+        if(state) {
+            Intent newActivity = new Intent(SearchAlbumActivity.this, AlbumActivity.class);
+
+            Bundle myData = new Bundle();
+            myData.putString("nameAlbum", album.getAlbumName());
+            myData.putInt("IDAlbum", album.getId());
+
+            newActivity.putExtra(ALBUM_TO, myData);
+            activityHindered = true;
+            startActivity(newActivity);
         }
     }
 
@@ -406,6 +434,20 @@ public class SearchAlbumActivity extends Activity {
         intent.putStringArrayListExtra("AutoComplete", hint);
         setResult(RESULT_OK, intent);
         super.onBackPressed();
+    }
+
+    //-----------------------------Implements-------------------
+
+    @Override
+    public void onMessageToActivity(String Source, Bundle bundle) {
+        switch (Source) {
+            case UtilityGlobals.PASSWORD_CHECK_DIALOG:
+                if (navigateTo != null) {
+                    resolveCheckPassword(bundle.getBoolean("passwordMatch"), navigateTo);
+                    navigateTo = null;
+                }
+                break;
+        }
     }
 
     //-------------------------------Misc------------------------

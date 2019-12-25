@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -117,6 +118,8 @@ public class AlbumActivity extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.myBarCir);
         progressBar.setVisibility(View.INVISIBLE);
 
+        if(IDAlbum == - 1)
+            button.setVisibility(View.GONE);
     }
 
     public void getData() {
@@ -162,48 +165,103 @@ public class AlbumActivity extends Activity {
         adapter.notifyDataSetChanged();
 
         //Sét sự kiện click ảnh
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
+        if(IDAlbum != -1)
+        {
+            gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                Bundle myData = new Bundle();
-                myData.putInt("IDAlbum", IDAlbum);
-                myData.putInt("IDImage", list.get(i).getPos());
+                    Intent newActivity = new Intent(AlbumActivity.this, ViewImageActivity.class);
 
-                newActivity.putExtras(myData);
-                startActivity(newActivity);
-            }
-        });
+                    Bundle myData = new Bundle();
+                    myData.putInt("IDAlbum", IDAlbum);
+                    myData.putInt("IDImage", list.get(i).getPos());
+
+                    newActivity.putExtras(myData);
+                    startActivity(newActivity);
+                }
+            });
+        }
+
 
         //Sét sự kiện click ảnh lâu
-        gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                AlertDialog DeleteDialog = new AlertDialog.Builder(AlbumActivity.this)
-                        .setTitle("Bạn muốn xóa ảnh này?\n")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(), "Image deleted", Toast.LENGTH_LONG).show();
+        if(IDAlbum != -1)
+        {
+            gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                    AlertDialog DeleteDialog = new AlertDialog.Builder(AlbumActivity.this)
+                            .setTitle("Bạn muốn xóa ảnh này?\n")
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+//                                    Toast.makeText(getApplicationContext(), "Image deleted", Toast.LENGTH_LONG).show();
+                                    Image image = list.get(position);
+                                    Toast.makeText(getApplicationContext(), String.valueOf(IDAlbum), Toast.LENGTH_LONG).show();
 
-                                removeImage( position);
+                                    new MoveImage().execute(-1, position);
+                                    list.remove(position);
+                                    adapter.notifyDataSetChanged();
 
-                            }
-                        })
-                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                                }
+                            })
+                            .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
 
-                                dialog.dismiss();
-                            }
-                        })
-                        .create();
-                DeleteDialog.show();
-                return true;
+                                    dialog.dismiss();
+                                }
+                            })
+                            .create();
+                    DeleteDialog.show();
+                    return true;
 
-            }
-        });
+                }
+            });
+        }
+        else
+        {
+            gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                    AlertDialog DeleteDialog = new AlertDialog.Builder(AlbumActivity.this)
+                            .setTitle("Thao tác bạn muốn\n")
+                            .setPositiveButton("Restore", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    Image image =  DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum, position);
+                                    int oldIDAlbum = image.getOldIDAlbum();
+
+                                    Toast.makeText(getApplicationContext(), String.valueOf(oldIDAlbum) , Toast.LENGTH_LONG).show();
+
+                                    new MoveImage().execute(oldIDAlbum, position);
+                                    list.remove(position);
+                                    adapter.notifyDataSetChanged();
+                                }
+                            })
+                            .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    removeImage(position);
+                                }
+                            })
+
+                            .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    dialog.dismiss();
+                                }
+                            })
+                            .create();
+                    DeleteDialog.show();
+                    return true;
+
+                }
+            });
+        }
+
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -297,6 +355,9 @@ public class AlbumActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        if(IDAlbum == -1)
+            return  false;
+
         getMenuInflater().inflate(R.menu.menualbum,menu);
         return true;
     }
@@ -469,45 +530,45 @@ public class AlbumActivity extends Activity {
 
     }
 
-//    private class MoveImage extends AsyncTask<Integer, Void, Void> {
-//        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
-//
-//        String waitMsg = "Wait\nProcess is being done... ";
-//        protected void onPreExecute()
-//        {
-//            this.dialog.setMessage(waitMsg);
-//            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
-//            this.dialog.show();
-//        }
-//
-//        @Override
-//        protected Void doInBackground(Integer... integers) {
-//            Integer numberOfImages = DatabaseHandler.getInstance(AlbumActivity.this).getNumberOfImages(integers[0]);
-//
-//            Image image = DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum,integers[1]);
-//            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, integers[1]);
-//
-//            for(int i=integers[1]; i<list.size(); i++)
-//            {
-//                DatabaseHandler.getInstance(AlbumActivity.this).updateIDImage(list.get(i),i);
-//                list.get(i).setPos(i);
-//            }
-//
-//            DatabaseHandler.getInstance(AlbumActivity.this).addImage(image.getUrlHinh(),numberOfImages,integers[0]);
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onProgressUpdate(Void... value) {
-//            adapter.notifyDataSetChanged();
-//        }
-//        protected void onPostExecute(final Void unused) {
-//            if (this.dialog.isShowing()) {
-//                this.dialog.dismiss();
-//            }
-//
-//        }
-//    }
+    private class MoveImage extends AsyncTask<Integer, Void, Void> {
+        private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);
+
+        String waitMsg = "Wait\nProcess is being done... ";
+        protected void onPreExecute()
+        {
+            this.dialog.setMessage(waitMsg);
+            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+            this.dialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            Integer numberOfImages = DatabaseHandler.getInstance(AlbumActivity.this).getNumberOfImages(integers[0]);
+
+            Image image = DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum,integers[1]);
+            DatabaseHandler.getInstance(AlbumActivity.this).deleteImage(IDAlbum, integers[1]);
+
+            for(int i=integers[1]; i<list.size(); i++)
+            {
+                DatabaseHandler.getInstance(AlbumActivity.this).updateIDImage(list.get(i),i);
+                list.get(i).setPos(i);
+            }
+
+            DatabaseHandler.getInstance(AlbumActivity.this).addImageWithOldIDAlbum(image.getUrlHinh(),numberOfImages,integers[0], IDAlbum);
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... value) {
+            adapter.notifyDataSetChanged();
+        }
+        protected void onPostExecute(final Void unused) {
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+
+        }
+    }
 
     private class UploadImage extends AsyncTask<List<Uri>,Void,Void>{
         private final ProgressDialog dialog = new ProgressDialog(AlbumActivity.this);

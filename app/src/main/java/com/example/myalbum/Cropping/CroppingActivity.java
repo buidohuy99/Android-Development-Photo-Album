@@ -98,6 +98,7 @@ public class CroppingActivity extends Activity {
                 }
             });
         }
+
     }
 
     void setCropMode(View view) {

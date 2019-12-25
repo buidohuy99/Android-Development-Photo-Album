@@ -17,30 +17,35 @@ public class Album implements Parcelable {
     private String albumName;
     private int albumID;
     private String albumDate;
+    private String albumPassword;
     //created date
 
-    public Album(String albumName){
+    public Album(String albumName, String albumPassword){
         super();
         this.albumName = albumName;
+        this.albumPassword = albumPassword;
     }
 
-    public Album(int id, String name, String date){
+    public Album(int id, String name, String date, String password){
         super();
         albumID = id;
         albumName = name;
         albumDate = date;
+        albumPassword = password;
     }
 
-    public Album(String name, String date){
+    public Album(String name, String date, String albumPassword){
         super();
         albumName = name;
         albumDate = date;
+        this.albumPassword = albumPassword;
     }
 
     protected Album(Parcel in) {
         albumID = in.readInt();
         albumName = in.readString();
         albumDate = in.readString();
+        albumPassword = in.readString();
     }
 
     public static final Creator<Album> CREATOR = new Creator<Album>() {
@@ -77,6 +82,11 @@ public class Album implements Parcelable {
         albumDate=date;
     }
 
+    //Album Pass
+    public String getAlbumPassword() {return albumPassword;}
+
+    public void setAlbumPassword(String pass) {albumPassword = pass;};
+
     @Override
     public int describeContents() {
         return 0;
@@ -87,5 +97,6 @@ public class Album implements Parcelable {
         dest.writeInt(albumID);
         dest.writeString(albumName);
         dest.writeString(albumDate);
+        dest.writeString(albumPassword);
     }
 }

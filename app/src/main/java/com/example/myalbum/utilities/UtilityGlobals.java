@@ -8,6 +8,7 @@ import com.bumptech.glide.request.RequestOptions;
 public class UtilityGlobals {
 
     public static final String ADD_ALBUM_DIALOG = "Add Album Dialog";
+    public static final String PASSWORD_CHECK_DIALOG = "Check password";
 
     public static final int TRASH_ALBUM = -1;
     public static final int FAVORITE_ALBUM = -2;

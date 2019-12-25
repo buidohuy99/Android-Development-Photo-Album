@@ -71,6 +71,12 @@ public class MoveCopyImageActivity extends Activity {
         allAlbums = new ArrayList<Album>();
         allAlbums = DatabaseHandler.getInstance(MoveCopyImageActivity.this).getAllAlbums();
 
+
+        allAlbums.remove(0);
+        allAlbums.remove(0);
+
+
+
         albumsAdapter = new AlbumsAdapter(this,
                 allAlbums,
                 R.layout.albumlist_row);
@@ -84,7 +90,7 @@ public class MoveCopyImageActivity extends Activity {
 
                     Intent returnIntent = new Intent();
                     Bundle myBundle = new Bundle();
-                    myBundle.putInt("newIDAlbum", i);
+                    myBundle.putInt("newIDAlbum", allAlbums.get(i).getId());
                     myBundle.putInt("IDImage", idImage);
 
                     returnIntent.putExtra("Result",myBundle);

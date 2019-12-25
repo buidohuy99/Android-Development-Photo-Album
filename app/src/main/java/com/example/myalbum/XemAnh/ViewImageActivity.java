@@ -63,6 +63,7 @@ public class ViewImageActivity extends Activity {
     private static final int ADD_IMAGE_TO_ALBUM = 90;
     private static final int MOVE_IMGAE_TO_ALBUM = 100;
     private static final int EDIT_IMAGE = 101;
+    private  static  final  int VIEW_DETAILS = 95;
 
     int CurrentImage;
 
@@ -168,7 +169,7 @@ public class ViewImageActivity extends Activity {
             viewPager.setAdapter(customAdapterViewPager);
             thumbnailsContainer.removeAllViews();
             inflateThumbnails();
-            new RemoveImageTask().execute(pos);
+            new moveImageToAlbum().execute(-1, pos);
 
 
         }
@@ -219,6 +220,17 @@ public class ViewImageActivity extends Activity {
                 }
             });
             dialog.show();
+        }
+
+        if(id == R.id.action_details)
+        {
+            Intent intent = new Intent(ViewImageActivity.this , DetailPicture.class);
+            int temp = viewPager.getCurrentItem();
+            Bundle myData = new Bundle();
+            myData.putInt("IDAlbum", IDAlbum);
+            myData.putInt("IDImage", temp);
+            intent.putExtras(myData);
+        startActivityForResult(intent, VIEW_DETAILS);
         }
         return false;
 
@@ -388,7 +400,7 @@ public class ViewImageActivity extends Activity {
                 listImage.get(i).setPos(i);
             }
 
-            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(), numberOfImages, integers[0]);
+            DatabaseHandler.getInstance(ViewImageActivity.this).addImageWithOldIDAlbum(image.getUrlHinh(), numberOfImages, integers[0], IDAlbum);
             return null;
         }
 

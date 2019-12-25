@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingTop="5dp">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginLeft="15dp"
+        android:text="@string/album_name"/>
     <EditText
         android:id="@+id/albumNameField"
         android:layout_width="match_parent"
@@ -10,4 +16,32 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
         android:background="@drawable/edittext_default"/>
+    <CheckBox
+        android:id="@+id/albumPasswordCheck"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="15dp"
+        android:text="Đặt mật khẩu cho album"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/albumPasswordArea"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:layout_marginLeft="15dp"
+            android:text="@string/album_password"/>
+        <EditText
+            android:id="@+id/albumPasswordField"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="15dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:background="@drawable/edittext_default"
+            android:inputType="textPassword"/>
+    </LinearLayout>
 </LinearLayout>

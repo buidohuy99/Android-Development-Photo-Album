@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import ja.burhanrashid52.photoeditor.OnPhotoEditorListener;
 import ja.burhanrashid52.photoeditor.PhotoEditor;
 import ja.burhanrashid52.photoeditor.PhotoEditorView;
+import ja.burhanrashid52.photoeditor.PhotoFilter;
 import ja.burhanrashid52.photoeditor.ViewType;
 
 class BrushInfo
@@ -69,6 +70,7 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
     ImageButton addEmojiButton;
     ImageButton addTextButton;
     ImageButton addBrushButton;
+    ImageButton addFilterButton;
 
     BrushInfo brushInfo;
 
@@ -77,6 +79,15 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
     AddEmojFragment emojiFragment;
     BrushFragment brushFragment;
     AddTextFragment textFragment;
+    FilterFragment filterFragment;
+
+    static PhotoFilter[] filterOptions =
+            {
+                    PhotoFilter.NONE,
+                    PhotoFilter.AUTO_FIX,
+                    PhotoFilter.BLACK_WHITE,
+                    PhotoFilter.CONTRAST
+            };
 
 
     @Override
@@ -118,23 +129,23 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         addEmojiButton = findViewById(R.id.addEmojiButton);
         addBrushButton = findViewById(R.id.addBrushButton);
         addTextButton = findViewById(R.id.addTextButton);
+        addFilterButton = findViewById(R.id.addFilterButton);
+
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //get data bundle from previous activity
         Intent myCallerIntent = getIntent();
         Bundle myBundle = myCallerIntent.getExtras();
         IDAlbum = myBundle.getInt("IDAlbum");
         IDImage = myBundle.getInt("IDImage");
         context = this;
-
-
         image = DatabaseHandler.getInstance(PhotoEditorHandler.this).getImageAt(IDAlbum,IDImage);
 
-
-
+        //setup UI binding and photoEditor
         findLayoutView();
         mPhotoEditorView = (PhotoEditorView) findViewById(R.id.photoEditorView);
 
@@ -190,8 +201,6 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
             }
         });
 
-
-
         saveListener = new PhotoEditor.OnSaveListener() {
             @Override
             public void onSuccess(@NonNull String imagePath) {
@@ -219,6 +228,7 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         });
 
 
+        //add listener to edit feature buttons
         addEmojiButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -257,13 +267,20 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
                     }
                 });
 
-
-
-
                 //photoEditor.addText(inputText.text, inputText.color);
             }
         });
 
+        addFilterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                filterFragment = FilterFragment.newInstance();
+                addFragment(filterFragment);
+
+            }
+        });
+
+        //add listener to edit function buttons
         undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -294,6 +311,10 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
             }
         });
 
+        
+
+
+
     }
 
     @Override
@@ -301,9 +322,8 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
 
         if (sender == "EmojiFragment")
         {
-
-
             photoEditor.addEmoji(bundle.getString("ChosenEmoji"));
+            photoEditor.setFilterEffect(PhotoFilter.BLACK_WHITE);
         }
 
         if (sender == "BrushFragment")
@@ -323,6 +343,12 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         if (sender == "TextFragment")
         {
             //do nothing
+        }
+
+        if (sender == "FilterFragment")
+        {
+
+            photoEditor.setFilterEffect(filterOptions[bundle.getInt("FilterOption")]);
         }
 
     }

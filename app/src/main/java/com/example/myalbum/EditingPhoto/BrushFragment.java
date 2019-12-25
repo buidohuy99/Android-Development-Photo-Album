@@ -66,25 +66,6 @@ public class BrushFragment extends Fragment implements FragmentCallbacks {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        /*LinearLayout emojiLayout = (LinearLayout) inflater.inflate(R.layout.edit_emoji_fragment_layout, null);
-        GridView EmojiGridView = emojiLayout.findViewById(R.id.EmojiList);
-
-        final Bundle bundle = getArguments();
-        final ArrayList<String> emojiList = bundle.getStringArrayList("EmojiList");
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-                android.R.layout.simple_list_item_1, emojiList);
-        EmojiGridView.setAdapter(adapter);
-
-        EmojiGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Bundle SendBundle = new Bundle();
-                SendBundle.putString("ChosenEmoji",emojiList.get(position));
-                main.onMsgFromFragToMain("EmojiFragment", SendBundle);
-            }
-        });*/
-
         ConstraintLayout paintLayout = (ConstraintLayout) inflater.inflate(R.layout.edit_brush_fragment_layout, null);
 
         final Bundle bundle = getArguments();

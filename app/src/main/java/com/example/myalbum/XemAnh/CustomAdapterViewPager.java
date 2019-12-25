@@ -1,6 +1,7 @@
 package com.example.myalbum.XemAnh;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.ortiz.touchview.TouchImageView;
 
 import java.util.List;
 
@@ -29,6 +31,7 @@ public class CustomAdapterViewPager extends PagerAdapter {
         this.imgList=imgList;
     }
 
+
     @Override
     public int getCount() {
         return imgList.size();
@@ -42,11 +45,11 @@ public class CustomAdapterViewPager extends PagerAdapter {
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
-        ImageView imgDisplay;
+        TouchImageView imgDisplay;
         layoutInflater=(LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
 
         View viewLayout = layoutInflater.inflate(R.layout.fragment_page,container,false);
-        imgDisplay=(ImageView)viewLayout.findViewById(R.id.image22);
+        imgDisplay=(TouchImageView) viewLayout.findViewById(R.id.image22);
         String path;
         path = imgList.get(position).getUrlHinh();
 

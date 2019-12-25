@@ -2,24 +2,36 @@ package com.example.myalbum.XemAnh;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.WallpaperManager;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ShareActionProvider;
 import android.widget.Toast;
+import android.widget.WrapperListAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.view.MenuItemCompat;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
@@ -33,6 +45,9 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -41,6 +56,8 @@ public class ViewImageActivity extends Activity {
     private int IDImage;
     private List<Image> listImage;
     private ViewPager viewPager;
+    Handler myHandler = new Handler();
+    private int typeWallpager;
     private CustomAdapterViewPager customAdapterViewPager;
     private LinearLayout thumbnailsContainer;
     private int IDAlbumtoMove;
@@ -48,12 +65,12 @@ public class ViewImageActivity extends Activity {
     private static final int MOVE_IMGAE_TO_ALBUM = 100;
     private static final int EDIT_IMAGE= 101;
     private static final int CROP_IMAGE= 102;
+    private  static  final  int VIEW_DETAILS = 95;
 
     int CurrentImage;
 
 
-    private void getData()
-    {
+    private void getData() {
         //Get data from HomeActivity
         Intent callingIntent = getIntent();
         Bundle myBundle = callingIntent.getExtras();
@@ -64,26 +81,23 @@ public class ViewImageActivity extends Activity {
     }
 
     @Override
-    public boolean onNavigateUp(){
+    public boolean onNavigateUp() {
         finish();
         return true;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        viewPager = (ViewPager)findViewById(R.id.view_page);
-        getData();
-        //actionBar= getActionBar();
-        //actionBar.setHomeButtonEnabled(true);
-
+        viewPager = (ViewPager) findViewById(R.id.view_page);
         getData();
 
-        Album album =DatabaseHandler.getInstance(this).getAlbum(IDAlbum);
+        Album album = DatabaseHandler.getInstance(this).getAlbum(IDAlbum);
         this.setTitle(album.getAlbumName());
 
-        customAdapterViewPager = new CustomAdapterViewPager(this,listImage);
+        customAdapterViewPager = new CustomAdapterViewPager(this, listImage);
 
         viewPager.setAdapter(customAdapterViewPager);
         viewPager.setCurrentItem(IDImage);
@@ -99,18 +113,35 @@ public class ViewImageActivity extends Activity {
         super.onResume();
 
 
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main,menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         int id = menuItem.getItemId();
+        if (id == R.id.action_share) {
+            int pos = viewPager.getCurrentItem();
+            Uri uriToImage = Uri.parse(listImage.get(pos).getUrlHinh());
+            File file = new File(uriToImage.getPath());
+
+            if (uriToImage != null) {
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setType("image/jpg");
+                startActivity(Intent.createChooser(shareIntent, "haha"));
+            } else {
+                finish();
+            }
+
+        }
         if (id == R.id.action_edit) {
             CurrentImage = viewPager.getCurrentItem();
             int temp = viewPager.getCurrentItem();
@@ -146,8 +177,7 @@ public class ViewImageActivity extends Activity {
             newActivity.putExtras(myData);
             startActivityForResult(newActivity, ADD_IMAGE_TO_ALBUM);
         }
-        if (id == R.id.action_delete)
-        {
+        if (id == R.id.action_delete) {
             int pos = viewPager.getCurrentItem();
             viewPager.setAdapter(null);
             listImage.remove(pos);
@@ -155,11 +185,12 @@ public class ViewImageActivity extends Activity {
             viewPager.setAdapter(customAdapterViewPager);
             thumbnailsContainer.removeAllViews();
             inflateThumbnails();
-           new RemoveImageTask().execute(pos);
+            new moveImageToAlbum().execute(-1, pos);
+
 
         }
-        if(id == R.id.action_movetoalbum)
-        {
+
+        if (id == R.id.action_movetoalbum) {
             IDAlbumtoMove = viewPager.getCurrentItem();
             Intent newActivity = new Intent(ViewImageActivity.this, MoveCopyImageActivity.class);
 
@@ -169,9 +200,58 @@ public class ViewImageActivity extends Activity {
             startActivityForResult(newActivity, MOVE_IMGAE_TO_ALBUM);
 
         }
+        if (id == R.id.action_wallpager) {
+
+            closeOptionsMenu();
+
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.dialog_wallpager);
+            ImageView homescreen = (ImageView) dialog.findViewById(R.id.homescreen);
+            ImageView lockscreen = (ImageView) dialog.findViewById(R.id.lockscreen);
+            ImageView bothscreen = (ImageView) dialog.findViewById(R.id.bothscreen);
+
+            homescreen.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    typeWallpager = 1;
+                    new decodeFileAsync().execute();
+                    dialog.dismiss();
+                }
+            });
+            lockscreen.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    typeWallpager = 2;
+                    new decodeFileAsync().execute();
+                    dialog.dismiss();
+
+                }
+            });
+            bothscreen.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    typeWallpager = 3;
+                    new decodeFileAsync().execute();
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        }
+
+        if(id == R.id.action_details)
+        {
+            Intent intent = new Intent(ViewImageActivity.this , DetailPicture.class);
+            int temp = viewPager.getCurrentItem();
+            Bundle myData = new Bundle();
+            myData.putInt("IDAlbum", IDAlbum);
+            myData.putInt("IDImage", temp);
+            intent.putExtras(myData);
+        startActivityForResult(intent, VIEW_DETAILS);
+        }
         return false;
 
     }
+
 
     private void inflateThumbnails() {
         for (int i = 0; i < listImage.size(); i++) {
@@ -208,8 +288,7 @@ public class ViewImageActivity extends Activity {
             int idalbum = myBundle.getInt("newIDAlbum");
             int idimage = IDAlbumtoMove;
 
-            if (idalbum != IDAlbum)
-            {
+            if (idalbum != IDAlbum) {
                 new addImageToAlbum().execute(idalbum, idimage);
             }
         }
@@ -225,20 +304,12 @@ public class ViewImageActivity extends Activity {
             int idalbum = myBundle.getInt("newIDAlbum");
             int idimage = IDAlbumtoMove;
 
-            if (idalbum != IDAlbum)
-            {
+            if (idalbum != IDAlbum) {
                 new moveImageToAlbum().execute(idalbum, idimage);
             }
         }
 
         if (resultCode == RESULT_OK && requestCode == EDIT_IMAGE) {
-//            List<Image> newImage = DatabaseHandler.getInstance(ViewImageActivity.this).getAllImageOfAlbum(IDAlbum);
-////            listImage.clear();
-////            for(int i = 0; i< newImage.size();i++)
-////            {
-////                newImage.add(newImage.get(i));
-////            }
-
             viewPager.setAdapter(null);
             customAdapterViewPager.notifyDataSetChanged();
             viewPager.setAdapter(customAdapterViewPager);
@@ -248,12 +319,13 @@ public class ViewImageActivity extends Activity {
         }
 
     }
+
     private class addImageToAlbum extends AsyncTask<Integer, Void, Void> {
         private final ProgressDialog dialog = new ProgressDialog(ViewImageActivity.this);
 
         String waitMsg = "Wait\nProcess is being done... ";
-        protected void onPreExecute()
-        {
+
+        protected void onPreExecute() {
             this.dialog.setMessage(waitMsg);
             this.dialog.setCancelable(false); //outside touch doesn't dismiss you
             this.dialog.show();
@@ -262,8 +334,8 @@ public class ViewImageActivity extends Activity {
         @Override
         protected Void doInBackground(Integer... integers) {
             Integer numberOfImages = DatabaseHandler.getInstance(ViewImageActivity.this).getNumberOfImages(integers[0]);
-            Image image = DatabaseHandler.getInstance(ViewImageActivity.this).getImageAt(IDAlbum,integers[1]);
-            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(),numberOfImages,integers[0]);
+            Image image = DatabaseHandler.getInstance(ViewImageActivity.this).getImageAt(IDAlbum, integers[1]);
+            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(), numberOfImages, integers[0]);
             publishProgress();
             return null;
         }
@@ -272,6 +344,7 @@ public class ViewImageActivity extends Activity {
         protected void onProgressUpdate(Void... value) {
             super.onProgressUpdate(value);
         }
+
         protected void onPostExecute(final Void unused) {
             if (this.dialog.isShowing()) {
                 this.dialog.dismiss();
@@ -279,12 +352,13 @@ public class ViewImageActivity extends Activity {
 
         }
     }
+
     private class RemoveImageTask extends AsyncTask<Integer, Integer, Void> {
         private final ProgressDialog dialog = new ProgressDialog(ViewImageActivity.this);
 
         String waitMsg = "Wait\nProcess is being done... ";
-        protected void onPreExecute()
-        {
+
+        protected void onPreExecute() {
             this.dialog.setMessage(waitMsg);
             this.dialog.setCancelable(false); //outside touch doesn't dismiss you
             this.dialog.show();
@@ -296,9 +370,8 @@ public class ViewImageActivity extends Activity {
             listImage.remove(integers[0]);
             DatabaseHandler.getInstance(ViewImageActivity.this).deleteImage(IDAlbum, integers[0]);
 
-            for(int i=integers[0]; i<listImage.size(); i++)
-            {
-                DatabaseHandler.getInstance(ViewImageActivity.this).updateIDImage(listImage.get(i),i);
+            for (int i = integers[0]; i < listImage.size(); i++) {
+                DatabaseHandler.getInstance(ViewImageActivity.this).updateIDImage(listImage.get(i), i);
                 listImage.get(i).setPos(i);
             }
 
@@ -310,6 +383,7 @@ public class ViewImageActivity extends Activity {
         protected void onProgressUpdate(Integer... value) {
             super.onProgressUpdate(value);
         }
+
         protected void onPostExecute(final Void unused) {
             if (this.dialog.isShowing()) {
                 this.dialog.dismiss();
@@ -318,12 +392,13 @@ public class ViewImageActivity extends Activity {
         }
 
     }
-        private class moveImageToAlbum extends AsyncTask<Integer, Void, Void> {
+
+    private class moveImageToAlbum extends AsyncTask<Integer, Void, Void> {
         private final ProgressDialog dialog = new ProgressDialog(ViewImageActivity.this);
 
         String waitMsg = "Wait\nProcess is being done... ";
-        protected void onPreExecute()
-        {
+
+        protected void onPreExecute() {
             this.dialog.setMessage(waitMsg);
             this.dialog.setCancelable(false); //outside touch doesn't dismiss you
             this.dialog.show();
@@ -333,22 +408,22 @@ public class ViewImageActivity extends Activity {
         protected Void doInBackground(Integer... integers) {
             Integer numberOfImages = DatabaseHandler.getInstance(ViewImageActivity.this).getNumberOfImages(integers[0]);
 
-            Image image = DatabaseHandler.getInstance(ViewImageActivity.this).getImageAt(IDAlbum,integers[1]);
+            Image image = DatabaseHandler.getInstance(ViewImageActivity.this).getImageAt(IDAlbum, integers[1]);
             DatabaseHandler.getInstance(ViewImageActivity.this).deleteImage(IDAlbum, integers[1]);
 
-            for(int i=integers[1]; i<listImage.size(); i++)
-            {
-                DatabaseHandler.getInstance(ViewImageActivity.this).updateIDImage(listImage.get(i),i);
+            for (int i = integers[1]; i < listImage.size(); i++) {
+                DatabaseHandler.getInstance(ViewImageActivity.this).updateIDImage(listImage.get(i), i);
                 listImage.get(i).setPos(i);
             }
 
-            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(),numberOfImages,integers[0]);
+            DatabaseHandler.getInstance(ViewImageActivity.this).addImageWithOldIDAlbum(image.getUrlHinh(), numberOfImages, integers[0], IDAlbum);
             return null;
         }
 
         @Override
         protected void onProgressUpdate(Void... value) {
         }
+
         protected void onPostExecute(final Void unused) {
             if (this.dialog.isShowing()) {
                 this.dialog.dismiss();
@@ -356,4 +431,56 @@ public class ViewImageActivity extends Activity {
 
         }
     }
+    private class decodeFileAsync extends AsyncTask<Void, Void, Void> {
+        private final ProgressDialog dialog = new ProgressDialog(ViewImageActivity.this);
+
+        String waitMsg = "Wait\nProcess is being done... ";
+        int pos;
+        protected void onPreExecute() {
+            pos = viewPager.getCurrentItem();
+            this.dialog.setMessage(waitMsg);
+            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+            this.dialog.show();
+
+        }
+
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                Uri uriImage = Uri.parse(listImage.get(pos).getUrlHinh());
+                File file = new File(uriImage.getPath());
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                WallpaperManager manager = WallpaperManager.getInstance(getApplicationContext());
+
+                if (typeWallpager == 1)
+                    manager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_SYSTEM);
+                else if (typeWallpager == 2)
+                    manager.setBitmap(bitmap, null, true, WallpaperManager.FLAG_LOCK);
+                else
+                    manager.setBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            publishProgress();
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... value) {
+            Toast.makeText(ViewImageActivity.this, "Thành công", Toast.LENGTH_LONG).show();
+            super.onProgressUpdate(value);
+        }
+
+        protected void onPostExecute(final Void unused) {
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+
+        }
+
+    }
+
+
 }

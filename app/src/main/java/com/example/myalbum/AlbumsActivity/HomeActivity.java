@@ -2,12 +2,18 @@ package com.example.myalbum.AlbumsActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.ActionMode;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,11 +22,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.bumptech.glide.Glide;
 import com.example.myalbum.R;
 
 //Included for event kind of listener
@@ -30,6 +38,7 @@ import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
 import com.example.myalbum.utilities.HeaderGridView;
+import com.example.myalbum.utilities.SearchHistoryManager;
 import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
 
@@ -74,12 +83,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private Button addAlbumButton;
     private ProgressBar loadingCir;
     private AddAlbumDialog addAlbumDialog = null;
+    private PasswordCheckDialog passwordPrompt = null;
 
     //Auto-complete source
     private ArrayList<String> hint;
 
     //Albums database
     private List<Album> allAlbums;
+    private Album navigateTo;
 
     //Events
     private OnClickEvent addAlbumButton_OnClick = new OnClickEvent();
@@ -99,21 +110,9 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //Album related logic (to be moved to different class)
         //Add album
-    private void addAlbum(String name) {
-        Album album = new Album(name);
-        //Add to database
-        int nextID = AlbumBusinessLogic.findSmallestMissingAlbumID(allAlbums);
-        album.setId(nextID);
-        DatabaseHandler.getInstance(HomeActivity.this).addAlbum(album);
-        //Display album
-        allAlbums.add(album);
-        albumsAdapter.notifyDataSetChanged();
-        //Update autocomplete
-        hint.add(name);
-        ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, hint);
-        searchBar.setAdapter(autoCompleteAdapter);
-        albumList.smoothScrollToPosition(albumsAdapter.getCount()-1);
+    private void addAlbum(String name, String password) {
+        Album album = new Album(name, password);
+        new AddAlbum().execute(album);
     }
 
     //Find album by name
@@ -123,7 +122,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         return (ArrayList<Album>)result;
     }
 
-    private void resetAdapters(final ArrayList<Integer> selectedAlbums){
+    private void resetAdapters(final ArrayList<Integer> selectedAlbums, boolean setBlur, Integer selectedSize){
         //Add adapters
         //For displaying all albums
         albumsAdapter = new AlbumsAdapter(this,
@@ -143,6 +142,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             loadingCir.setVisibility(View.VISIBLE);
             setSelectedThread.run();
         }
+        albumsAdapter.setBlurSystemAlbumsState(setBlur);
+        if(selectedSize != null) albumsAdapter.setSelectedSize(selectedSize);
         albumList.setAdapter(albumsAdapter);
 
         //For autocomplete field
@@ -151,9 +152,12 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         searchBar.setAdapter(autoCompleteAdapter);
     }
 
-    private void bindFunctionalities(final ArrayList<Integer> selectedAlbums){
+    private void bindFunctionalities(final ArrayList<Integer> selectedAlbums, boolean blur, Integer selectedSize){
 
-        resetAdapters(selectedAlbums);
+        resetAdapters(selectedAlbums, blur, selectedSize);
+
+        passwordPrompt = PasswordCheckDialog.newInstance(HomeActivity.this, "Nhập mật khẩu xem album");
+
         //Set listeners + events
 
         //Add Album Button
@@ -162,7 +166,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             @Override
             public void onClick(View v) {
                 if(addAlbumDialog == null)
-                    addAlbumDialog = AddAlbumDialog.newInstance(HomeActivity.this,"Thêm tên của album");
+                    addAlbumDialog = AddAlbumDialog.newInstance(HomeActivity.this,"Thông tin album");
                 addAlbumDialog.show();
             }
         });
@@ -205,10 +209,27 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
             if(isOnEdit){
+                //Cannot trigger edit for system albums
+                if(allAlbums.get((int)l).getId() < 0 || allAlbums.size() - 1 == l) return;
                 albumsAdapter.toggleSelected((int) l);
                 albumsAdapter.notifyDataSetChanged();
+                actionmode.setTitle(albumsAdapter.getSelectedCount() + " items selected");
             }
             else {
+                if(allAlbums.size() - 1 == l) {
+                    if(addAlbumDialog == null)
+                        addAlbumDialog = AddAlbumDialog.newInstance(HomeActivity.this,"Thông tin album");
+                    addAlbumDialog.show();
+                    return;
+                }
+
+                if(allAlbums.get((int)l).getAlbumPassword() != null) {
+                    navigateTo = allAlbums.get((int)l);
+                    passwordPrompt.setCompare(allAlbums.get((int)l).getAlbumPassword());
+                    passwordPrompt.show();
+                    return;
+                }
+
                 Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
 
                 Bundle myData = new Bundle();
@@ -227,10 +248,20 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                if(isOnEdit) return false;
-                startMyEditMode();
+                if(isOnEdit || allAlbums.size() - 1 == id) return false;
+                startMyEditMode(null);
+                albumsAdapter.toggleBlurSystemAlbums();
+                String actionBarTitle = "Select items";
+                //Cannot trigger edit for system albums
+                if(allAlbums.get((int)id).getId() < 0) {
+                    albumsAdapter.notifyDataSetChanged();
+                    actionmode.setTitle(actionBarTitle);
+                    return true;
+                }
                 albumsAdapter.toggleSelected((int)id);
                 albumsAdapter.notifyDataSetChanged();
+                actionBarTitle = albumsAdapter.getSelectedCount() + " items selected";
+                actionmode.setTitle(actionBarTitle);
                 return true;
             }
         });
@@ -244,19 +275,20 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             case FIND_ALBUM_THREADCODE:
                 ArrayList<Album> filtered = (ArrayList<Album>) msg.obj;
                 Intent newActivity = new Intent(this, SearchAlbumActivity.class);
+                SearchHistoryManager.getInstance().pushSearch((searchBar.getText()).toString());
                 newActivity.putParcelableArrayListExtra("Render Info", filtered);
                 newActivity.putStringArrayListExtra("AutoComplete", hint);
-                newActivity.putExtra("Search Word", (searchBar.getText()).toString());
+                searchBar.setText("");
                 loadingCir.setVisibility(View.INVISIBLE);
                 activityHindered = true;
                 startActivityForResult(newActivity, SEARCH_ALBUM);
                 break;
             case RELOAD_ALL_ALBUM_THREADCODE: case DELETE_SELECTS_THREADCODE:
-                resetAdapters(null);
+                resetAdapters(null, false, null);
                 loadingCir.setVisibility(View.INVISIBLE);
                 break;
             case LOAD_ALL_ALBUM_THREADCODE:
-                bindFunctionalities(null);
+                bindFunctionalities(null, false, null);
                 loadingCir.setVisibility(View.INVISIBLE);
                 break;
             case SET_SELECTED_THREADCODE:
@@ -302,7 +334,21 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         deleteSelects.run();
     }
 
-    private void startMyEditMode(){
+    private void resolveCheckPassword(boolean state, Album album) {
+        if(state) {
+            Intent newActivity = new Intent(HomeActivity.this, AlbumActivity.class);
+
+            Bundle myData = new Bundle();
+            myData.putString("nameAlbum", album.getAlbumName());
+            myData.putInt("IDAlbum", album.getId());
+
+            newActivity.putExtra(ALBUM_TO, myData);
+            activityHindered = true;
+            startActivity(newActivity);
+        }
+    }
+
+    private void startMyEditMode(String titleName){
         if(isOnEdit) return;
         isOnEdit = true;
         //change action bar
@@ -310,7 +356,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             gridViewItemCallBack = new GridViewItemCallBack(HomeActivity.this);
         }
         actionmode = startActionMode(gridViewItemCallBack);
-        actionmode.setTitle("Select albums");
+        if(titleName != null) actionmode.setTitle(titleName);
     }
 
     //-------------------------------------------Life-cycle------------------------------------------
@@ -319,6 +365,15 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_activity);
+
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                // This method must be called on a background thread.
+                Glide.get(HomeActivity.this.getApplicationContext()).clearDiskCache();
+                return null;
+            }
+        }.execute();
 
         //Create header area
         final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
@@ -336,28 +391,47 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         //Add header to gridview
         albumList.addHeaderView(headerArea);
 
+        //Create thread for loading
+        Thread loadThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DatabaseHandler db = DatabaseHandler.getInstance(HomeActivity.this);
+                db.initSpecialAlbums();
+                allAlbums = db.getAllAlbums();
+                //Populate hints with album name
+                for(int i = 0 ; i< allAlbums.size(); i++) {
+                    hint.add(allAlbums.get(i).getAlbumName());
+                }
+                allAlbums.add(new Album("Add album", null));
+
+                Message msg = updateHandler.obtainMessage(LOAD_ALL_ALBUM_THREADCODE);
+                updateHandler.sendMessage(msg);
+            }
+        });
+
+
         //Check saved state
         if(savedInstanceState != null) {
             if (savedInstanceState.getBoolean("isOnEdit"))
-                startMyEditMode();
+                startMyEditMode(savedInstanceState.getString("editBarText"));
             allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
             hint = savedInstanceState.getStringArrayList("autocompleteHints");
-            bindFunctionalities((ArrayList<Integer>)savedInstanceState.getSerializable("selectedState"));
-        }else{
-            //Create thread for loading
-            Thread loadThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
-                    //Populate hints with album name
-                    for(int i = 0 ; i< allAlbums.size(); i++) {
-                        hint.add(allAlbums.get(i).getAlbumName());
-                    }
-                    Message msg = updateHandler.obtainMessage(LOAD_ALL_ALBUM_THREADCODE);
-                    updateHandler.sendMessage(msg);
-                }
-            });
+            ArrayList<Integer> selectedState = (ArrayList<Integer>)savedInstanceState.getSerializable("selectedState");
+            Boolean blurState = savedInstanceState.getBoolean("systemAlbumsState");
+            if(blurState == null) blurState = false;
+            //If found no saved state
+            if(allAlbums == null || hint == null){
+                //Create necessary arrays
+                allAlbums = new ArrayList<Album>();
+                hint = new ArrayList<String>();
 
+                //Run the thread
+                loadingCir.setVisibility(View.VISIBLE);
+                loadThread.run();
+                return;
+            }
+            bindFunctionalities(selectedState, blurState, savedInstanceState.getInt("selectedArraySize"));
+        }else{
             //Create necessary arrays
             allAlbums = new ArrayList<Album>();
             hint = new ArrayList<String>();
@@ -366,7 +440,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             loadingCir.setVisibility(View.VISIBLE);
             loadThread.run();
         }
-
     }
 
     @Override
@@ -375,9 +448,12 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             loadingCir.setVisibility(View.VISIBLE);
 
             outState.putBoolean("isOnEdit", isOnEdit);
+            if(actionmode != null) outState.putString("editBarText", actionmode.getTitle().toString());
             outState.putParcelableArrayList("allAlbums", (ArrayList<Album>) allAlbums);
             outState.putSerializable("selectedState", albumsAdapter.getSelected());
+            outState.putInt("selectedArraySize", albumsAdapter.getSelectedCount());
             outState.putStringArrayList("autocompleteHints", hint);
+            outState.putBoolean("systemAlbumsState", albumsAdapter.getBlurSystemAlbumsState());
 
             loadingCir.setVisibility(View.INVISIBLE);
         }
@@ -396,6 +472,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 @Override
                 public void run() {
                     allAlbums = DatabaseHandler.getInstance(HomeActivity.this).getAllAlbums();
+                    allAlbums.add(new Album("Add album", null));
                     Message msg = updateHandler.obtainMessage(RELOAD_ALL_ALBUM_THREADCODE);
                     updateHandler.sendMessage(msg);
                 }
@@ -417,12 +494,46 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     public void onMessageToActivity(String source, Bundle bundle) {
         switch (source){
             case UtilityGlobals.ADD_ALBUM_DIALOG:
-                addAlbum(bundle.getString("albumName"));
+                addAlbum(bundle.getString("albumName"), bundle.getString("albumPassword"));
+                break;
+            case UtilityGlobals.PASSWORD_CHECK_DIALOG:
+                if(navigateTo != null) {
+                    resolveCheckPassword(bundle.getBoolean("passwordMatch"),navigateTo);
+                    navigateTo = null;
+                }
                 break;
         }
     }
 
     //---------------------------------Utilities for this activity-----------------------
+
+    private class AddAlbum extends AsyncTask<Album, Void, ArrayAdapter<String>> {
+
+        @Override
+        protected ArrayAdapter<String> doInBackground(Album... albums) {
+            Album album = albums[0];
+            //Add to database
+            int nextID = AlbumBusinessLogic.findSmallestMissingAlbumID(allAlbums);
+            album.setId(nextID);
+            DatabaseHandler.getInstance(HomeActivity.this).addAlbum(album);
+            //Display album
+            allAlbums.add(allAlbums.size() - 1, album);
+
+            //Update autocomplete
+            hint.add(album.getAlbumName());
+            ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(HomeActivity.this,
+                    android.R.layout.simple_dropdown_item_1line, hint);
+
+            return autoCompleteAdapter;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayAdapter<String> strings) {
+            albumsAdapter.notifyDataSetChanged();
+            searchBar.setAdapter(strings);
+            albumList.smoothScrollByOffset(albumList.getMeasuredHeight());
+        }
+    }
 
     //Wrapper class for Handler
     private static class IncomingHandler extends Handler {
@@ -481,6 +592,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             isOnEdit = false;
             actionmode = null;
             if(albumsAdapter != null) {
+                albumsAdapter.toggleBlurSystemAlbums();
                 albumsAdapter.clearSelected();
                 albumsAdapter.notifyDataSetChanged();
             }

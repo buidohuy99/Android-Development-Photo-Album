@@ -12,6 +12,7 @@
         android:icon="@drawable/ic_share_black_24dp"
         android:orderInCategory="140"
         android:title="Share"
+        app:actionProviderClass="android.widget.ShareActionProvider"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_delete"
@@ -42,7 +43,7 @@
         android:title="Move to album"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_about"
+        android:id="@+id/action_wallpager"
         android:orderInCategory="200"
         android:title="Set as Wallpaper"
         app:showAsAction="never" />

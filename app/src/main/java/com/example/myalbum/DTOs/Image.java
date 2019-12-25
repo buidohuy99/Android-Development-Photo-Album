@@ -5,12 +5,20 @@ public class Image
     private String Url;
     private  int idAlbum;
     private int pos;
+    private int oldIDAlbum;
 
     public Image(String UrlHinh, int idAlbum, int pos)
     {
         this.Url = UrlHinh;
         this.idAlbum = idAlbum;
         this.pos=pos;
+    }
+    public Image(String UrlHinh, int idAlbum, int pos, int oldIDAlbum)
+    {
+        this.Url = UrlHinh;
+        this.idAlbum = idAlbum;
+        this.pos=pos;
+        this.oldIDAlbum = oldIDAlbum;
     }
 
     public  String getUrlHinh(){
@@ -24,6 +32,8 @@ public class Image
     public  int getPos(){
         return this.pos;
     }
+
+    public int getOldIDAlbum(){ return this.oldIDAlbum; }
 
     public void setPos(int newPos){
         this.pos = newPos;

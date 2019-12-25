@@ -81,6 +81,14 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
     AddTextFragment textFragment;
     FilterFragment filterFragment;
 
+    static PhotoFilter[] filterOptions =
+            {
+                    PhotoFilter.NONE,
+                    PhotoFilter.AUTO_FIX,
+                    PhotoFilter.BLACK_WHITE,
+                    PhotoFilter.CONTRAST
+            };
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -335,6 +343,12 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         if (sender == "TextFragment")
         {
             //do nothing
+        }
+
+        if (sender == "FilterFragment")
+        {
+
+            photoEditor.setFilterEffect(filterOptions[bundle.getInt("FilterOption")]);
         }
 
     }

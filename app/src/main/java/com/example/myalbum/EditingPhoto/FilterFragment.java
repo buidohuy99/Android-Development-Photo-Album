@@ -82,6 +82,16 @@ public class FilterFragment extends Fragment implements FragmentCallbacks {
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false);
         filterView.setLayoutManager(layoutManager);
+
+        adapter.setListener(new FilterAdapter.Listener() {
+            @Override
+            public void onClick(int position) {
+                Bundle bundle = new Bundle();
+                bundle.putInt("FilterOption", position);
+                main.onMsgFromFragToMain("FilterFragment",bundle);
+
+            }
+        });
         return filterView;
 
     }

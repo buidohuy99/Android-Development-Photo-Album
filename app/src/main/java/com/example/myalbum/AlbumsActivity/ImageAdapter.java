@@ -3,12 +3,16 @@ package com.example.myalbum.AlbumsActivity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.BaseAdapter;
+import android.widget.Checkable;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 
@@ -25,15 +29,16 @@ import java.io.InputStream;
 import java.util.List;
 
 
-
 public class ImageAdapter extends BaseAdapter {
     Context context;
     List<Image> picture;
 
+
     public ImageAdapter(Context mainActivity, List<Image> list) {
-        this.context= mainActivity;
-        this.picture=list;
+        this.context = mainActivity;
+        this.picture = list;
     }
+
 
     @Override
     public int getCount() {
@@ -53,7 +58,9 @@ public class ImageAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        ImageView imageView;
+        final ImageView imageView;
+        CheckableLayout checkableLayout;
+
 // if possible, reuse (convertView) image already held in cache
         if (view == null) {
 // no previous version of thumbnail held in the scrapview holder
@@ -65,9 +72,13 @@ public class ImageAdapter extends BaseAdapter {
             imageView.setLayoutParams(new GridView.LayoutParams(gridsize, gridsize));
 //imageView.setLayoutParams(new GridView.LayoutParams(100, 100));//NOT a good practice
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(1, 1, 3, 1);
+            imageView.setPadding(2, 2, 2, 2);
+
+            checkableLayout = new CheckableLayout(context);
+            checkableLayout.addView(imageView);
         } else {
-            imageView = (ImageView) view;
+            checkableLayout = (CheckableLayout) view;
+            imageView = (ImageView) checkableLayout.getChildAt(0);
         }
 
         Glide.with(context).load(picture.get(i).getUrlHinh())
@@ -77,13 +88,41 @@ public class ImageAdapter extends BaseAdapter {
                 .error(R.drawable.error)
                 .into(imageView);
 
+
         imageView.setId(i);
 
+        return checkableLayout;
 
-        return imageView;
 
     }//
 
+    public class CheckableLayout extends FrameLayout implements Checkable {
+        private boolean mChecked;
+
+        public CheckableLayout(Context context) {
+            super(context);
+        }
+
+        @SuppressWarnings("deprecation")
+        public void setChecked(boolean checked) {
+            mChecked = checked;
+
+            if(checked)
+                setBackgroundColor(Color.RED);
+            else
+                setBackgroundColor(Color.TRANSPARENT);
+
+        }
+
+        public boolean isChecked() {
+            return mChecked;
+        }
+
+        public void toggle() {
+            setChecked(!mChecked);
+        }
+
+    }
 
 
 }

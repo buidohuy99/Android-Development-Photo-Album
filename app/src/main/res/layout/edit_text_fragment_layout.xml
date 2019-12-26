@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:focusable="true"
-    android:focusableInTouchMode="true">
+    android:focusableInTouchMode="true"
+    android:background="#AA1C1C1C">
 
     <Button
         android:id="@+id/btnDone"
@@ -23,7 +24,7 @@
         android:id="@+id/sbColor"
         app:colorSeeds="@array/rainbow"
         app:thumbBorderColor="#5a97ed"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"

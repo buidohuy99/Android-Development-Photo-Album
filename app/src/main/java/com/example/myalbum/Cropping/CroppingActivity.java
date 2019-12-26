@@ -33,6 +33,8 @@ public class CroppingActivity extends Activity {
 
     TextView option_free;
     TextView option_3_4;
+    TextView option_4_3;
+    TextView option_9_16;
     TextView option_16_9;
     TextView option_square;
     TextView option_circular;
@@ -49,6 +51,8 @@ public class CroppingActivity extends Activity {
         mCropView = (CropImageView) findViewById(R.id.cropImageView);
         option_free = (TextView) findViewById(R.id.option_free);
         option_3_4 = (TextView) findViewById(R.id.option_3_4);
+        option_4_3 = (TextView) findViewById(R.id.option_4_3);
+        option_9_16 = (TextView) findViewById(R.id.option_9_16);
         option_16_9 = (TextView) findViewById(R.id.option_16_9);
         option_square = (TextView) findViewById(R.id.option_square);
         option_circular = (TextView) findViewById(R.id.option_circular);
@@ -196,6 +200,17 @@ public class CroppingActivity extends Activity {
                 mCropView.setCropMode(CropImageView.CropMode.RATIO_3_4);
                 break;
             }
+
+            case R.id.option_4_3: {
+                mCropView.setCropMode(CropImageView.CropMode.RATIO_4_3);
+                break;
+            }
+
+            case R.id.option_9_16: {
+                mCropView.setCropMode(CropImageView.CropMode.RATIO_9_16);
+                break;
+            }
+
 
             case R.id.option_16_9: {
                 mCropView.setCropMode(CropImageView.CropMode.RATIO_16_9);

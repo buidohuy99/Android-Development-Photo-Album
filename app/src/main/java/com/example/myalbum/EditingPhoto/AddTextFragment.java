@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -66,6 +67,8 @@ public class AddTextFragment extends DialogFragment implements FragmentCallbacks
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+
         ConstraintLayout textLayout = (ConstraintLayout) inflater.inflate(R.layout.edit_text_fragment_layout, null);
         editText = (EditText) textLayout.findViewById(R.id.inputText);
         colorSeekBar = (ColorSeekBar) textLayout.findViewById(R.id.sbColor);
@@ -97,14 +100,14 @@ public class AddTextFragment extends DialogFragment implements FragmentCallbacks
             }
         });
 
+
+
         return textLayout;
     }
 
 
     @Override
     public void onMsgFromMainToFragment(Bundle bundle) {
-
-
 
     }
 

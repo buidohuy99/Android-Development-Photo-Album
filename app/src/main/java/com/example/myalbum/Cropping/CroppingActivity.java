@@ -3,9 +3,12 @@ package com.example.myalbum.Cropping;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -13,7 +16,9 @@ import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 import com.isseiaoki.simplecropview.CropImageView;
+import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
 
 import java.io.File;
 
@@ -33,6 +38,11 @@ public class CroppingActivity extends Activity {
     TextView option_circular;
     TextView option_fit;
 
+    ImageButton saveButton;
+    ImageButton cancelButton;
+    ImageButton rotateButton;
+    ImageButton rotateCounterButton;
+
 
     void findLayoutView()
     {
@@ -44,7 +54,10 @@ public class CroppingActivity extends Activity {
         option_circular = (TextView) findViewById(R.id.option_circular);
         option_fit = (TextView) findViewById(R.id.option_fit);
 
-
+        saveButton = findViewById(R.id.buttonSave);
+        cancelButton = findViewById(R.id.buttonCancel);
+        rotateButton = findViewById(R.id.rotateClockwise);
+        rotateCounterButton = findViewById(R.id.rotateCounterClockwise);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +112,26 @@ public class CroppingActivity extends Activity {
             });
         }
 
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+
+        rotateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
+            }
+        });
+
+        rotateCounterButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_M90D);
+            }
+        });
     }
 
     void setCropMode(View view) {

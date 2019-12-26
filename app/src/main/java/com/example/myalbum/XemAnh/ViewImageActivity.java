@@ -38,6 +38,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myalbum.AlbumsActivity.AlbumActivity;
 import com.example.myalbum.AlbumsActivity.MoveCopyImageActivity;
+import com.example.myalbum.Cropping.CroppingActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
@@ -62,7 +63,8 @@ public class ViewImageActivity extends Activity {
     private int IDAlbumtoMove;
     private static final int ADD_IMAGE_TO_ALBUM = 90;
     private static final int MOVE_IMGAE_TO_ALBUM = 100;
-    private static final int EDIT_IMAGE = 101;
+    private static final int EDIT_IMAGE= 101;
+    private static final int CROP_IMAGE= 102;
     private  static  final  int VIEW_DETAILS = 95;
 
     int CurrentImage;
@@ -152,6 +154,20 @@ public class ViewImageActivity extends Activity {
             startActivityForResult(intent, EDIT_IMAGE);
             return true;
         }
+
+        if (id == R.id.action_crop) {
+            CurrentImage = viewPager.getCurrentItem();
+            int temp = viewPager.getCurrentItem();
+
+            Intent intent = new Intent(this, CroppingActivity.class);
+            Bundle myData = new Bundle();
+            myData.putInt("IDAlbum", IDAlbum);
+            myData.putInt("IDImage", temp);
+            intent.putExtras(myData);
+            startActivityForResult(intent, CROP_IMAGE);
+            return true;
+        }
+
         if (id == R.id.action_addtoalbum) {
             IDAlbumtoMove = viewPager.getCurrentItem();
             Intent newActivity = new Intent(ViewImageActivity.this, MoveCopyImageActivity.class);
@@ -294,6 +310,15 @@ public class ViewImageActivity extends Activity {
         }
 
         if (resultCode == RESULT_OK && requestCode == EDIT_IMAGE) {
+            viewPager.setAdapter(null);
+            customAdapterViewPager.notifyDataSetChanged();
+            viewPager.setAdapter(customAdapterViewPager);
+            viewPager.setCurrentItem(CurrentImage);
+            thumbnailsContainer.removeAllViews();
+            inflateThumbnails();
+        }
+
+        if (resultCode == RESULT_OK && requestCode == CROP_IMAGE) {
             viewPager.setAdapter(null);
             customAdapterViewPager.notifyDataSetChanged();
             viewPager.setAdapter(customAdapterViewPager);

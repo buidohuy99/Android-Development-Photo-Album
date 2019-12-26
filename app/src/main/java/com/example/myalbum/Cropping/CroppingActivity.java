@@ -59,6 +59,13 @@ public class CroppingActivity extends Activity {
         rotateButton = findViewById(R.id.rotateClockwise);
         rotateCounterButton = findViewById(R.id.rotateCounterClockwise);
     }
+
+    @Override
+    public boolean onNavigateUp(){
+        finish();
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +137,38 @@ public class CroppingActivity extends Activity {
             @Override
             public void onClick(View view) {
                 mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_M90D);
+            }
+        });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCropView.startCrop(
+
+                        imageUri,
+
+                        new CropCallback() {
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onSuccess(Bitmap cropped) {}
+
+                        },
+
+                        new SaveCallback() {
+                            @Override
+                            public void onError(Throwable e) {
+
+                            }
+
+                            @Override
+                            public void onSuccess(Uri outputUri) {}
+
+                        }
+                );
             }
         });
     }

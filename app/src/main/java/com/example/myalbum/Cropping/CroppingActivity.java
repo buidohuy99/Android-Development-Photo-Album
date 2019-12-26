@@ -62,7 +62,7 @@ public class CroppingActivity extends Activity {
 
     @Override
     public boolean onNavigateUp(){
-        finish();
+        ReturnToViewImage();
         return true;
     }
 
@@ -122,7 +122,7 @@ public class CroppingActivity extends Activity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                finish();
+                ReturnToViewImage();
             }
         });
 
@@ -217,5 +217,12 @@ public class CroppingActivity extends Activity {
                 break;
             }
         }
+    }
+
+    void ReturnToViewImage()
+    {
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_OK,returnIntent);
+        finish();
     }
 }

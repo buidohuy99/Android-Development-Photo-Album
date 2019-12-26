@@ -7,14 +7,18 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.accessibility.AccessibilityManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.myalbum.AlbumsActivity.HomeActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
+import com.example.myalbum.interfaces.ActivityCallBacks;
 import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
@@ -22,7 +26,14 @@ import com.isseiaoki.simplecropview.callback.SaveCallback;
 
 import java.io.File;
 
-public class CroppingActivity extends Activity {
+class CustomCropRatio
+{
+
+    public int height;
+    public int width;
+}
+
+public class CroppingActivity extends Activity implements ActivityCallBacks {
 
     Context context;
     int IDAlbum;
@@ -30,6 +41,7 @@ public class CroppingActivity extends Activity {
     Image image;
     Uri imageUri;
     CropImageView mCropView;
+    CustomCropRatio ratio;
 
     TextView option_free;
     TextView option_3_4;
@@ -44,7 +56,7 @@ public class CroppingActivity extends Activity {
     ImageButton cancelButton;
     ImageButton rotateButton;
     ImageButton rotateCounterButton;
-
+    CustomCropRatioDialog dialog;
 
     void findLayoutView()
     {
@@ -102,6 +114,9 @@ public class CroppingActivity extends Activity {
                     @Override
                     public void onSuccess() {}
                 });
+
+        //set custom ratio
+        ratio = new CustomCropRatio();
 
         //SET LISTENER
         option_free.setOnClickListener(new View.OnClickListener() {
@@ -231,6 +246,11 @@ public class CroppingActivity extends Activity {
                 mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
                 break;
             }
+
+            case R.id.option_custom: {
+                dialog = CustomCropRatioDialog.newInstance(this, ratio.width, ratio.height);
+                dialog.show();
+            }
         }
     }
 
@@ -239,5 +259,21 @@ public class CroppingActivity extends Activity {
         Intent returnIntent = new Intent();
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
+    }
+
+    @Override
+    public void onMessageToActivity(String Source, Bundle bundle) {
+        if (Source == "custom ratio")
+        {
+            ratio.height = bundle.getInt("height");
+            ratio.width = bundle.getInt("width");
+            
+            if (ratio.height <=0 || ratio.width <= 0)
+            {
+                return;
+            }
+
+            mCropView.setCustomRatio(ratio.width, ratio.height);
+        }
     }
 }

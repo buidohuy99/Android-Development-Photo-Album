@@ -136,6 +136,17 @@
                 android:textColor="#F5F5F5"
                 android:gravity="center"
                 android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_custom"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="CUSTOM"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
         </LinearLayout>
 
     </HorizontalScrollView>

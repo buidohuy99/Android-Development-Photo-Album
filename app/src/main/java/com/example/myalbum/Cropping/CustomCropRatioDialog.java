@@ -1,11 +1,13 @@
 package com.example.myalbum.Cropping;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.myalbum.AlbumsActivity.HomeActivity;
 import com.example.myalbum.R;
@@ -17,8 +19,8 @@ public class CustomCropRatioDialog {
     View DialogView;
     EditText height;
     EditText width;
-    HomeActivity main;
-    public static CustomCropRatioDialog newInstance(HomeActivity activity, int oldWidth, int oldHeight)
+    CroppingActivity main;
+    public static CustomCropRatioDialog newInstance(CroppingActivity activity, int oldWidth, int oldHeight)
     {
         CustomCropRatioDialog CustomDialog = new CustomCropRatioDialog();
         CustomDialog.oldWidth = oldWidth;
@@ -35,7 +37,7 @@ public class CustomCropRatioDialog {
             width = DialogView.findViewById(R.id.widthEditText);
             width.setText(Integer.toString(oldWidth));
             height = DialogView.findViewById(R.id.heightEditText);
-            width.setText(Integer.toString(oldHeight));
+            height.setText(Integer.toString(oldHeight));
 
             dialog = new AlertDialog.Builder(main)
                     .setView(DialogView)
@@ -43,8 +45,18 @@ public class CustomCropRatioDialog {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             Bundle bundle =new Bundle();
-                            bundle.getInt("width", Integer.parseInt(width.getText().toString()));
-                            bundle.getInt("height", Integer.parseInt(height.getText().toString()));
+
+                            int newWidth = Integer.parseInt(width.getText().toString());
+                            int newHeight = Integer.parseInt(height.getText().toString());
+
+                            bundle.putInt("width", newWidth);
+                            bundle.putInt("height", newHeight);
+                            if (newHeight <=0 || newWidth <=0)
+                            {
+                                Toast.makeText(main,"Input value wrong, width or height must be positive",Toast.LENGTH_LONG).show();
+                                dialogInterface.dismiss();
+                                return;
+                            }
                             main.onMessageToActivity("custom ratio",bundle);
 
                         }
@@ -57,6 +69,7 @@ public class CustomCropRatioDialog {
                     })
                     .create();
         }
+        dialog.show();
     }
 
 }

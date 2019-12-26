@@ -163,9 +163,20 @@ public class CroppingActivity extends Activity {
                             public void onError(Throwable e) {
 
                             }
-
                             @Override
-                            public void onSuccess(Uri outputUri) {}
+                            public void onSuccess(Uri outputUri) {
+                                mCropView.startLoad(
+
+                                        outputUri,
+
+                                        new LoadCallback() {
+                                            @Override
+                                            public void onError(Throwable e) { }
+
+                                            @Override
+                                            public void onSuccess() {}
+                                        });
+                            }
 
                         }
                 );

@@ -318,6 +318,15 @@ public class ViewImageActivity extends Activity {
             inflateThumbnails();
         }
 
+        if (resultCode == RESULT_OK && requestCode == CROP_IMAGE) {
+            viewPager.setAdapter(null);
+            customAdapterViewPager.notifyDataSetChanged();
+            viewPager.setAdapter(customAdapterViewPager);
+            viewPager.setCurrentItem(CurrentImage);
+            thumbnailsContainer.removeAllViews();
+            inflateThumbnails();
+        }
+
     }
 
     private class addImageToAlbum extends AsyncTask<Integer, Void, Void> {

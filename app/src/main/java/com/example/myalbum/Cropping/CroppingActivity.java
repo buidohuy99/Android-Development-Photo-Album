@@ -1,10 +1,12 @@
 package com.example.myalbum.Cropping;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
@@ -58,8 +60,7 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
     ImageButton rotateCounterButton;
     CustomCropRatioDialog dialog;
 
-    void findLayoutView()
-    {
+    void findLayoutView() {
         mCropView = (CropImageView) findViewById(R.id.cropImageView);
         option_free = (TextView) findViewById(R.id.option_free);
         option_3_4 = (TextView) findViewById(R.id.option_3_4);
@@ -77,7 +78,7 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
     }
 
     @Override
-    public boolean onNavigateUp(){
+    public boolean onNavigateUp() {
         ReturnToViewImage();
         return true;
     }
@@ -95,7 +96,7 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
         context = this;
 
         //GET SELECTED IMAGE
-        image = DatabaseHandler.getInstance(CroppingActivity.this).getImageAt(IDAlbum,IDImage);
+        image = DatabaseHandler.getInstance(CroppingActivity.this).getImageAt(IDAlbum, IDImage);
 
         //MAKE URI
         File file = new File(image.getUrlHinh());
@@ -109,10 +110,12 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
 
                 new LoadCallback() {
                     @Override
-                    public void onError(Throwable e) { }
+                    public void onError(Throwable e) {
+                    }
 
                     @Override
-                    public void onSuccess() {}
+                    public void onSuccess() {
+                    }
                 });
 
         //set custom ratio
@@ -127,8 +130,7 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
         });
 
         LinearLayout layout = findViewById(R.id.cropMode);
-        for (int i = 0; i < layout.getChildCount();i++)
-        {
+        for (int i = 0; i < layout.getChildCount(); i++) {
             View option = layout.getChildAt(i);
             option.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -162,6 +164,12 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                final ProgressDialog dialog =ProgressDialog.show(context, "Please wait",
+                        "Processing Image", true);
+                dialog.setCancelable(false);
+                dialog.show();
+
                 mCropView.startCrop(
 
                         imageUri,
@@ -173,7 +181,8 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
                             }
 
                             @Override
-                            public void onSuccess(Bitmap cropped) {}
+                            public void onSuccess(Bitmap cropped) {
+                            }
 
                         },
 
@@ -182,6 +191,7 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
                             public void onError(Throwable e) {
 
                             }
+
                             @Override
                             public void onSuccess(Uri outputUri) {
                                 mCropView.startLoad(
@@ -190,10 +200,13 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
 
                                         new LoadCallback() {
                                             @Override
-                                            public void onError(Throwable e) { }
+                                            public void onError(Throwable e) {
+                                            }
 
                                             @Override
-                                            public void onSuccess() {}
+                                            public void onSuccess() {
+                                                dialog.dismiss();
+                                            }
                                         });
                             }
 
@@ -254,26 +267,24 @@ public class CroppingActivity extends Activity implements ActivityCallBacks {
         }
     }
 
-    void ReturnToViewImage()
-    {
+    void ReturnToViewImage() {
         Intent returnIntent = new Intent();
-        setResult(Activity.RESULT_OK,returnIntent);
+        setResult(Activity.RESULT_OK, returnIntent);
         finish();
     }
 
     @Override
     public void onMessageToActivity(String Source, Bundle bundle) {
-        if (Source == "custom ratio")
-        {
+        if (Source == "custom ratio") {
             ratio.height = bundle.getInt("height");
             ratio.width = bundle.getInt("width");
-            
-            if (ratio.height <=0 || ratio.width <= 0)
-            {
+
+            if (ratio.height <= 0 || ratio.width <= 0) {
                 return;
             }
 
             mCropView.setCustomRatio(ratio.width, ratio.height);
         }
     }
+
 }

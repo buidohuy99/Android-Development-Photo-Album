@@ -250,6 +250,23 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.close();
     }
 
+    public void addListImageWithOldIDAlbum(List<String> image,int idImage, int albumId, int idOldAlbum) {
+        for(int i = 0 ; i < image.size(); i++)
+        {
+            SQLiteDatabase db = this.getWritableDatabase();
+
+            ContentValues values = new ContentValues();
+            values.put(KEY_ID_IMAGE, idImage + i);
+            values.put(ID_ALBUM, albumId);
+            values.put(IMAGE, image.get(i));
+            values.put(ID_OLDALBUM, idOldAlbum);
+
+            db.insert(TABLE_IMAGE, null, values);
+            db.close();
+        }
+
+    }
+
     public List<Image> getAllImageOfAlbum(int albumID) {
 
         List<Image> listImage = new ArrayList<Image>();
@@ -317,7 +334,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(sqlDeleteAllImages);
         db.close();
     }
+    public void deleteListImage(int albumID, List<Integer> imageID) {
+        for(int i = 0; i < imageID.size(); i++)
+        {
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.delete(TABLE_IMAGE, ID_ALBUM + " = ? AND " + KEY_ID_IMAGE + " = ?", new String[]{String.valueOf(albumID), String.valueOf(imageID.get(i))});
+            String sqlDeleteAllImages = String.format(
+                    "DELETE FROM %s " +
+                            "WHERE %s = %d AND %s = %d", TABLE_IMAGE, ID_ALBUM, albumID, KEY_ID_IMAGE, imageID.get(i));
+            db.execSQL(sqlDeleteAllImages);
+            db.close();
+        }
 
+    }
     public void deleteAllImageAt(int albumID) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_IMAGE, ID_ALBUM + " = ? ", new String[]{String.valueOf(albumID)});

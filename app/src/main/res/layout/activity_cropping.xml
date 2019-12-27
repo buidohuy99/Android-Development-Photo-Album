@@ -1,9 +1,228 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Cropping.CroppingActivity">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <com.isseiaoki.simplecropview.CropImageView
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cropImageView"
+        android:paddingTop="0dp"
+        android:paddingBottom="100dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        custom:scv_crop_mode="fit_image"
+        custom:scv_background_color="@color/black"
+        custom:scv_handle_color="#5a97ed"
+        custom:scv_guide_color="#5a97ed"
+        custom:scv_overlay_color="#AA1C1C1C"
+        custom:scv_frame_color="#5a97ed"
+        custom:scv_handle_size="14dp"
+        custom:scv_touch_padding="8dp"
+        custom:scv_handle_show_mode="show_always"
+        custom:scv_guide_show_mode="show_always"
+        custom:scv_min_frame_size="50dp"
+        custom:scv_frame_stroke_weight="1dp"
+        custom:scv_guide_stroke_weight="1dp"/>
+
+    <HorizontalScrollView
+        android:id="@+id/editBar"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="10dp"
+        android:layout_marginBottom="0dp"
+        android:layout_above="@id/navigateBar"
+        android:layout_alignParentRight="true"
+        android:background="@color/black">
+
+        <LinearLayout
+            android:id="@+id/cropMode"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_marginLeft="15dp"
+            android:layout_marginRight="15dp">
+
+            <TextView
+                android:id="@+id/option_free"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="FREE"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_3_4"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="3 : 4"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_4_3"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="4 : 3"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_16_9"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="16: 9"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_9_16"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="9: 16"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_square"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="SQUARE"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_circular"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="CIRCULAR"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_fit"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="FIT IMAGE"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+
+            <TextView
+                android:id="@+id/option_custom"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="@color/black"
+                android:layout_marginRight="50dp"
+                android:text="CUSTOM"
+                android:textColor="#F5F5F5"
+                android:gravity="center"
+                android:textSize="8pt"></TextView>
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/navigateBar"
+        android:layout_marginTop="0dp"
+        android:paddingTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingBottom="8dp"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="@color/black">
+
+        <RelativeLayout
+            android:id="@+id/center"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/buttonSave"
+            app:layout_constraintLeft_toRightOf="@+id/buttonCancel">
+
+            <ImageButton
+                android:id="@+id/rotateCounterClockwise"
+                android:padding="5dp"
+                android:layout_width="38dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:layout_marginRight="70dp"
+                android:background="@drawable/roundcorner"
+                android:src="@drawable/crop_rotate_counter">
+
+            </ImageButton>
+
+            <ImageButton
+                android:id="@+id/rotateClockwise"
+                android:padding="5dp"
+                android:layout_width="38dp"
+                android:layout_height="35dp"
+                android:scaleType="fitCenter"
+                android:layout_marginLeft="70dp"
+                android:background="@drawable/roundcorner"
+                android:src="@drawable/crop_rotate_clockwise">
+
+            </ImageButton>
+
+        </RelativeLayout>
+
+        <ImageButton
+
+            android:id="@+id/buttonSave"
+            android:layout_width="41dp"
+            android:layout_height="41dp"
+            android:scaleType="fitCenter"
+            android:background="@drawable/roundcorner"
+            android:padding="6dp"
+            android:src= "@drawable/edit_save"
+            android:layout_weight="1"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <ImageButton
+            android:id="@+id/buttonCancel"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:background="@drawable/roundcorner"
+            android:src="@drawable/edit_cancel"
+            android:layout_weight="1"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

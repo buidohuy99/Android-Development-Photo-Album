@@ -72,7 +72,7 @@ public class ImageAdapter extends BaseAdapter {
             imageView.setLayoutParams(new GridView.LayoutParams(gridsize, gridsize));
 //imageView.setLayoutParams(new GridView.LayoutParams(100, 100));//NOT a good practice
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(2, 2, 2, 2);
+            imageView.setPadding(5, 5, 5, 5);
 
             checkableLayout = new CheckableLayout(context);
             checkableLayout.addView(imageView);

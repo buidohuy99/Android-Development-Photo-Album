@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -39,6 +40,8 @@ import com.example.myalbum.utilities.UtilityListeners;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static com.example.myalbum.AlbumsActivity.AlbumActivity.ALBUM_TO;
@@ -67,6 +70,8 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
     private Button searchButton;
     private ProgressBar loadingCir;
     private PasswordCheckDialog passwordPrompt = null;
+    private Spinner SortOption;
+    private Spinner SortOrder;
 
     private ArrayList<Album> renderAlbums;
     private ArrayList<String> hint;
@@ -259,6 +264,39 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
             }
         });
 
+        SortOption.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String spinnerValue = String.valueOf(SortOption.getSelectedItem().toString());
+
+                if (!spinnerValue.equals("Xếp theo..."))
+                {
+                    SortAlbum(SortOption.getSelectedItemPosition(), SortOrder.getSelectedItemPosition());
+                }
+
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        SortOrder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String spinnerValue = String.valueOf(SortOption.getSelectedItem().toString());
+
+                if (!spinnerValue.equals("Xếp theo..."))
+                {
+                    SortAlbum(SortOption.getSelectedItemPosition(), SortOrder.getSelectedItemPosition());
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
     }
 
     //Function to process messages send to main thread from other thread
@@ -326,6 +364,8 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         searchButton = findViewById(R.id.searchButton);
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
+        SortOption = findViewById(R.id.spinner1);
+        SortOrder = findViewById(R.id.spinner2);
 
         if(savedInstanceState != null) {
             if (savedInstanceState.getBoolean("isOnEdit"))
@@ -536,4 +576,55 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
             albumsAdapter.notifyDataSetChanged();
         }
     }
+
+    private class SortByName implements Comparator<Album>
+    {
+
+        @Override
+        public int compare(Album album, Album t1) {
+            return album.getAlbumName().compareTo(t1.getAlbumName());
+        }
+    }
+
+    private class SortByImageCount implements Comparator<Album>
+    {
+
+        @Override
+        public int compare(Album album, Album t1) {
+            int count1 = DatabaseHandler.getInstance(SearchAlbumActivity.this).getNumberOfImages(album.getId());
+            int count2 = DatabaseHandler.getInstance(SearchAlbumActivity.this).getNumberOfImages(t1.getId());
+
+            return count1 - count2;
+        }
+    }
+
+    private void SortAlbum(int SortOption, int Order)
+    {
+        if (SortOption == 1)
+        {
+            if (Order == 0)
+            {
+                Collections.sort(renderAlbums, new SortByName());
+            }
+            else
+            {
+                Collections.sort(renderAlbums, Collections.reverseOrder(new SortByName()));
+            }
+
+        }
+        else
+        {
+            if (Order == 0)
+            {
+                Collections.sort(renderAlbums, new SortByImageCount());
+            }
+            else
+            {
+                Collections.sort(renderAlbums, Collections.reverseOrder(new SortByImageCount()));
+            }
+        }
+        albumsAdapter.notifyDataSetChanged();
+
+    }
+
 }

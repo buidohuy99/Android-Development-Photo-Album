@@ -88,7 +88,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private AddAlbumDialog addAlbumDialog = null;
     private PasswordCheckDialog passwordPrompt = null;
     private Spinner SortOption;
-    private Spinner SortBy;
+    private Spinner SortOrder;
 
     //Auto-complete source
     private ArrayList<String> hint;
@@ -252,7 +252,28 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         SortOption.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                SortAlbum(0,0);
+                String spinnerValue = String.valueOf(SortOption.getSelectedItem().toString());
+
+                if (!spinnerValue.equals("Xếp theo..."))
+                {
+                    SortAlbum(SortOption.getSelectedItemPosition(), SortOrder.getSelectedItemPosition());
+                }
+
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
+        SortOrder.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String spinnerValue = String.valueOf(SortOption.getSelectedItem().toString());
+
+                if (!spinnerValue.equals("Xếp theo..."))
+                {
+                    SortAlbum(SortOption.getSelectedItemPosition(), SortOrder.getSelectedItemPosition());
+                }
             }
 
             @Override
@@ -405,7 +426,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
         SortOption = headerArea.findViewById(R.id.spinner1);
-        SortBy = headerArea.findViewById(R.id.spinner2);
+        SortOrder = headerArea.findViewById(R.id.spinner2);
 
         //Add header to gridview
         albumList.addHeaderView(headerArea);
@@ -649,10 +670,47 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         }
     }
 
+    private class SortByImageCount implements Comparator<Album>
+    {
+
+        @Override
+        public int compare(Album album, Album t1) {
+            int count1 = DatabaseHandler.getInstance(HomeActivity.this).getNumberOfImages(album.getId());
+            int count2 = DatabaseHandler.getInstance(HomeActivity.this).getNumberOfImages(t1.getId());
+
+            return count1 - count2;
+        }
+    }
+
     private void SortAlbum(int SortOption, int Order)
     {
         List<Album> albums = allAlbums.subList(2, allAlbums.size() - 1);
-        Collections.sort(albums, new SortByName());
+
+        if (SortOption == 1)
+        {
+            if (Order == 0)
+            {
+                Collections.sort(albums, new SortByName());
+            }
+            else
+            {
+                Collections.sort(albums, Collections.reverseOrder(new SortByName()));
+            }
+
+        }
+        else
+        {
+            if (Order == 0)
+            {
+                Collections.sort(albums, new SortByImageCount());
+            }
+            else
+            {
+                Collections.sort(albums, Collections.reverseOrder(new SortByImageCount()));
+            }
+        }
+
+
         for (int i = 2; i < allAlbums.size() - 1; i++)
         {
             allAlbums.set(i, albums.get(i - 2));

@@ -2,4 +2,21 @@
     <string name="app_name">My Album</string>
     <string name="album_name">Tên Album</string>
     <string name="album_password">Mật khẩu Album</string>
+
+    <string name="SortOption">Sort option</string>
+
+    <string-array name="SortOptions">
+        <item>Sort by...</item>
+        <item>By Name</item>
+        <item>By image count</item>
+    </string-array>
+
+    <string name="Order">Sort option</string>
+
+    <string-array name="SortBy">
+        <item>Order...</item>
+        <item>A - Z</item>
+        <item>Z - A</item>
+    </string-array>
+
 </resources>

@@ -29,6 +29,28 @@
             android:text="Search"
             android:background="@drawable/search_button"/>
     </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/spinner1"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:entries="@array/SortOptions"
+            android:prompt="@string/SortOption" />
+
+        <Spinner
+            android:id="@+id/spinner2"
+            android:layout_width="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_height="30dp"
+            android:entries="@array/SortBy"
+            android:prompt="@string/Order" />
+    </LinearLayout>
+    
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

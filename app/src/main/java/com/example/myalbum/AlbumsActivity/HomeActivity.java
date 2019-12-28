@@ -24,6 +24,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -47,6 +48,8 @@ import com.example.myalbum.DTOs.Album;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 //test
@@ -84,6 +87,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private ProgressBar loadingCir;
     private AddAlbumDialog addAlbumDialog = null;
     private PasswordCheckDialog passwordPrompt = null;
+    private Spinner SortOption;
+    private Spinner SortBy;
 
     //Auto-complete source
     private ArrayList<String> hint;
@@ -244,6 +249,18 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         });
         albumList.setOnItemClickListener(albumList_OnItemClick);
 
+        SortOption.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                SortAlbum(0,0);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
         //Delete
         albumList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -387,6 +404,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         addAlbumButton = headerArea.findViewById(R.id.addAlbumButton);
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
+        SortOption = headerArea.findViewById(R.id.spinner1);
+        SortBy = headerArea.findViewById(R.id.spinner2);
 
         //Add header to gridview
         albumList.addHeaderView(headerArea);
@@ -619,6 +638,27 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         if(albumsAdapter != null) {
             albumsAdapter.notifyDataSetChanged();
         }
+    }
+
+    private class SortByName implements Comparator<Album>
+    {
+
+        @Override
+        public int compare(Album album, Album t1) {
+            return album.getAlbumName().compareTo(t1.getAlbumName());
+        }
+    }
+
+    private void SortAlbum(int SortOption, int Order)
+    {
+        List<Album> albums = allAlbums.subList(2, allAlbums.size() - 1);
+        Collections.sort(albums, new SortByName());
+        for (int i = 2; i < allAlbums.size() - 1; i++)
+        {
+            allAlbums.set(i, albums.get(i - 2));
+        }
+
+        albumsAdapter.notifyDataSetChanged();
     }
 
 }

@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -223,16 +224,31 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
                     break;
             }
         }
-        else if(numberOfImages - 1 < 0)
-            Glide.with(currentContext).load(R.drawable.nopictures)
-                    .placeholder(R.drawable.loading)
-                    .into(thisRowViews.albumImage);
+        else if(numberOfImages - 1 < 0) {
+            if (album.getAlbumPassword() != null ) {
+                Glide.with(currentContext).load(R.drawable.album_lock)
+                        .placeholder(R.drawable.loading)
+                        .error(R.drawable.error)
+                        .into(thisRowViews.albumImage);
+            } else {
+                Glide.with(currentContext).load(R.drawable.nopictures)
+                        .placeholder(R.drawable.loading)
+                        .into(thisRowViews.albumImage);
+            }
+        }
         else {
-            Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), numberOfImages-1);
-            Glide.with(currentContext).load(latestImage.getUrlHinh())
-                    .placeholder(R.drawable.loading)
-                    .error(R.drawable.error)
-                    .into(thisRowViews.albumImage);
+            if(album.getAlbumPassword() != null){
+                Glide.with(currentContext).load(R.drawable.album_lock)
+                        .placeholder(R.drawable.loading)
+                        .error(R.drawable.error)
+                        .into(thisRowViews.albumImage);
+            }else {
+                Image latestImage = DatabaseHandler.getInstance(currentContext).getImageAt(album.getId(), numberOfImages - 1);
+                Glide.with(currentContext).load(latestImage.getUrlHinh())
+                        .placeholder(R.drawable.loading)
+                        .error(R.drawable.error)
+                        .into(thisRowViews.albumImage);
+            }
         }
 
 

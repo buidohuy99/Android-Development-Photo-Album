@@ -18,6 +18,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
@@ -31,6 +32,7 @@ import android.widget.WrapperListAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.FileProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.viewpager.widget.ViewPager;
 
@@ -45,7 +47,9 @@ import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.EditingPhoto.PhotoEditorHandler;
 import com.example.myalbum.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -91,6 +95,9 @@ public class ViewImageActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+
         viewPager = (ViewPager) findViewById(R.id.view_page);
         getData();
 
@@ -120,7 +127,17 @@ public class ViewImageActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+    public byte[] getBytes(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
+        int bufferSize = 1024;
+        byte[] buffer = new byte[bufferSize];
 
+        int len = 0;
+        while ((len = inputStream.read(buffer)) != -1) {
+            byteBuffer.write(buffer, 0, len);
+        }
+        return byteBuffer.toByteArray();
+    }
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
@@ -129,7 +146,6 @@ public class ViewImageActivity extends Activity {
             int pos = viewPager.getCurrentItem();
             Uri uriToImage = Uri.parse(listImage.get(pos).getUrlHinh());
             File file = new File(uriToImage.getPath());
-
             if (uriToImage != null) {
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
@@ -137,8 +153,6 @@ public class ViewImageActivity extends Activity {
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.setType("image/jpg");
                 startActivity(Intent.createChooser(shareIntent, "haha"));
-            } else {
-                finish();
             }
 
         }

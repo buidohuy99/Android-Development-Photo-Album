@@ -3,6 +3,7 @@ package com.example.myalbum.EditingPhoto;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -71,6 +72,7 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
     ImageButton addTextButton;
     ImageButton addBrushButton;
     ImageButton addFilterButton;
+    ProgressDialog dialog;
 
     BrushInfo brushInfo;
 
@@ -131,6 +133,10 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         addTextButton = findViewById(R.id.addTextButton);
         addFilterButton = findViewById(R.id.addFilterButton);
 
+        dialog = new ProgressDialog(context);
+        dialog.setTitle("Please wait");
+        dialog.setMessage("Processing image");
+        dialog.setCancelable(false);
     }
 
     @Override
@@ -205,6 +211,18 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
             @Override
             public void onSuccess(@NonNull String imagePath) {
                 Toast.makeText(context, "Image Saved Successfully", Toast.LENGTH_LONG).show();
+//                Intent returnIntent = new Intent();
+//                setResult(Activity.RESULT_OK,returnIntent);
+//                finish();
+
+                Glide.with(context).load(image.getUrlHinh())
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .placeholder(R.drawable.loading)
+                        .error(R.drawable.error)
+                        .into(mPhotoEditorView.getSource());
+                dialog.dismiss();
+
             }
 
             @Override
@@ -298,6 +316,8 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
+
+                dialog.show();
                 saveFile();
                 //finish();
                 //photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
@@ -396,9 +416,6 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         } else {
             // Permission has already been granted
             photoEditor.saveAsFile(image.getUrlHinh(),saveListener);
-            Intent returnIntent = new Intent();
-            setResult(Activity.RESULT_OK,returnIntent);
-            finish();
         }
 
 

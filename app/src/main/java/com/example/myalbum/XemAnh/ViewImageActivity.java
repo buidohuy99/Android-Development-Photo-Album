@@ -66,6 +66,7 @@ public class ViewImageActivity extends Activity {
     private LinearLayout thumbnailsContainer;
     private int IDAlbumtoMove;
     private static final int ADD_IMAGE_TO_ALBUM = 90;
+    private static final int ADD_IMAGE_TO_FAVOUR = 90;
     private static final int MOVE_IMGAE_TO_ALBUM = 100;
     private static final int EDIT_IMAGE= 101;
     private static final int CROP_IMAGE= 102;
@@ -262,6 +263,16 @@ public class ViewImageActivity extends Activity {
             intent.putExtras(myData);
         startActivityForResult(intent, VIEW_DETAILS);
         }
+
+        if(id == R.id.action_favor)
+        {
+            int picture = viewPager.getCurrentItem();
+            Integer numberOfImages = DatabaseHandler.getInstance(ViewImageActivity.this).getNumberOfImages(-2);
+            Image image = DatabaseHandler.getInstance(ViewImageActivity.this).getImageAt(IDAlbum, picture);
+            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(), numberOfImages, -2);
+            Toast.makeText(ViewImageActivity.this, "Thành công", Toast.LENGTH_LONG).show();
+        }
+
         return false;
 
     }
@@ -341,6 +352,7 @@ public class ViewImageActivity extends Activity {
             inflateThumbnails();
         }
 
+
     }
 
     private class addImageToAlbum extends AsyncTask<Integer, Void, Void> {
@@ -375,6 +387,42 @@ public class ViewImageActivity extends Activity {
 
         }
     }
+
+    private class addImageToFavour extends AsyncTask<Integer, Void, Void> {
+        private final ProgressDialog dialog = new ProgressDialog(ViewImageActivity.this);
+
+        String waitMsg = "Wait\nProcess is being done... ";
+
+        protected void onPreExecute() {
+            this.dialog.setMessage(waitMsg);
+            this.dialog.setCancelable(false); //outside touch doesn't dismiss you
+            this.dialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Integer... integers) {
+            Integer numberOfImages = DatabaseHandler.getInstance(ViewImageActivity.this).getNumberOfImages(-2);
+            Image image = DatabaseHandler.getInstance(ViewImageActivity.this).getImageAt(IDAlbum, integers[1]);
+            DatabaseHandler.getInstance(ViewImageActivity.this).addImage(image.getUrlHinh(), integers[1], -2);
+            publishProgress();
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... value) {
+            super.onProgressUpdate(value);
+        }
+
+        protected void onPostExecute(final Void unused) {
+            if (this.dialog.isShowing()) {
+                this.dialog.dismiss();
+            }
+
+        }
+    }
+
+
+
 
     private class RemoveImageTask extends AsyncTask<Integer, Integer, Void> {
         private final ProgressDialog dialog = new ProgressDialog(ViewImageActivity.this);

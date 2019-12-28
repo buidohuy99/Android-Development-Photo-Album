@@ -343,7 +343,6 @@ public class PhotoEditorHandler extends FragmentActivity implements MainCallback
         if (sender == "EmojiFragment")
         {
             photoEditor.addEmoji(bundle.getString("ChosenEmoji"));
-            photoEditor.setFilterEffect(PhotoFilter.BLACK_WHITE);
         }
 
         if (sender == "BrushFragment")

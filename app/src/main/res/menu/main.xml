@@ -30,7 +30,7 @@
     <item
         android:id="@+id/action_crop"
         android:orderInCategory="180"
-        android:title="Crop..."
+        android:title="Crop and Rotate"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_addtoalbum"

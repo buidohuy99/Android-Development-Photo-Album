@@ -146,7 +146,7 @@ public class AlbumActivity extends Activity {
 
         if (myBundle != null) {
             IDAlbum = myBundle.getInt("IDAlbum");
-            nameAlbum = myBundle.getString("nameAlbum") + String.valueOf(IDAlbum);
+            nameAlbum = myBundle.getString("nameAlbum");
             list = DatabaseHandler.getInstance(AlbumActivity.this).getAllImageOfAlbum(IDAlbum);
         }
 
@@ -215,7 +215,6 @@ public class AlbumActivity extends Activity {
 //                                    Image image = DatabaseHandler.getInstance(AlbumActivity.this).getImageAt(IDAlbum, index);
 //                                    new Restore().execute(index, image.getOldIDAlbum());
 //                                    Toast.makeText(AlbumActivity.this, String.valueOf(image.getPos())+ "+" + String.valueOf(image.getOldIDAlbum()), Toast.LENGTH_LONG).show();
-                                    Toast.makeText(AlbumActivity.this, String.valueOf(index), Toast.LENGTH_LONG).show();
 
                                 }
                             })
@@ -370,7 +369,7 @@ public class AlbumActivity extends Activity {
 
 
             } else {
-                displayMessage(getBaseContext(), "Nullll");
+                displayMessage(getBaseContext(), "Null");
             }
         }
 
@@ -693,7 +692,7 @@ public class AlbumActivity extends Activity {
             adapter.notifyDataSetChanged();
 
             modeGrid.finish();
-            Toast.makeText(AlbumActivity.this, OK, Toast.LENGTH_LONG).show();
+            Toast.makeText(AlbumActivity.this, "Xóa thành công", Toast.LENGTH_LONG).show();
         }
 
         protected void onPostExecute(final Void unused) {

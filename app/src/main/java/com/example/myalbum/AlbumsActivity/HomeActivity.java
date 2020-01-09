@@ -2,18 +2,13 @@ package com.example.myalbum.AlbumsActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,10 +17,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -40,6 +33,7 @@ import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
 import com.example.myalbum.utilities.HeaderGridView;
 import com.example.myalbum.utilities.SearchHistoryManager;
+import com.example.myalbum.utilities.UtilityFunctions;
 import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
 
@@ -74,8 +68,10 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
 
     //HomeActivity states
+        //Note-ing activity on edit mode
     private boolean isOnEdit = false;
-    private boolean activityHindered = false;
+        //Note-ing original orientation
+    private int originalOrientation;
     public ActionMode actionmode;
     private GridViewItemCallBack gridViewItemCallBack;
 
@@ -242,7 +238,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 myData.putInt("IDAlbum", allAlbums.get((int) l).getId());
 
                 newActivity.putExtra(ALBUM_TO, myData);
-                activityHindered = true;
                 startActivity(newActivity);
             }
             }
@@ -318,7 +313,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 newActivity.putStringArrayListExtra("AutoComplete", hint);
                 searchBar.setText("");
                 loadingCir.setVisibility(View.INVISIBLE);
-                activityHindered = true;
                 startActivityForResult(newActivity, SEARCH_ALBUM);
                 break;
             case RELOAD_ALL_ALBUM_THREADCODE: case DELETE_SELECTS_THREADCODE:
@@ -381,7 +375,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             myData.putInt("IDAlbum", album.getId());
 
             newActivity.putExtra(ALBUM_TO, myData);
-            activityHindered = true;
             startActivity(newActivity);
         }
     }
@@ -403,6 +396,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_activity);
+        //Init orientation
+        originalOrientation = UtilityFunctions.getOrientation(this);
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -452,15 +447,16 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
         //Check saved state
         if(savedInstanceState != null) {
-            if (savedInstanceState.getBoolean("isOnEdit"))
-                startMyEditMode(savedInstanceState.getString("editBarText"));
-            allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
-            hint = savedInstanceState.getStringArrayList("autocompleteHints");
-            ArrayList<Integer> selectedState = (ArrayList<Integer>)savedInstanceState.getSerializable("selectedState");
-            Boolean blurState = savedInstanceState.getBoolean("systemAlbumsState");
-            if(blurState == null) blurState = false;
-            //If found no saved state
-            if(allAlbums == null || hint == null){
+            if(savedInstanceState.getBoolean("orientationChanged")) {
+                if (savedInstanceState.getBoolean("isOnEdit"))
+                    startMyEditMode(savedInstanceState.getString("editBarText"));
+                allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
+                hint = savedInstanceState.getStringArrayList("autocompleteHints");
+                ArrayList<Integer> selectedState = (ArrayList<Integer>) savedInstanceState.getSerializable("selectedState");
+                Boolean blurState = savedInstanceState.getBoolean("systemAlbumsState");
+                if (blurState == null) blurState = false;
+                bindFunctionalities(selectedState, blurState, savedInstanceState.getInt("selectedArraySize"));
+            } else{
                 //Create necessary arrays
                 allAlbums = new ArrayList<Album>();
                 hint = new ArrayList<String>();
@@ -468,9 +464,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 //Run the thread
                 loadingCir.setVisibility(View.VISIBLE);
                 loadThread.run();
-                return;
             }
-            bindFunctionalities(selectedState, blurState, savedInstanceState.getInt("selectedArraySize"));
         }else{
             //Create necessary arrays
             allAlbums = new ArrayList<Album>();
@@ -484,19 +478,22 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        if(!activityHindered) {
-            loadingCir.setVisibility(View.VISIBLE);
+        loadingCir.setVisibility(View.VISIBLE);
 
+        boolean orientationFlag = UtilityFunctions.getOrientation(this) != originalOrientation;
+        outState.putBoolean("orientationChanged", orientationFlag);
+        if(orientationFlag) {
             outState.putBoolean("isOnEdit", isOnEdit);
-            if(actionmode != null) outState.putString("editBarText", actionmode.getTitle().toString());
+            if (actionmode != null)
+                outState.putString("editBarText", actionmode.getTitle().toString());
             outState.putParcelableArrayList("allAlbums", (ArrayList<Album>) allAlbums);
             outState.putSerializable("selectedState", albumsAdapter.getSelected());
             outState.putInt("selectedArraySize", albumsAdapter.getSelectedCount());
             outState.putStringArrayList("autocompleteHints", hint);
             outState.putBoolean("systemAlbumsState", albumsAdapter.getBlurSystemAlbumsState());
-
-            loadingCir.setVisibility(View.INVISIBLE);
         }
+
+        loadingCir.setVisibility(View.INVISIBLE);
         if (actionmode != null) actionmode.finish();
         super.onSaveInstanceState(outState);
     }
@@ -655,7 +652,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onResume()
     {
         super.onResume();
-        activityHindered = false;
         if(albumsAdapter != null) {
             albumsAdapter.notifyDataSetChanged();
         }

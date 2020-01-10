@@ -6,19 +6,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
 import com.example.myalbum.DTOs.Image;
 import com.example.myalbum.R;
 import com.example.myalbum.utilities.SquareImageView;
+import com.example.myalbum.utilities.UtilityFunctions;
 import com.example.myalbum.utilities.UtilityGlobals;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AlbumsAdapter extends BaseAdapter implements Serializable {
+public class AlbumsAdapter extends BaseAdapter implements Serializable, StickyGridHeadersSimpleAdapter {
 
     //Create a separate display Album from the true amount of Albums
     List<Album> displayAlbums;
@@ -34,6 +32,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
     private int selectedSize = 0;
     private boolean blurSystemAlbums = false;
     private boolean prevBlurStat = false;
+    private LinearLayout.LayoutParams albumTypeHeaderLayoutParams;
 
     //Context of current Activity/ Fragment
     Activity currentContext;
@@ -45,6 +44,10 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         currentContext = context;
         layoutToInflate = resource;
         selected = new HashMap<Integer, Boolean>();
+        albumTypeHeaderLayoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
     }
 
     public void toggleSelected(int position) {
@@ -118,6 +121,11 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         return position;
     }
 
+    @Override
+    public long getHeaderId(int position) {
+        return displayAlbums.get(position).getId() < 0 ? 0 : 1;
+    }
+
     //Create a wrapper for holding all Views inside an Album Row
     class AlbumRowViewsHolder {
         SquareImageView albumImage;
@@ -137,6 +145,86 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         }
     }
 
+    class AlbumsHeaderViewholder {
+        TextView albumTypeHeader;
+        TextView albumDateHeader;
+
+        AlbumsHeaderViewholder (View root) {
+            albumTypeHeader = root.findViewById(R.id.albumTypeHeader);
+            albumDateHeader = root.findViewById(R.id.albumDateHeader);
+        }
+    }
+
+    @Override
+    public View getHeaderView(int position, View convertView, ViewGroup parent) {
+        final AlbumsHeaderViewholder thisHeaderViews;
+
+        final View currentHeader;
+
+        if(convertView == null) {
+            LayoutInflater inflater = currentContext.getLayoutInflater();
+            currentHeader = inflater.inflate(R.layout.albumlist_header, parent, false);
+            thisHeaderViews = new AlbumsHeaderViewholder(currentHeader);
+            currentHeader.setTag(thisHeaderViews);
+        }else {
+            currentHeader = convertView;
+            thisHeaderViews = (AlbumsHeaderViewholder) convertView.getTag();
+        }
+
+        int getID = displayAlbums.get(position).getId();
+
+        if(getID < 0) {
+            //Set headers based on orientation
+            int orientation = UtilityFunctions.getOrientation(currentContext);
+            float scale = currentContext.getResources().getDisplayMetrics().density;
+            int dpAsPixels;
+            if(orientation % 2 != 0) {
+                dpAsPixels = (int) (5 * scale + 0.5f);
+
+            }else {
+                dpAsPixels = (int) (10 * scale + 0.5f);
+            }
+            albumTypeHeaderLayoutParams.setMargins(0, dpAsPixels, 0, dpAsPixels);
+            thisHeaderViews.albumTypeHeader.setPadding(dpAsPixels, dpAsPixels, dpAsPixels, dpAsPixels);
+            thisHeaderViews.albumTypeHeader.setLayoutParams(albumTypeHeaderLayoutParams);
+
+            if(thisHeaderViews.albumTypeHeader.getVisibility() != View.VISIBLE) {
+                thisHeaderViews.albumTypeHeader.setVisibility(View.VISIBLE);
+            };
+
+            thisHeaderViews.albumTypeHeader.setText("Album đặc biệt");
+        }else{
+            if (currentContext.getClass() == HomeActivity.class)
+            {
+                //Set headers based on orientation
+                int orientation = UtilityFunctions.getOrientation(currentContext);
+                float scale = currentContext.getResources().getDisplayMetrics().density;
+                int dpAsPixels;
+                if(orientation % 2 != 0) {
+                    dpAsPixels = (int) (5 * scale + 0.5f);
+
+                }else {
+                    dpAsPixels = (int) (10 * scale + 0.5f);
+                }
+                albumTypeHeaderLayoutParams.setMargins(0, dpAsPixels, 0, dpAsPixels);
+                thisHeaderViews.albumTypeHeader.setPadding(dpAsPixels, dpAsPixels, dpAsPixels, dpAsPixels);
+                thisHeaderViews.albumTypeHeader.setLayoutParams(albumTypeHeaderLayoutParams);
+
+                if(thisHeaderViews.albumTypeHeader.getVisibility() != View.VISIBLE) {
+                    thisHeaderViews.albumTypeHeader.setVisibility(View.VISIBLE);
+                };
+                thisHeaderViews.albumTypeHeader.setText("Album của tôi");
+            }
+            else {
+                if(thisHeaderViews.albumTypeHeader.getVisibility() == View.VISIBLE) {
+                    thisHeaderViews.albumTypeHeader.setVisibility(View.GONE);
+                }
+            }
+        }
+
+        return currentHeader;
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
@@ -153,7 +241,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
             //If there is none, use the inflater of current Activity
             LayoutInflater inflater = currentContext.getLayoutInflater();
             //... to create a new view of a row from .xml file
-            currentRow = inflater.inflate(R.layout.albumlist_row, null);
+            currentRow = inflater.inflate(R.layout.albumlist_row, parent, false);
 
             //Create a View Holder to hold all Views from currentRow View/ViewGroup
             thisRowViews = new AlbumRowViewsHolder(currentRow);
@@ -174,13 +262,12 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         if(!currentRow.isEnabled()) currentRow.setEnabled(true);
 
         if(position == displayAlbums.size() - 1 && currentContext.getClass() == HomeActivity.class) {
-            thisRowViews.albumImage.setBackground(null);
             thisRowViews.albumInfo.setVisibility(View.INVISIBLE);
             thisRowViews.checkedOverlay.setVisibility(View.INVISIBLE);
             Glide.with(currentContext).load(R.drawable.add_album)
                     .placeholder(R.drawable.loading)
                     .into(thisRowViews.albumImage);
-            currentRow.setBackground(null);
+            if(currentRow.getBackground() != null) currentRow.setBackground(null);
             currentRow.setEnabled(false);
             if(prevBlurStat != blurSystemAlbums) {
                 if (blurSystemAlbums) {
@@ -191,8 +278,6 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         }
 
         //if reuse view without background add background
-        if(currentRow.getBackground() == null) currentRow.setBackgroundResource(R.drawable.black_border);
-        if(thisRowViews.albumImage.getBackground() == null) thisRowViews.albumImage.setBackgroundResource(R.color.white);
         if(thisRowViews.albumInfo.getVisibility() == View.INVISIBLE) thisRowViews.albumInfo.setVisibility(View.VISIBLE);
         //Add contents to the Views inside the Row or
         //Update the contents of the Views inside found scrap Row
@@ -207,6 +292,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
         thisRowViews.imagesNumber.setText(numberOfImages.toString());
         //Set album thumbnail
         if(album.getId() < 0){
+            if(currentRow.getBackground() != null) currentRow.setBackground(null);
             if(prevBlurStat != blurSystemAlbums) {
                 if (blurSystemAlbums)
                     thisRowViews.albumWhiteOverlay.setVisibility(View.VISIBLE);
@@ -225,6 +311,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
             }
         }
         else if(numberOfImages - 1 < 0) {
+            if(currentRow.getBackground() == null) currentRow.setBackgroundResource(R.drawable.black_border);
             if (album.getAlbumPassword() != null ) {
                 Glide.with(currentContext).load(R.drawable.album_lock)
                         .placeholder(R.drawable.loading)
@@ -237,6 +324,7 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable {
             }
         }
         else {
+            if(currentRow.getBackground() == null) currentRow.setBackgroundResource(R.drawable.black_border);
             if(album.getAlbumPassword() != null){
                 Glide.with(currentContext).load(R.drawable.album_lock)
                         .placeholder(R.drawable.loading)

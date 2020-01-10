@@ -5,9 +5,13 @@ import android.os.Parcelable;
 
 import com.example.myalbum.AlbumsActivity.HomeActivity;
 import com.example.myalbum.DAO.DatabaseHandler;
+import com.example.myalbum.utilities.UtilityGlobals;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 //Album class
@@ -80,6 +84,12 @@ public class Album implements Parcelable {
 
     public void setDate(String date){
         albumDate=date;
+    }
+    public void setCurrentDate() {
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat(UtilityGlobals.globalDateFormat);
+        String formattedDate = df.format(c);
+        albumDate = formattedDate;
     }
 
     //Album Pass

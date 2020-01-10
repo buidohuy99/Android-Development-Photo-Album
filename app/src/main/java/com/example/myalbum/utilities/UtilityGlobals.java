@@ -13,4 +13,6 @@ public class UtilityGlobals {
     public static final int TRASH_ALBUM = -1;
     public static final int FAVORITE_ALBUM = -2;
 
+    public static final String globalDateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+
 }

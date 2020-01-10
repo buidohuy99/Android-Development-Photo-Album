@@ -31,6 +31,7 @@ import com.example.myalbum.utilities.SearchHistoryManager;
 import com.example.myalbum.utilities.UtilityFunctions;
 import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapterWrapper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -73,6 +74,8 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     //Adapters
     private AlbumsAdapter albumsAdapter;
+    //Wrapper to section the adapter
+    private StickyGridHeadersSimpleAdapterWrapper albumsWrapperAdapter;
 
     //Events
     private OnClickEvent searchButton_OnClick = new OnClickEvent();
@@ -138,9 +141,14 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
     private void resetAdapters(final ArrayList<Integer> selectedAlbums, Integer selectedSize) {
         //Add adapters
         //For displaying all albums
-        albumsAdapter = new AlbumsAdapter(this,
-                renderAlbums,
-                R.layout.albumlist_row);
+        if(albumsAdapter == null) {
+            albumsAdapter = new AlbumsAdapter(this,
+                    renderAlbums,
+                    R.layout.albumlist_row);
+        }
+        if(albumsWrapperAdapter == null) {
+            albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
+        }
         if(selectedAlbums != null) {
             //Create thread for setting selected
             Thread setSelectedThread = new Thread(new Runnable() {
@@ -156,7 +164,7 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
             setSelectedThread.run();
         }
         if(selectedSize != null) albumsAdapter.setSelectedSize(selectedSize);
-        albumList.setAdapter(albumsAdapter);
+        albumList.setAdapter(albumsWrapperAdapter);
 
         //For autocomplete field
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
@@ -358,6 +366,13 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         loadingCir = findViewById(R.id.progress_circular);
         SortOption = findViewById(R.id.spinner1);
         SortOrder = findViewById(R.id.spinner2);
+
+        if(UtilityFunctions.getOrientation(this) % 2 != 0) {
+            albumList.setNumColumns(5);
+        }
+        else {
+            albumList.setNumColumns(2);
+        }
 
         if(savedInstanceState != null) {
             if(savedInstanceState.getBoolean("orientationChanged")) {

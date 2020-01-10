@@ -3,15 +3,13 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="2dp"
-    android:background="@drawable/black_border">
+    android:padding="2dp">
     <com.example.myalbum.utilities.SquareImageView
         android:id="@+id/albumImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:layout_gravity="center"
-        android:background="@color/white" />
+        android:layout_gravity="center" />
     <com.example.myalbum.utilities.SquareImageView
         android:id="@+id/checkedOverlay"
         android:layout_width="match_parent"
@@ -20,14 +18,14 @@
         android:layout_gravity="center"
         android:visibility="invisible"
         android:src="@drawable/checked_mark"
-        android:background="#994287f5"
+        android:background="#99000000"
         android:padding="15dp"/>
     <LinearLayout
         android:id="@+id/albumInfo"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="center_horizontal|bottom"
-        android:background="#73000000">
+        android:background="#73458cff">
         <TextView
             android:id="@+id/albumName"
             android:layout_height="match_parent"

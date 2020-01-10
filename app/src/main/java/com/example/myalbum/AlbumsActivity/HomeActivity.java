@@ -4,19 +4,21 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.ActionMode;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 
@@ -31,7 +33,6 @@ import com.example.myalbum.events.OnClickEvent;
 import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
-import com.example.myalbum.utilities.HeaderGridView;
 import com.example.myalbum.utilities.SearchHistoryManager;
 import com.example.myalbum.utilities.UtilityFunctions;
 import com.example.myalbum.utilities.UtilityGlobals;
@@ -48,6 +49,7 @@ import java.util.List;
 
 //test
 import com.example.myalbum.DAO.DatabaseHandler;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapterWrapper;
 //end test
 
 public class HomeActivity extends Activity implements ActivityCallBacks {
@@ -77,7 +79,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //Page widgets
     private AutoCompleteTextView searchBar;
-    private HeaderGridView albumList;
+    private GridView albumList;
     private Button searchButton;
     private Button addAlbumButton;
     private ProgressBar loadingCir;
@@ -106,6 +108,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //Adapters
     private AlbumsAdapter albumsAdapter;
+    //Wrapper to section the adapter
+    private StickyGridHeadersSimpleAdapterWrapper albumsWrapperAdapter;
 
     //---------------------------------------Functions-----------------------------------
 
@@ -113,6 +117,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         //Add album
     private void addAlbum(String name, String password) {
         Album album = new Album(name, password);
+        album.setCurrentDate();
         new AddAlbum().execute(album);
     }
 
@@ -126,9 +131,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private void resetAdapters(final ArrayList<Integer> selectedAlbums, boolean setBlur, Integer selectedSize){
         //Add adapters
         //For displaying all albums
-        albumsAdapter = new AlbumsAdapter(this,
-                allAlbums,
-                R.layout.albumlist_row);
+        if(albumsAdapter == null) {
+            albumsAdapter = new AlbumsAdapter(this,
+                    allAlbums,
+                    R.layout.albumlist_row);
+        }
+        if(albumsWrapperAdapter == null) {
+            albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
+        }
         if(selectedAlbums != null) {
             //Create thread for setting selected
             Thread setSelectedThread = new Thread(new Runnable() {
@@ -145,7 +155,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         }
         albumsAdapter.setBlurSystemAlbumsState(setBlur);
         if(selectedSize != null) albumsAdapter.setSelectedSize(selectedSize);
-        albumList.setAdapter(albumsAdapter);
+        albumList.setAdapter(albumsWrapperAdapter);
 
         //For autocomplete field
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
@@ -408,23 +418,23 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             }
         }.execute();
 
-        //Create header area
-        final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
-                .findViewById(android.R.id.content)).getChildAt(0);
-
-        View headerArea = this.getLayoutInflater().inflate(R.layout.albumlist_header, viewGroup, false);
-
         //Bind
-        searchBar = headerArea.findViewById(R.id.searchBar);
-        searchButton = headerArea.findViewById(R.id.searchButton);
-        addAlbumButton = headerArea.findViewById(R.id.addAlbumButton);
+        searchBar = findViewById(R.id.searchBar);
+        searchButton = findViewById(R.id.searchButton);
+        addAlbumButton = findViewById(R.id.addAlbumButton);
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
-        SortOption = headerArea.findViewById(R.id.spinner1);
-        SortOrder = headerArea.findViewById(R.id.spinner2);
-
-        //Add header to gridview
-        albumList.addHeaderView(headerArea);
+        SortOption = findViewById(R.id.spinner1);
+        SortOrder = findViewById(R.id.spinner2);
+        View quickAct = findViewById(R.id.quickOperate);
+        if(UtilityFunctions.getOrientation(this) % 2 != 0) {
+            quickAct.setVisibility(View.GONE);
+            albumList.setNumColumns(5);
+        }
+        else {
+            quickAct.setVisibility(View.VISIBLE);
+            albumList.setNumColumns(2);
+        }
 
         //Create thread for loading
         Thread loadThread = new Thread(new Runnable() {

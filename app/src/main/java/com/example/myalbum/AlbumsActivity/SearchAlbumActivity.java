@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,7 +37,6 @@ import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapterWra
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static com.example.myalbum.AlbumsActivity.AlbumActivity.ALBUM_TO;
@@ -83,6 +83,11 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     //Handlers
     private IncomingHandler updateHandler = new IncomingHandler(this);
+
+    //Comparators
+    private AlbumBusinessLogic.SortByName sortByName;
+    private AlbumBusinessLogic.SortByDate sortByDate;
+    private AlbumBusinessLogic.SortByImageCount sortByImageCount;
 
     //Album logic
     private ArrayList<Album> findAlbumByName(String name){
@@ -146,6 +151,7 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
                     renderAlbums,
                     R.layout.albumlist_row);
         }
+        Collections.sort(renderAlbums, sortByDate);
         if(albumsWrapperAdapter == null) {
             albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
         }
@@ -359,6 +365,11 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
 
+        //Get comparators
+        sortByName = new AlbumBusinessLogic.SortByName();
+        sortByImageCount = new AlbumBusinessLogic.SortByImageCount(this);
+        sortByDate = new AlbumBusinessLogic.SortByDate();
+
         //Bind
         searchBar = findViewById(R.id.searchBar);
         searchButton = findViewById(R.id.searchButton);
@@ -369,8 +380,7 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
         if(UtilityFunctions.getOrientation(this) % 2 != 0) {
             albumList.setNumColumns(5);
-        }
-        else {
+        } else {
             albumList.setNumColumns(2);
         }
 
@@ -585,38 +595,17 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         }
     }
 
-    private class SortByName implements Comparator<Album>
-    {
-
-        @Override
-        public int compare(Album album, Album t1) {
-            return album.getAlbumName().compareTo(t1.getAlbumName());
-        }
-    }
-
-    private class SortByImageCount implements Comparator<Album>
-    {
-
-        @Override
-        public int compare(Album album, Album t1) {
-            int count1 = DatabaseHandler.getInstance(SearchAlbumActivity.this).getNumberOfImages(album.getId());
-            int count2 = DatabaseHandler.getInstance(SearchAlbumActivity.this).getNumberOfImages(t1.getId());
-
-            return count1 - count2;
-        }
-    }
-
     private void SortAlbum(int SortOption, int Order)
     {
         if (SortOption == 1)
         {
             if (Order == 0)
             {
-                Collections.sort(renderAlbums, new SortByName());
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, sortByName));
             }
             else
             {
-                Collections.sort(renderAlbums, Collections.reverseOrder(new SortByName()));
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, true, sortByName, false));
             }
 
         }
@@ -624,15 +613,14 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         {
             if (Order == 0)
             {
-                Collections.sort(renderAlbums, new SortByImageCount());
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, sortByImageCount));
             }
             else
             {
-                Collections.sort(renderAlbums, Collections.reverseOrder(new SortByImageCount()));
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, true, sortByImageCount, false));
             }
         }
         albumsAdapter.notifyDataSetChanged();
-
     }
 
 }

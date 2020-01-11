@@ -19,7 +19,9 @@ import com.example.myalbum.utilities.UtilityGlobals;
 import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapter;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +125,19 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable, StickyGr
 
     @Override
     public long getHeaderId(int position) {
-        return displayAlbums.get(position).getId() < 0 ? 0 : 1;
+        if(currentContext.getClass() == HomeActivity.class)
+            return displayAlbums.get(position).getId() < 0 ? 0 : 1;
+        else {
+            Album current = displayAlbums.get(position);
+            if(current.getId() < 0) return -2;
+            try {
+                Date date = UtilityGlobals.globalSDF.parse(current.getDate());
+                long days = (date.getTime() / (1000 * 60 * 60 *24)) % 7;
+                return days;
+            }catch (Exception e) {
+                return -1;
+            }
+        }
     }
 
     //Create a wrapper for holding all Views inside an Album Row
@@ -171,9 +185,9 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable, StickyGr
             thisHeaderViews = (AlbumsHeaderViewholder) convertView.getTag();
         }
 
-        int getID = displayAlbums.get(position).getId();
-
-        if(getID < 0) {
+        Album album = displayAlbums.get(position);
+        if (currentContext.getClass() == HomeActivity.class)
+        {
             //Set headers based on orientation
             int orientation = UtilityFunctions.getOrientation(currentContext);
             float scale = currentContext.getResources().getDisplayMetrics().density;
@@ -192,34 +206,28 @@ public class AlbumsAdapter extends BaseAdapter implements Serializable, StickyGr
                 thisHeaderViews.albumTypeHeader.setVisibility(View.VISIBLE);
             };
 
-            thisHeaderViews.albumTypeHeader.setText("Album đặc biệt");
-        }else{
-            if (currentContext.getClass() == HomeActivity.class)
-            {
-                //Set headers based on orientation
-                int orientation = UtilityFunctions.getOrientation(currentContext);
-                float scale = currentContext.getResources().getDisplayMetrics().density;
-                int dpAsPixels;
-                if(orientation % 2 != 0) {
-                    dpAsPixels = (int) (5 * scale + 0.5f);
-
-                }else {
-                    dpAsPixels = (int) (10 * scale + 0.5f);
-                }
-                albumTypeHeaderLayoutParams.setMargins(0, dpAsPixels, 0, dpAsPixels);
-                thisHeaderViews.albumTypeHeader.setPadding(dpAsPixels, dpAsPixels, dpAsPixels, dpAsPixels);
-                thisHeaderViews.albumTypeHeader.setLayoutParams(albumTypeHeaderLayoutParams);
-
-                if(thisHeaderViews.albumTypeHeader.getVisibility() != View.VISIBLE) {
-                    thisHeaderViews.albumTypeHeader.setVisibility(View.VISIBLE);
-                };
-                thisHeaderViews.albumTypeHeader.setText("Album của tôi");
+            if(album.getId() >= 0)
+                thisHeaderViews.albumTypeHeader.setText("Albums của tôi");
+            else
+                thisHeaderViews.albumTypeHeader.setText("Albums đặc biệt");
+        }
+        else {
+            if(thisHeaderViews.albumTypeHeader.getVisibility() == View.VISIBLE) {
+                thisHeaderViews.albumTypeHeader.setVisibility(View.GONE);
             }
-            else {
-                if(thisHeaderViews.albumTypeHeader.getVisibility() == View.VISIBLE) {
-                    thisHeaderViews.albumTypeHeader.setVisibility(View.GONE);
+            if(thisHeaderViews.albumDateHeader.getVisibility() != View.VISIBLE) {
+                thisHeaderViews.albumDateHeader.setVisibility(View.VISIBLE);
+            };
+            String dateStr = album.getDate();
+            if(dateStr != null) {
+                try {
+                    Date date = UtilityGlobals.globalSDF.parse(dateStr);
+                    SimpleDateFormat vietnameseSDF = new SimpleDateFormat("'Ngày' dd 'tháng' MM 'năm' yyyy");
+                    thisHeaderViews.albumDateHeader.setText(vietnameseSDF.format(date));
+                } catch (Exception e) {
+                    thisHeaderViews.albumDateHeader.setText("Ngày tạo không rõ");
                 }
-            }
+            }else thisHeaderViews.albumDateHeader.setText("Ngày tạo không rõ");
         }
 
         return currentHeader;

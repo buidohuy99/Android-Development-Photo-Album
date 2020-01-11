@@ -224,6 +224,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 if(allAlbums.get((int)l).getId() < 0 || allAlbums.size() - 1 == l) return;
                 albumsAdapter.toggleSelected((int) l);
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
                 actionmode.setTitle(albumsAdapter.getSelectedCount() + " items selected");
             }
             else {
@@ -298,11 +299,13 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 //Cannot trigger edit for system albums
                 if(allAlbums.get((int)id).getId() < 0) {
                     albumsAdapter.notifyDataSetChanged();
+                    albumsWrapperAdapter.notifyDataSetChanged();
                     actionmode.setTitle(actionBarTitle);
                     return true;
                 }
                 albumsAdapter.toggleSelected((int)id);
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
                 actionBarTitle = albumsAdapter.getSelectedCount() + " items selected";
                 actionmode.setTitle(actionBarTitle);
                 return true;
@@ -335,6 +338,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 break;
             case SET_SELECTED_THREADCODE:
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
                 loadingCir.setVisibility(View.INVISIBLE);
                 break;
         }
@@ -577,6 +581,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         @Override
         protected void onPostExecute(ArrayAdapter<String> strings) {
             albumsAdapter.notifyDataSetChanged();
+            albumsWrapperAdapter.notifyDataSetChanged();
             searchBar.setAdapter(strings);
             albumList.smoothScrollByOffset(albumList.getMeasuredHeight());
         }
@@ -642,6 +647,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 albumsAdapter.toggleBlurSystemAlbums();
                 albumsAdapter.clearSelected();
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
             }
         }
 
@@ -664,6 +670,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         super.onResume();
         if(albumsAdapter != null) {
             albumsAdapter.notifyDataSetChanged();
+            albumsWrapperAdapter.notifyDataSetChanged();
         }
     }
 
@@ -723,6 +730,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         }
 
         albumsAdapter.notifyDataSetChanged();
+        albumsWrapperAdapter.notifyDataSetChanged();
     }
 
 }

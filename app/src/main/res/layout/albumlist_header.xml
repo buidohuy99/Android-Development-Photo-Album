@@ -1,81 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:clickable="true">
-    <LinearLayout
-        android:id="@+id/searchZone"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/albumTypeHeader"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_marginBottom="20dp"
-        android:weightSum="12"
-        android:background="@drawable/edittext_default">
-        <AutoCompleteTextView
-            android:id="@+id/searchBar"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="8"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
-            android:inputType="text"
-            android:background="@null"/>
-        <Button
-            android:id="@+id/searchButton"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="4"
-            android:text="Search"
-            android:background="@drawable/search_button"/>
-    </LinearLayout>
-    
-    <LinearLayout
+        android:layout_height="match_parent"
+        android:textStyle="bold"
+        android:textSize="20dp"
+        android:gravity="center"
+        android:padding="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/white"
+        android:background="@drawable/header_style"/>
+    <TextView
+        android:id="@+id/albumDateHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Spinner
-            android:id="@+id/spinner1"
-            android:layout_width="wrap_content"
-            android:layout_height="30dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:entries="@array/SortOptions"
-            android:prompt="@string/SortOption" />
-
-        <Spinner
-            android:id="@+id/spinner2"
-            android:layout_width="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:layout_height="30dp"
-            android:entries="@array/SortBy"
-            android:prompt="@string/Order" />
-    </LinearLayout>
-    
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="10dp">
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textSize="20dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/black"
-            android:text="Tất cả album"/>
-        <Button
-            android:id="@+id/addAlbumButton"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:gravity="center_vertical"
-            android:background="@drawable/plus_icon_button"
-            />
-    </LinearLayout>
-
+        android:layout_height="match_parent"
+        android:textStyle="bold|italic"
+        android:textSize="17dp"
+        android:gravity="center_vertical"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/black"
+        android:visibility="gone"/>
 </LinearLayout>

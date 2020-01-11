@@ -4,13 +4,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,14 +17,10 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.GridView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.NavUtils;
 
 import com.example.myalbum.DAO.DatabaseHandler;
 import com.example.myalbum.DTOs.Album;
@@ -35,13 +29,14 @@ import com.example.myalbum.events.OnClickEvent;
 import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 import com.example.myalbum.utilities.SearchHistoryManager;
+import com.example.myalbum.utilities.UtilityFunctions;
 import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapterWrapper;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static com.example.myalbum.AlbumsActivity.AlbumActivity.ALBUM_TO;
@@ -60,7 +55,7 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     //Activity states
     private boolean isOnEdit = false;
-    private boolean activityHindered = false;
+    private int originalOrientation;
     public ActionMode actionmode;
     private GridViewItemCallBack gridViewItemCallBack;
 
@@ -79,6 +74,8 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     //Adapters
     private AlbumsAdapter albumsAdapter;
+    //Wrapper to section the adapter
+    private StickyGridHeadersSimpleAdapterWrapper albumsWrapperAdapter;
 
     //Events
     private OnClickEvent searchButton_OnClick = new OnClickEvent();
@@ -86,6 +83,11 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     //Handlers
     private IncomingHandler updateHandler = new IncomingHandler(this);
+
+    //Comparators
+    private AlbumBusinessLogic.SortByName sortByName;
+    private AlbumBusinessLogic.SortByDate sortByDate;
+    private AlbumBusinessLogic.SortByImageCount sortByImageCount;
 
     //Album logic
     private ArrayList<Album> findAlbumByName(String name){
@@ -144,9 +146,15 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
     private void resetAdapters(final ArrayList<Integer> selectedAlbums, Integer selectedSize) {
         //Add adapters
         //For displaying all albums
-        albumsAdapter = new AlbumsAdapter(this,
-                renderAlbums,
-                R.layout.albumlist_row);
+        if(albumsAdapter == null) {
+            albumsAdapter = new AlbumsAdapter(this,
+                    renderAlbums,
+                    R.layout.albumlist_row);
+        }
+        Collections.sort(renderAlbums, sortByDate);
+        if(albumsWrapperAdapter == null) {
+            albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
+        }
         if(selectedAlbums != null) {
             //Create thread for setting selected
             Thread setSelectedThread = new Thread(new Runnable() {
@@ -162,7 +170,7 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
             setSelectedThread.run();
         }
         if(selectedSize != null) albumsAdapter.setSelectedSize(selectedSize);
-        albumList.setAdapter(albumsAdapter);
+        albumList.setAdapter(albumsWrapperAdapter);
 
         //For autocomplete field
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
@@ -235,7 +243,6 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
                     myData.putInt("IDAlbum", renderAlbums.get((int) l).getId());
 
                     newActivity.putExtra(ALBUM_TO, myData);
-                    activityHindered = true;
                     startActivity(newActivity);
                 }
             }
@@ -311,7 +318,6 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
                 newActivity.putExtra("AutoComplete", hint);
                 searchBar.setText("");
                 loadingCir.setVisibility(View.INVISIBLE);
-                activityHindered = true;
                 startActivityForResult(newActivity, SEARCH_ALBUM);
                 break;
             case SET_SELECTED_THREADCODE:
@@ -344,7 +350,6 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
             myData.putInt("IDAlbum", album.getId());
 
             newActivity.putExtra(ALBUM_TO, myData);
-            activityHindered = true;
             startActivity(newActivity);
         }
     }
@@ -354,10 +359,16 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.searchalbum_layout);
+        originalOrientation = UtilityFunctions.getOrientation(this);
 
         //Set action bar back
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
+
+        //Get comparators
+        sortByName = new AlbumBusinessLogic.SortByName();
+        sortByImageCount = new AlbumBusinessLogic.SortByImageCount(this);
+        sortByDate = new AlbumBusinessLogic.SortByDate();
 
         //Bind
         searchBar = findViewById(R.id.searchBar);
@@ -367,14 +378,20 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         SortOption = findViewById(R.id.spinner1);
         SortOrder = findViewById(R.id.spinner2);
 
-        if(savedInstanceState != null) {
-            if (savedInstanceState.getBoolean("isOnEdit"))
-                startMyEditMode(savedInstanceState.getString("editBarText"));
-            hint = savedInstanceState.getStringArrayList("autocompleteHints");
-            renderAlbums = savedInstanceState.getParcelableArrayList("renderAlbums");
-            //If found no saved state
-            if(renderAlbums == null || hint == null){
+        if(UtilityFunctions.getOrientation(this) % 2 != 0) {
+            albumList.setNumColumns(5);
+        } else {
+            albumList.setNumColumns(2);
+        }
 
+        if(savedInstanceState != null) {
+            if(savedInstanceState.getBoolean("orientationChanged")) {
+                if (savedInstanceState.getBoolean("isOnEdit"))
+                    startMyEditMode(savedInstanceState.getString("editBarText"));
+                hint = savedInstanceState.getStringArrayList("autocompleteHints");
+                renderAlbums = savedInstanceState.getParcelableArrayList("renderAlbums");
+                bindFunctionalities((ArrayList<Integer>)savedInstanceState.getSerializable("selectedState"), savedInstanceState.getInt("selectedArraySize"));
+            }else{
                 Thread researchAlbums =  new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -395,9 +412,7 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
                 //Run the thread
                 loadingCir.setVisibility(View.VISIBLE);
                 researchAlbums.run();
-                return;
             }
-            bindFunctionalities((ArrayList<Integer>)savedInstanceState.getSerializable("selectedState"), savedInstanceState.getInt("selectedArraySize"));
         }else{
             Intent received = getIntent();
             hint = received.getStringArrayListExtra("AutoComplete");
@@ -437,17 +452,21 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        if(!activityHindered) {
-            loadingCir.setVisibility(View.VISIBLE);
+        loadingCir.setVisibility(View.VISIBLE);
+
+        boolean orientationFlag = UtilityFunctions.getOrientation(this) != originalOrientation;
+        outState.putBoolean("orientationChanged", orientationFlag);
+        if(orientationFlag) {
             outState.putBoolean("isOnEdit", isOnEdit);
-            if(actionmode != null) outState.putString("editBarText", actionmode.getTitle().toString());
+            if (actionmode != null)
+                outState.putString("editBarText", actionmode.getTitle().toString());
             outState.putInt("selectedArraySize", albumsAdapter.getSelectedCount());
             outState.putSerializable("selectedState", albumsAdapter.getSelected());
             outState.putStringArrayList("autocompleteHints", hint);
             outState.putParcelableArrayList("renderAlbums", renderAlbums);
-
-            loadingCir.setVisibility(View.INVISIBLE);
         }
+
+        loadingCir.setVisibility(View.INVISIBLE);
         if (actionmode != null) actionmode.finish();
         super.onSaveInstanceState(outState);
     }
@@ -571,30 +590,8 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
     protected void onResume()
     {
         super.onResume();
-        activityHindered = false;
         if(albumsAdapter != null) {
             albumsAdapter.notifyDataSetChanged();
-        }
-    }
-
-    private class SortByName implements Comparator<Album>
-    {
-
-        @Override
-        public int compare(Album album, Album t1) {
-            return album.getAlbumName().compareTo(t1.getAlbumName());
-        }
-    }
-
-    private class SortByImageCount implements Comparator<Album>
-    {
-
-        @Override
-        public int compare(Album album, Album t1) {
-            int count1 = DatabaseHandler.getInstance(SearchAlbumActivity.this).getNumberOfImages(album.getId());
-            int count2 = DatabaseHandler.getInstance(SearchAlbumActivity.this).getNumberOfImages(t1.getId());
-
-            return count1 - count2;
         }
     }
 
@@ -604,11 +601,11 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         {
             if (Order == 0)
             {
-                Collections.sort(renderAlbums, new SortByName());
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, sortByName));
             }
             else
             {
-                Collections.sort(renderAlbums, Collections.reverseOrder(new SortByName()));
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, true, sortByName, false));
             }
 
         }
@@ -616,15 +613,14 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
         {
             if (Order == 0)
             {
-                Collections.sort(renderAlbums, new SortByImageCount());
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, sortByImageCount));
             }
             else
             {
-                Collections.sort(renderAlbums, Collections.reverseOrder(new SortByImageCount()));
+                Collections.sort(renderAlbums, new AlbumBusinessLogic.TwoFieldSort(sortByDate, true, sortByImageCount, false));
             }
         }
         albumsAdapter.notifyDataSetChanged();
-
     }
 
 }

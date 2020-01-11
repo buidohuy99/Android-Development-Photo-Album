@@ -2,30 +2,25 @@ package com.example.myalbum.AlbumsActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.ActionMode;
-import android.view.ContextMenu;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -38,8 +33,8 @@ import com.example.myalbum.events.OnClickEvent;
 import com.example.myalbum.events.OnItemClickEvent;
 import com.example.myalbum.interfaces.ActivityCallBacks;
 //Included for utilities, check out corresponding folders for code
-import com.example.myalbum.utilities.HeaderGridView;
 import com.example.myalbum.utilities.SearchHistoryManager;
+import com.example.myalbum.utilities.UtilityFunctions;
 import com.example.myalbum.utilities.UtilityGlobals;
 import com.example.myalbum.utilities.UtilityListeners;
 
@@ -54,6 +49,7 @@ import java.util.List;
 
 //test
 import com.example.myalbum.DAO.DatabaseHandler;
+import com.tonicartos.widget.stickygridheaders.StickyGridHeadersSimpleAdapterWrapper;
 //end test
 
 public class HomeActivity extends Activity implements ActivityCallBacks {
@@ -74,14 +70,16 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
 
     //HomeActivity states
+        //Note-ing activity on edit mode
     private boolean isOnEdit = false;
-    private boolean activityHindered = false;
+        //Note-ing original orientation
+    private int originalOrientation;
     public ActionMode actionmode;
     private GridViewItemCallBack gridViewItemCallBack;
 
     //Page widgets
     private AutoCompleteTextView searchBar;
-    private HeaderGridView albumList;
+    private GridView albumList;
     private Button searchButton;
     private Button addAlbumButton;
     private ProgressBar loadingCir;
@@ -110,6 +108,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     //Adapters
     private AlbumsAdapter albumsAdapter;
+    //Wrapper to section the adapter
+    private StickyGridHeadersSimpleAdapterWrapper albumsWrapperAdapter;
 
     //---------------------------------------Functions-----------------------------------
 
@@ -117,6 +117,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         //Add album
     private void addAlbum(String name, String password) {
         Album album = new Album(name, password);
+        album.setCurrentDate();
         new AddAlbum().execute(album);
     }
 
@@ -130,9 +131,14 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     private void resetAdapters(final ArrayList<Integer> selectedAlbums, boolean setBlur, Integer selectedSize){
         //Add adapters
         //For displaying all albums
-        albumsAdapter = new AlbumsAdapter(this,
-                allAlbums,
-                R.layout.albumlist_row);
+        if(albumsAdapter == null) {
+            albumsAdapter = new AlbumsAdapter(this,
+                    allAlbums,
+                    R.layout.albumlist_row);
+        }
+        if(albumsWrapperAdapter == null) {
+            albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
+        }
         if(selectedAlbums != null) {
             //Create thread for setting selected
             Thread setSelectedThread = new Thread(new Runnable() {
@@ -149,7 +155,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         }
         albumsAdapter.setBlurSystemAlbumsState(setBlur);
         if(selectedSize != null) albumsAdapter.setSelectedSize(selectedSize);
-        albumList.setAdapter(albumsAdapter);
+        albumList.setAdapter(albumsWrapperAdapter);
 
         //For autocomplete field
         ArrayAdapter<String> autoCompleteAdapter = new ArrayAdapter<String>(this,
@@ -218,6 +224,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 if(allAlbums.get((int)l).getId() < 0 || allAlbums.size() - 1 == l) return;
                 albumsAdapter.toggleSelected((int) l);
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
                 actionmode.setTitle(albumsAdapter.getSelectedCount() + " items selected");
             }
             else {
@@ -242,7 +249,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 myData.putInt("IDAlbum", allAlbums.get((int) l).getId());
 
                 newActivity.putExtra(ALBUM_TO, myData);
-                activityHindered = true;
                 startActivity(newActivity);
             }
             }
@@ -293,11 +299,13 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 //Cannot trigger edit for system albums
                 if(allAlbums.get((int)id).getId() < 0) {
                     albumsAdapter.notifyDataSetChanged();
+                    albumsWrapperAdapter.notifyDataSetChanged();
                     actionmode.setTitle(actionBarTitle);
                     return true;
                 }
                 albumsAdapter.toggleSelected((int)id);
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
                 actionBarTitle = albumsAdapter.getSelectedCount() + " items selected";
                 actionmode.setTitle(actionBarTitle);
                 return true;
@@ -318,7 +326,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 newActivity.putStringArrayListExtra("AutoComplete", hint);
                 searchBar.setText("");
                 loadingCir.setVisibility(View.INVISIBLE);
-                activityHindered = true;
                 startActivityForResult(newActivity, SEARCH_ALBUM);
                 break;
             case RELOAD_ALL_ALBUM_THREADCODE: case DELETE_SELECTS_THREADCODE:
@@ -331,6 +338,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 break;
             case SET_SELECTED_THREADCODE:
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
                 loadingCir.setVisibility(View.INVISIBLE);
                 break;
         }
@@ -381,7 +389,6 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             myData.putInt("IDAlbum", album.getId());
 
             newActivity.putExtra(ALBUM_TO, myData);
-            activityHindered = true;
             startActivity(newActivity);
         }
     }
@@ -403,6 +410,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_activity);
+        //Init orientation
+        originalOrientation = UtilityFunctions.getOrientation(this);
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -413,23 +422,23 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             }
         }.execute();
 
-        //Create header area
-        final ViewGroup viewGroup = (ViewGroup) ((ViewGroup) this
-                .findViewById(android.R.id.content)).getChildAt(0);
-
-        View headerArea = this.getLayoutInflater().inflate(R.layout.albumlist_header, viewGroup, false);
-
         //Bind
-        searchBar = headerArea.findViewById(R.id.searchBar);
-        searchButton = headerArea.findViewById(R.id.searchButton);
-        addAlbumButton = headerArea.findViewById(R.id.addAlbumButton);
+        searchBar = findViewById(R.id.searchBar);
+        searchButton = findViewById(R.id.searchButton);
+        addAlbumButton = findViewById(R.id.addAlbumButton);
         albumList = findViewById(R.id.albumList);
         loadingCir = findViewById(R.id.progress_circular);
-        SortOption = headerArea.findViewById(R.id.spinner1);
-        SortOrder = headerArea.findViewById(R.id.spinner2);
-
-        //Add header to gridview
-        albumList.addHeaderView(headerArea);
+        SortOption = findViewById(R.id.spinner1);
+        SortOrder = findViewById(R.id.spinner2);
+        View quickAct = findViewById(R.id.quickOperate);
+        if(UtilityFunctions.getOrientation(this) % 2 != 0) {
+            quickAct.setVisibility(View.GONE);
+            albumList.setNumColumns(5);
+        }
+        else {
+            quickAct.setVisibility(View.VISIBLE);
+            albumList.setNumColumns(2);
+        }
 
         //Create thread for loading
         Thread loadThread = new Thread(new Runnable() {
@@ -452,15 +461,16 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
         //Check saved state
         if(savedInstanceState != null) {
-            if (savedInstanceState.getBoolean("isOnEdit"))
-                startMyEditMode(savedInstanceState.getString("editBarText"));
-            allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
-            hint = savedInstanceState.getStringArrayList("autocompleteHints");
-            ArrayList<Integer> selectedState = (ArrayList<Integer>)savedInstanceState.getSerializable("selectedState");
-            Boolean blurState = savedInstanceState.getBoolean("systemAlbumsState");
-            if(blurState == null) blurState = false;
-            //If found no saved state
-            if(allAlbums == null || hint == null){
+            if(savedInstanceState.getBoolean("orientationChanged")) {
+                if (savedInstanceState.getBoolean("isOnEdit"))
+                    startMyEditMode(savedInstanceState.getString("editBarText"));
+                allAlbums = savedInstanceState.getParcelableArrayList("allAlbums");
+                hint = savedInstanceState.getStringArrayList("autocompleteHints");
+                ArrayList<Integer> selectedState = (ArrayList<Integer>) savedInstanceState.getSerializable("selectedState");
+                Boolean blurState = savedInstanceState.getBoolean("systemAlbumsState");
+                if (blurState == null) blurState = false;
+                bindFunctionalities(selectedState, blurState, savedInstanceState.getInt("selectedArraySize"));
+            } else{
                 //Create necessary arrays
                 allAlbums = new ArrayList<Album>();
                 hint = new ArrayList<String>();
@@ -468,9 +478,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 //Run the thread
                 loadingCir.setVisibility(View.VISIBLE);
                 loadThread.run();
-                return;
             }
-            bindFunctionalities(selectedState, blurState, savedInstanceState.getInt("selectedArraySize"));
         }else{
             //Create necessary arrays
             allAlbums = new ArrayList<Album>();
@@ -484,19 +492,22 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        if(!activityHindered) {
-            loadingCir.setVisibility(View.VISIBLE);
+        loadingCir.setVisibility(View.VISIBLE);
 
+        boolean orientationFlag = UtilityFunctions.getOrientation(this) != originalOrientation;
+        outState.putBoolean("orientationChanged", orientationFlag);
+        if(orientationFlag) {
             outState.putBoolean("isOnEdit", isOnEdit);
-            if(actionmode != null) outState.putString("editBarText", actionmode.getTitle().toString());
+            if (actionmode != null)
+                outState.putString("editBarText", actionmode.getTitle().toString());
             outState.putParcelableArrayList("allAlbums", (ArrayList<Album>) allAlbums);
             outState.putSerializable("selectedState", albumsAdapter.getSelected());
             outState.putInt("selectedArraySize", albumsAdapter.getSelectedCount());
             outState.putStringArrayList("autocompleteHints", hint);
             outState.putBoolean("systemAlbumsState", albumsAdapter.getBlurSystemAlbumsState());
-
-            loadingCir.setVisibility(View.INVISIBLE);
         }
+
+        loadingCir.setVisibility(View.INVISIBLE);
         if (actionmode != null) actionmode.finish();
         super.onSaveInstanceState(outState);
     }
@@ -570,6 +581,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         @Override
         protected void onPostExecute(ArrayAdapter<String> strings) {
             albumsAdapter.notifyDataSetChanged();
+            albumsWrapperAdapter.notifyDataSetChanged();
             searchBar.setAdapter(strings);
             albumList.smoothScrollByOffset(albumList.getMeasuredHeight());
         }
@@ -635,6 +647,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
                 albumsAdapter.toggleBlurSystemAlbums();
                 albumsAdapter.clearSelected();
                 albumsAdapter.notifyDataSetChanged();
+                albumsWrapperAdapter.notifyDataSetChanged();
             }
         }
 
@@ -655,9 +668,9 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
     protected void onResume()
     {
         super.onResume();
-        activityHindered = false;
         if(albumsAdapter != null) {
             albumsAdapter.notifyDataSetChanged();
+            albumsWrapperAdapter.notifyDataSetChanged();
         }
     }
 
@@ -717,6 +730,7 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
         }
 
         albumsAdapter.notifyDataSetChanged();
+        albumsWrapperAdapter.notifyDataSetChanged();
     }
 
 }

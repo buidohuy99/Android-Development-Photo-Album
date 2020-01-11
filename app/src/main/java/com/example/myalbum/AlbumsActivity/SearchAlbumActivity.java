@@ -150,11 +150,9 @@ public class SearchAlbumActivity extends Activity implements ActivityCallBacks {
             albumsAdapter = new AlbumsAdapter(this,
                     renderAlbums,
                     R.layout.albumlist_row);
-        }
+        }else albumsAdapter.setList(renderAlbums);
         Collections.sort(renderAlbums, sortByDate);
-        if(albumsWrapperAdapter == null) {
-            albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
-        }
+        albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
         if(selectedAlbums != null) {
             //Create thread for setting selected
             Thread setSelectedThread = new Thread(new Runnable() {

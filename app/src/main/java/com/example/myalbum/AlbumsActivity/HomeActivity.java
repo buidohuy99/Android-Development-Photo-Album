@@ -135,10 +135,8 @@ public class HomeActivity extends Activity implements ActivityCallBacks {
             albumsAdapter = new AlbumsAdapter(this,
                     allAlbums,
                     R.layout.albumlist_row);
-        }
-        if(albumsWrapperAdapter == null) {
-            albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
-        }
+        }else albumsAdapter.setList(allAlbums);
+        albumsWrapperAdapter = new StickyGridHeadersSimpleAdapterWrapper(albumsAdapter);
         if(selectedAlbums != null) {
             //Create thread for setting selected
             Thread setSelectedThread = new Thread(new Runnable() {
